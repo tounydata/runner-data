@@ -571,7 +571,22 @@ async function logout() {
   document.getElementById('authScreen').style.display = 'flex';
 }
 
-// Auth state handled entirely by DOMContentLoaded below
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+    currentUser = session.user;
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    await loadProfile();
+    await loadRaces();
+    initRadar();
+    renderDimList();
+    await checkStravaToken();
+  }
+  if (event === 'SIGNED_OUT') {
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authScreen').style.display = 'flex';
+  }
+});
 
 // ============================================================
 // PROFILE
