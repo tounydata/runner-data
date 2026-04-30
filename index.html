@@ -310,13 +310,15 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
     <div class="strip-cell"><div class="strip-val tg" id="s-km-week">—</div><div class="strip-lbl">km / semaine</div></div>
     <div class="strip-cell"><div class="strip-val to" id="s-dplus">—</div><div class="strip-lbl">D+ / mois</div></div>
     <div class="strip-cell"><div class="strip-val to" id="s-dplus-week">—</div><div class="strip-lbl">D+ / semaine</div></div>
-    <div class="strip-cell"><div class="strip-val" id="s-semi">—</div><div class="strip-lbl">Semi PR</div></div>
   </div>
 
   <div class="grid-2 mt2">
     <!-- MATRIX -->
     <div class="card" style="grid-column:1">
-      <div class="card-label">Runner Matrix — cliquer une dimension</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+  <div class="card-label" style="margin:0">Runner Matrix</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--text3)">CONFIDENCE <span id="matrixConfidence">—</span></div>
+</div>
       <div class="matrix-inner">
         <div class="radar-wrap"><canvas id="matrixRadar" width="280" height="280"></canvas></div>
         <div class="dim-list" id="dimList"></div>
