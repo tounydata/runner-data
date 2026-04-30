@@ -1600,7 +1600,7 @@ function renderDetailedSection(s, secTimeS, idx=0){
     advice=`Section de liaison. Descendre la FC sous ${pct79} bpm, reprendre la ventilation. Ne pas forcer. Ravitailler si durée totale > 75min.`;
   }
 
-  return `<div class="section-block" style="border-left-color:${cols[s.type]}" onclick="highlightSection(${idx})" data-idx="${idx}">`;
+ return `<div class="section-block" style="border-left-color:${cols[s.type]}" onclick="highlightSection(${idx})" data-idx="${idx}">;
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:.3rem">
      <div class="strat-km">km ${s.startKm.toFixed(1)} -> ${s.endKm.toFixed(1)}</div>
       <div class="mono t2" style="font-size:.6rem">⏱ ${fmtT(secTimeS)} estimé</div>
