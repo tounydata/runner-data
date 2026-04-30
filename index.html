@@ -546,8 +546,20 @@ async function login() {
   const pass = document.getElementById('loginPassword').value;
   const msg = document.getElementById('authMsg');
   msg.textContent = 'Connexion...'; msg.style.color = 'var(--text2)';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { msg.textContent = error.message; msg.style.color = 'var(--red)'; }
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    msg.textContent = error.message; msg.style.color = 'var(--red)';
+  } else if (data?.user) {
+    currentUser = data.user;
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    await loadProfile();
+    await loadRaces();
+    initRadar();
+    renderDimList();
+    await checkStravaToken();
+  }
+}
 }
 
 async function signup() {
