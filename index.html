@@ -1053,7 +1053,7 @@ Donne une analyse courte incluant: qualité de l'effort, gestion FC, point fort 
     const data = await resp.json();
     return data.content?.[0]?.text || 'Analyse non disponible.';
   } catch(e) {
-    return 'Analyse IA temporairement indisponible.';
+    return 'Limite Groq atteinte — réessaie dans 1 minute.';
   }
 }
 
