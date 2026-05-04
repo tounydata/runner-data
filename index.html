@@ -1367,8 +1367,9 @@ async function openAnalyse(act) {
   // Athlete profile by section (VAM, recovery, etc.)
   renderAthleteProfile(streams, act);
 
-  // Check if this activity is linked to a race
-  const linkedRace = races.find(r => r.strava_activity_id == act.id);
+  // Check if this activity is linked to a race — reload fresh from DB first
+  await loadRaces();
+  const linkedRace = races.find(r => String(r.strava_activity_id) === String(act.id));
   if(linkedRace?.gpx_data) {
     renderRaceComparison(act, streams, linkedRace);
   } else {
@@ -1403,25 +1404,24 @@ async function linkActivityToRace(raceId, raceName, actId) {
     .eq('id', raceId);
   const panel = document.getElementById('linkActivityPanel');
   if(panel) panel.style.display='none';
-  if(btn){
-    if(error){btn.textContent='❌ Erreur';btn.disabled=false;}
-    else{
+  if(!error){
+    // Reload races from DB to ensure persistence
+    await loadRaces();
+    if(btn){
       btn.textContent=`✓ Lié à ${raceName}`;
       btn.style.background='var(--green)';btn.style.color='#000';btn.style.borderColor='var(--green)';
-      // Update local cache
-      const idx=races.findIndex(r=>r.id===raceId);
-      if(idx>=0){
-        races[idx].strava_activity_id=actId;
-        // If race has GPX, show comparison
-        if(races[idx].gpx_data) {
-          const token=await getToken();
-          if(token){
-            const streams=await fetchStreams(token, actId);
-            renderRaceComparison({id:actId,moving_time:0}, streams, races[idx]);
-          }
-        }
+    }
+    // Now check if linked race has GPX and show comparison
+    const linkedRace = races.find(r=>r.id===raceId);
+    if(linkedRace?.gpx_data){
+      const token=await getToken();
+      if(token){
+        const streams=await fetchStreams(token, actId);
+        renderRaceComparison({id:actId,moving_time:0}, streams, linkedRace);
       }
     }
+  } else if(btn){
+    btn.textContent='❌ Erreur';btn.disabled=false;
   }
 }
 
@@ -1683,15 +1683,21 @@ function renderRaces() {
     // Smart buttons based on state
     let buttons='';
     if(!past){
-      // Future race — show prepare button
       buttons+=`<button onclick='prepareRace(${JSON.stringify(r)})' class="btn-prepare">${hasGpx?'🗺️ Voir stratégie':'🗺️ Préparer'}</button>`;
     } else {
-      // Past race
-      if(hasGpx) buttons+=`<button onclick='prepareRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border2)">📊 Voir stratégie</button>`;
-      buttons+=`<button onclick='linkActivityFromRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--purple);color:#fff;border-color:var(--purple)">${hasActivity?'✓ Activité liée':'🔗 Lier activité'}</button>`;
+      if(hasActivity){
+        buttons+=`<button onclick='linkActivityFromRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border2);font-size:.52rem">↺ Changer</button>`;
+      } else {
+        buttons+=`<button onclick='linkActivityFromRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--purple);color:#fff;border-color:var(--purple)">🔗 Lier activité</button>`;
+      }
     }
 
-    return `<div class="race-item" style="cursor:${hasGpx?'pointer':'default'}" onclick="if(event.target.tagName!=='BUTTON'&&${hasGpx})prepareRace(${JSON.stringify(r)})">
+    const linkedAct=hasActivity?allActivities.find(a=>String(a.id)===String(r.strava_activity_id)):null;
+    const onCardClick=linkedAct?`openAnalyse(${JSON.stringify(linkedAct).replace(/"/g,'&quot;')})`:hasGpx?`prepareRace(${JSON.stringify(r)})`:'';
+
+    return `<div class="race-item" style="cursor:${onCardClick?'pointer':'default'};transition:background .15s"
+      onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''"
+      onclick="if(event.target.tagName!=='BUTTON'){${onCardClick}}">
       <div><div class="race-cd" style="color:${color}">${past?'✓':diff}</div><div class="race-cd-lbl">${past?'passée':'jours'}</div></div>
       <div class="race-info">
         <div class="race-name">${r.name}</div>
@@ -1807,9 +1813,7 @@ async function confirmLinkActivity(raceId, raceName, actId, modal) {
     .update({strava_activity_id: actId})
     .eq('id', raceId);
   if(!error){
-    const idx = races.findIndex(r=>r.id===raceId);
-    if(idx>=0) races[idx].strava_activity_id = actId;
-    renderRaces();
+    await loadRaces(); // reload from DB
     if(modal) modal.remove();
   }
 }
