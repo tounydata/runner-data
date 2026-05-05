@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -8,71 +6,26 @@
 <title>Runner Data Pro</title>
 
 <style>
-body {
-  margin:0;
-  font-family:-apple-system, system-ui;
-  background:#0b0f1a;
-  color:white;
-}
-
-.container {
-  padding:20px;
-  padding-bottom:100px;
-}
-
-.card {
-  background:#111827;
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:16px;
-}
-
-.title {
-  font-size:18px;
-  font-weight:600;
-  margin-bottom:10px;
-}
-
-.row {
-  display:flex;
-  justify-content:space-between;
-  margin:6px 0;
-}
-
-.badge {
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-.high { background:#dc2626; }
-.medium { background:#f59e0b; }
-.low { background:#16a34a; }
-
-.error {
-  color:#ef4444;
-  font-size:13px;
-}
-
-.navbar {
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#0b0f1a;
-  border-top:1px solid #1f2937;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0;
-}
+body{margin:0;font-family:-apple-system,system-ui;background:#0b0f1a;color:white;padding:20px;padding-bottom:90px}
+.card{background:#111827;border-radius:14px;padding:18px;margin:14px 0}
+.title{font-size:22px;font-weight:700;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;margin:8px 0}
+.muted{color:#9ca3af}
+.badge{padding:4px 8px;border-radius:8px;font-size:12px;font-weight:700}
+.high{background:#dc2626}
+.medium{background:#f59e0b}
+.low{background:#16a34a}
+.nav{position:fixed;left:0;right:0;bottom:0;background:#0b0f1a;border-top:1px solid #1f2937;display:flex;justify-content:space-around;padding:14px 0;font-weight:700}
+.err{color:#ef4444;padding:20px}
+.small{font-size:13px;color:#9ca3af}
 </style>
 </head>
 
 <body>
 
-<div class="container" id="app"></div>
+<div id="app"></div>
 
-<div class="navbar">
+<div class="nav">
   <div>DASHBOARD</div>
   <div>COURSES</div>
   <div>RENFO</div>
@@ -80,76 +33,80 @@ body {
 
 <script>
 
-// DEBUG SAFE
-window.onerror = function (msg, url, line) {
+// ======================
+// DEBUG SAFE (ANTI ÉCRAN BLANC)
+// ======================
+window.onerror=function(msg,url,line){
   document.body.innerHTML =
-    '<div style="color:red;padding:20px;">' +
+    '<div class="err">' +
     '<h2>ERREUR JS</h2>' +
-    '<p>' + msg + '</p>' +
-    '<p>Ligne: ' + line + '</p>' +
+    '<p>'+msg+'</p>' +
+    '<p>Ligne: '+line+'</p>' +
     '</div>';
 };
 
-// SAFE
-function safe(val){ return (val==null||isNaN(val))?null:Number(val); }
-function fix(val,d=2){ const n=safe(val); return n===null?"--":n.toFixed(d); }
+// ======================
+// SAFE NUMBERS
+// ======================
+function num(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
-// TEST DATA (remplace plus tard par tes vraies données)
-const activities = window.activities || [
-  {name:"Run",distance:5,time:1500,avgHR:140,elevation:10}
-];
+function fixed(v,d=2){
+  const n = num(v);
+  return n===null ? "--" : n.toFixed(d);
+}
 
-// CALCUL
-function pace(d,t){ if(!d||!t)return null; return t/d; }
+// ======================
+// CALCULS
+// ======================
+function pace(d,t){
+  d=num(d); t=num(t);
+  if(!d || !t) return null;
+  return t/d;
+}
 
-function formatPace(sec){
+function fmtPace(sec){
+  sec=num(sec);
   if(!sec) return "--";
   const m=Math.floor(sec/60);
   const s=Math.round(sec%60);
-  return m+":"+(s<10?"0":"")+s+"/km";
+  return m+":"+String(s).padStart(2,"0")+"/km";
 }
 
-// RENDER SAFE
-function render(){
+function sum(obj){
+  return Object.values(obj||{}).reduce((a,b)=>a+(num(b)||0),0);
+}
 
-  let root = document.getElementById("app");
-  if(!root){
-    root = document.createElement("div");
-    root.id="app";
-    document.body.appendChild(root);
+function zonesPct(z){
+  const total=sum(z);
+  if(!total) return null;
+
+  const res={};
+  for(let k in z){
+    res[k]=(num(z[k])||0)/total100;
   }
-
-  root.innerHTML="";
-
-  activities.forEach(a=>{
-
-    const p = pace(a.distance,a.time);
-
-    const div=document.createElement("div");
-    div.style.padding="20px";
-    div.style.margin="10px";
-    div.style.background="#111827";
-    div.style.borderRadius="10px";
-
-    div.innerHTML =
-      "<b>"+(a.name||"activité")+"</b><br>" +
-      "Distance: "+fix(a.distance)+" km<br>" +
-      "Allure: "+formatPace(p)+"<br>" +
-      "FC: "+fix(a.avgHR,0)+" bpm";
-
-    root.appendChild(div);
-  });
+  return res;
 }
 
-render();
+function intensity(z4){
+  z4=num(z4);
+  if(z4===null) return "LOW";
+  if(z4>80) return "HIGH";
+  if(z4>50) return "MEDIUM";
+  return "LOW";
+}
 
-</script>
-
+function cls(l){
+  return l==="HIGH" ? "high" :
+         l==="MEDIUM" ? "medium" :
+         "low";
+}
 
 // ======================
-// DATA (NE PAS TOUCHER STRUCTURE)
+// DATA (inchangée structure)
 // ======================
-
 const activities = [
   {
     name:"Trail du muguet",
@@ -170,109 +127,32 @@ const activities = [
 ];
 
 // ======================
-// CORE CALCULS
-// ======================
-
-function pace(distance,time){
-  if(!distance || !time) return null;
-  return time/distance;
-}
-
-function formatPace(sec){
-  if(!sec) return "--";
-  const m = Math.floor(sec/60);
-  const s = Math.round(sec%60);
-  return ${m}:${s.toString().padStart(2,"0")}/km;
-}
-
-function zonesPercent(z){
-  if(!z) return null;
-  const total = Object.values(z).reduce((a,b)=>a+b,0);
-  if(!total) return null;
-
-  let res={};
-  for(let k in z){
-    res[k]=(z[k]/total)*100;
-  }
-  return res;
-}
-
-function intensity(z4){
-  if(z4===null) return "LOW";
-  if(z4>80) return "HIGH";
-  if(z4>50) return "MEDIUM";
-  return "LOW";
-}
-
-// ======================
-// GLOBAL STATS
-// ======================
-
-function globalStats(list){
-  let total=0;
-  let z2=0;
-
-  list.forEach(a=>{
-    if(!a.hrZones) return;
-    const t=Object.values(a.hrZones).reduce((x,y)=>x+y,0);
-    total+=t;
-    z2+=a.hrZones.z2||0;
-  });
-
-  return {
-    z2: total ? (z2/total)*100 : 0
-  };
-}
-
-// ======================
-// PAF (NORMALISATION SIMPLE)
-// ======================
-
-function normalizedPace(pace,elevation){
-  if(!pace) return null;
-  if(!elevation) return pace;
-
-  // approximation robuste (pas de crash)
-  return pace * (1 - Math.min(elevation/10000,0.2));
-}
-
-// ======================
 // RENDER
 // ======================
-
 function render(){
 
-  const app=document.getElementById("app");
-  app.innerHTML="";
+  const app = document.getElementById("app");
+
+  let html =     <div class="title">Runner Data Pro</div>     <p class="small">Version stable anti-crash. Les données invalides n'arrêtent plus le rendu.</p>  ;
 
   activities.forEach(a=>{
 
     const p = pace(a.distance,a.time);
-    const np = normalizedPace(p,a.elevation);
-    const zones = zonesPercent(a.hrZones);
-
+    const zones = zonesPct(a.hrZones);
     const z4 = zones ? zones.z4 : null;
     const level = intensity(z4);
 
-    const color = level==="HIGH"?"high":
-                  level==="MEDIUM"?"medium":"low";
-
-    const card=document.createElement("div");
-    card.className="card";
-
-    card.innerHTML=      <div class="title">${a.name}</div>        <div class="row">         <span>Distance</span>         <span>${fix(a.distance)} km</span>       </div>        <div class="row">         <span>Allure</span>         <span>${formatPace(p)}</span>       </div>        <div class="row">         <span>Allure normalisée</span>         <span>${formatPace(np)}</span>       </div>        <div class="row">         <span>FC moyenne</span>         <span>${fix(a.avgHR,0)} bpm</span>       </div>        <div class="row">         <span>D+</span>         <span>${fix(a.elevation,0)} m</span>       </div>        <div class="row">         <span>Z4</span>         <span>${fix(z4,1)}%</span>       </div>        <div class="row">         <span>Intensité</span>         <span class="badge ${color}">${level}</span>       </div>    ;
-
-    app.appendChild(card);
+    html +=       <div class="card">         <div class="title">${a.name}</div>          <div class="row">           <span>Distance</span>           <b>${fixed(a.distance)} km</b>         </div>          <div class="row">           <span>Allure</span>           <b>${fmtPace(p)}</b>         </div>          <div class="row">           <span>FC moyenne</span>           <b>${fixed(a.avgHR,0)} bpm</b>         </div>          <div class="row">           <span>D+</span>           <b>${fixed(a.elevation,0)} m</b>         </div>          <div class="row">           <span>Z4</span>           <b>${fixed(z4,1)}%</b>         </div>          <div class="row">           <span>Intensité</span>           <span class="badge ${cls(level)}">${level}</span>         </div>       </div>    ;
   });
 
-  const g = globalStats(activities);
+  // GLOBAL
+  const totalTime = activities.reduce((s,a)=>s+sum(a.hrZones),0);
+  const z2Time = activities.reduce((s,a)=>s+(num(a.hrZones?.z2)||0),0);
+  const z2Percent = totalTime ? z2Time/totalTime100 : 0;
 
-  const globalCard=document.createElement("div");
-  globalCard.className="card";
+  html +=     <div class="card">       <div class="title">Stats globales</div>       <div class="row">         <span>% Z2 global</span>         <b>${fixed(z2Percent,1)}%</b>       </div>     </div>  ;
 
-  globalCard.innerHTML=    <div class="title">Stats globales</div>      <div class="row">       <span>% Z2</span>       <span>${fix(g.z2,1)}%</span>     </div>  ;
-
-  app.appendChild(globalCard);
+  app.innerHTML = html;
 }
 
 render();
