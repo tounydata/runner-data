@@ -1,4 +1,14 @@
+window.onerror = function (msg, url, line, col, error) {
+  document.body.innerHTML = `
+    <div style="color:red;padding:20px;">
+      ERREUR JS<br><br>
+      ${msg}<br>
+      ligne: ${line}
+    </div>
+  `;
+};
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
