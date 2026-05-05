@@ -1106,7 +1106,7 @@ async function loadActivities(token) {
 }
 
 async function fetchStreams(token, id) {
-  const r = await fetch(`https://www.strava.com/api/v3/activities/${id}/streams?keys=time,distance,altitude,heartrate,velocity_smooth,cadence&key_by_type=true`,{headers:{Authorization:`Bearer ${token}`}});
+  const r = await fetch(`https://www.strava.com/api/v3/activities/${id}/streams?keys=time,distance,altitude,heartrate,velocity_smooth,cadence,latlng&key_by_type=true`,{headers:{Authorization:`Bearer ${token}`}});
   return r.json();
 }
 
@@ -1414,6 +1414,12 @@ async function openAnalyse(act) {
       <div class="card"><div class="clabel">Répartition zones FC</div><div class="chart-wrap" style="height:190px"><canvas id="azChart"></canvas></div></div>
     </div>
 
+    <!-- CARTE ACTIVITÉ -->
+    <div class="card mt2" id="activityMapCard" style="display:none">
+      <div class="clabel">Carte de l'activité</div>
+      <div id="activityMap" style="height:280px;border-radius:8px;overflow:hidden"></div>
+    </div>
+
     <!-- PROFIL ATHLÈTE PAR SECTION (si streams dispo) -->
     <div id="athleteProfileSection" class="mt2"></div>
 
@@ -1429,7 +1435,11 @@ async function openAnalyse(act) {
 
   // Check if this activity is linked to a race — reload fresh from DB first
   await loadRaces();
-  const linkedRace = races.find(r => String(r.strava_activity_id) === String(act.id));
+  const linkedRace = races.find(r => {
+    const rid = r.strava_activity_id;
+    const aid = act.id;
+    return rid && aid && String(rid).trim() === String(aid).trim();
+  });
   if(linkedRace?.gpx_data) {
     renderRaceComparison(act, streams, linkedRace);
   } else {
@@ -1442,6 +1452,9 @@ async function openAnalyse(act) {
         : '<span class="mono t3">Aucune course passée dans le calendrier</span>';
     }
   }
+
+  // Map + profil alti interactif si latlng dispo
+  renderActivityMap(streams, act);
 
   // AI analysis async
   const aiText = await generateAIAnalysis(act, streams, paf);
@@ -1680,6 +1693,86 @@ function renderRaceComparison(act, streams, race) {
     userProfile.coeff_uphill = 1 + avgUpDiff/100;
     sb.from('profiles').upsert({id:currentUser.id, coeff_uphill: userProfile.coeff_uphill});
   }
+}
+
+function renderActivityMap(streams, act) {
+  const latlng = streams.latlng?.data;
+  if(!latlng || latlng.length < 2) return;
+
+  const card = document.getElementById('activityMapCard');
+  if(card) card.style.display = 'block';
+
+  setTimeout(() => {
+    // Destroy previous map instance if any
+    if(window._activityMap) { window._activityMap.remove(); window._activityMap = null; }
+
+    const map = L.map('activityMap', {zoomControl:true, scrollWheelZoom:false});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap', maxZoom:19}).addTo(map);
+    window._activityMap = map;
+
+    // Build points — sample every 3 for perf
+    const pts = latlng.filter((_,i)=>i%3===0).map(p=>[p[0],p[1]]);
+    const altD = streams.altitude?.data || [];
+    const hrD = streams.heartrate?.data || [];
+    const fcMax = userProfile.fc_max || 205;
+
+    // Color segments by HR zone
+    const zoneColors = ['#3b82f6','#2ecc71','#fbbf24','#ff6b35','#f43f5e'];
+    function hrZone(hr) {
+      const pct = hr/fcMax;
+      if(pct < 0.60) return 0;
+      if(pct < 0.70) return 1;
+      if(pct < 0.80) return 2;
+      if(pct < 0.90) return 3;
+      return 4;
+    }
+
+    if(hrD.length > 10) {
+      // Draw colored polyline segments by HR zone
+      const step = 3;
+      for(let i=0; i<latlng.length-step; i+=step) {
+        const p1=[latlng[i][0],latlng[i][1]];
+        const p2=[latlng[i+step]?.[0]||latlng[i][0], latlng[i+step]?.[1]||latlng[i][1]];
+        const hr = hrD[i] || 0;
+        const color = hr > 0 ? zoneColors[hrZone(hr)] : '#6b7d94';
+        L.polyline([p1,p2], {color, weight:4, opacity:.85}).addTo(map);
+      }
+    } else {
+      // No HR — single color polyline
+      L.polyline(pts, {color:'#00d4ff', weight:4, opacity:.85}).addTo(map);
+    }
+
+    // Start / finish markers
+    L.circleMarker(pts[0], {radius:7, fillColor:'#2ecc71', color:'#fff', weight:2, fillOpacity:1}).bindTooltip('Départ').addTo(map);
+    L.circleMarker(pts[pts.length-1], {radius:7, fillColor:'#f43f5e', color:'#fff', weight:2, fillOpacity:1}).bindTooltip('Arrivée').addTo(map);
+
+    // Hover marker for altitude chart sync
+    const hoverMarker = L.circleMarker(pts[0], {radius:6, fillColor:'#fff', color:'#00d4ff', weight:2, fillOpacity:1}).addTo(map);
+    hoverMarker.setStyle({opacity:0, fillOpacity:0});
+
+    map.fitBounds(L.latLngBounds(pts), {padding:[20,20]});
+
+    // Sync hover between chart and map
+    const apCanvas = document.getElementById('apChart');
+    if(apCanvas) {
+      apCanvas.addEventListener('mousemove', (e) => {
+        const chart = Chart.getChart(apCanvas);
+        if(!chart) return;
+        const pts2 = chart.getElementsAtEventForMode(e,'nearest',{axis:'x'},true);
+        if(pts2.length) {
+          const idx = pts2[0].index;
+          const totalPts = latlng.length;
+          const mapIdx = Math.min(Math.round(idx/cDist.length*totalPts), totalPts-1);
+          const ll = latlng[mapIdx];
+          if(ll) {
+            hoverMarker.setLatLng([ll[0],ll[1]]);
+            hoverMarker.setStyle({opacity:1, fillOpacity:1});
+          }
+        }
+      });
+      apCanvas.addEventListener('mouseleave', () => hoverMarker.setStyle({opacity:0, fillOpacity:0}));
+    }
+  }, 200);
 }
 
 function closeAnalyse() {
