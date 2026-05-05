@@ -223,7 +223,35 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .stitle{font-family:var(–display);font-size:1.5rem;letter-spacing:.03em;margin-bottom:.75rem;}
 
-/* ── RENFO ── */
+/* ── TOASTS ── */
+#toastContainer{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:var(–bg2);border:1px solid var(–border2);border-radius:10px;padding:12px 16px;font-size:.8rem;display:flex;align-items:center;gap:10px;max-width:320px;pointer-events:all;animation:slideIn .25s ease;box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.toast.success{border-color:rgba(46,204,113,.4);}
+.toast.error{border-color:rgba(244,63,94,.4);}
+.toast.info{border-color:rgba(0,212,255,.3);}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+
+/* ── ONBOARDING ── */
+#onboardingOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;padding:2rem;}
+#onboardingOverlay.open{display:flex;}
+.onb-step{display:none;text-align:center;max-width:480px;width:100%;}
+.onb-step.active{display:block;}
+.onb-icon{font-size:4rem;margin-bottom:1rem;}
+.onb-title{font-family:var(–display);font-size:2rem;letter-spacing:.03em;margin-bottom:.5rem;}
+.onb-desc{color:var(–text2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem;}
+.onb-dots{display:flex;gap:6px;justify-content:center;margin-bottom:1.5rem;}
+.onb-dot{width:8px;height:8px;border-radius:50%;background:var(–border2);transition:background .2s;}
+.onb-dot.active{background:var(–cyan);}
+
+/* ── CGU ── */
+#cguOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto;}
+#cguOverlay.open{display:flex;}
+.cgu-inner{background:var(–bg2);border:1px solid var(–border2);border-radius:var(–r);padding:2rem;max-width:700px;width:100%;margin:auto;}
+
+/* ── FOOTER ── */
+.app-footer{text-align:center;padding:1rem 2rem;font-family:var(–mono);font-size:.56rem;color:var(–text3);border-top:1px solid var(–border);margin-top:2rem;}
+.app-footer a{color:var(–text2);cursor:pointer;text-decoration:underline;}
 .renfo-tab{padding:8px 18px;border-radius:8px;border:1px solid var(–border2);background:var(–bg3);color:var(–text2);cursor:pointer;font-family:var(–mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
 .renfo-tab.active{background:var(–cyan);color:#000;border-color:var(–cyan);}
 .body-zone{transition:all .2s;cursor:pointer;}
@@ -595,6 +623,12 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   </div>
 </div>
 
+<div class="app-footer">
+  Runner OS · Données sécurisées · 
+  <a onclick="openCGU()">CGU & Confidentialité</a> · 
+  Strava API · Supabase · Groq AI
+</div>
+
 </main>
 </div><!-- appShell -->
 
@@ -900,6 +934,8 @@ async function initApp(user) {
   initBodySvg();
   await checkStravaToken();
   await loadHistoryFromDB();
+  // Onboarding pour nouveaux utilisateurs
+  if(!localStorage.getItem('onb_done')) initOnboarding();
 }
 
 // ════════════════════════════════════════════════════
@@ -2502,7 +2538,9 @@ const NUTRITION_DB = {
     {id:'naak-bar',brand:'Näak',name:'Ultra Energy Bar',carbs:29,caffeine:0,water:false,note:'50g, protéines végétales'},
     {id:'naak-bar-caf',brand:'Näak',name:'Ultra Energy Bar Caféine',carbs:27,caffeine:35,water:false,note:'50g, 35mg caféine'},
     {id:'ta-barre',brand:'TA Energy',name:'Barre Bio',carbs:20,caffeine:0,water:false,note:'38g, texture moelleuse'},
-    {id:'baouw-barre',brand:'Baouw',name:'Extra Bar 50g',carbs:24,caffeine:0,water:false,note:'Bio, sans gluten'},
+    {id:'nutripure-gel',brand:'Nutripure',name:'Gel Long Distance',carbs:30,caffeine:0,water:true,note:'SolidCarbs™, glucose+fructose — avec eau'},
+    {id:'nutripure-barre-ld',brand:'Nutripure',name:'Barre Long Distance',carbs:30,caffeine:0,water:false,note:'42g, moelleuse, BCAA + vitamines'},
+    {id:'nutripure-raw',brand:'Nutripure',name:'Raw Barre Bio',carbs:15,caffeine:0,water:false,note:'15g glucides + 8g protéines — avant effort ou ultra long'},
   ],
   boissons:[
     {id:'maurten-160d',brand:'Maurten',name:'Drink Mix 160',carbs:40,per:'500ml',water:true,note:'À diluer'},
@@ -2510,7 +2548,8 @@ const NUTRITION_DB = {
     {id:'deca-iso',brand:'Decathlon',name:'ISO (poudre)',carbs:33,per:'500ml',water:true,note:'À diluer'},
     {id:'deca-iso-plus',brand:'Decathlon',name:'ISO+ (poudre)',carbs:33,per:'500ml',water:true,note:'À diluer'},
     {id:'deca-iso-rtd',brand:'Decathlon',name:'ISO prête à boire',carbs:27,per:'500ml',water:false,note:'Prête à l\'emploi'},
-    {id:'nduranz-drink',brand:'Nduranz',name:'Nrgy Drink',carbs:45,per:'500ml',water:true,note:'À diluer'},
+    {id:'nutripure-drink',brand:'Nutripure',name:'Boisson Long Distance 30g',carbs:30,per:'400ml',water:true,note:'PureDigest™, BCAA + vitamines'},
+    {id:'nutripure-drink60',brand:'Nutripure',name:'Boisson Expert Long Distance 60g',carbs:60,per:'500ml',water:true,note:'Version haute énergie — athlètes expérimentés'},
     {id:'nduranz-drink90',brand:'Nduranz',name:'Nrgy Drink 90',carbs:90,per:'500ml',water:true,note:'Haute énergie ultra distance'},
   ]
 };
@@ -2923,6 +2962,89 @@ function showProgram(prog){
 }
 
 // ════════════════════════════════════════════════════
+// TOASTS
+// ════════════════════════════════════════════════════
+function showToast(msg, type='info', duration=4000) {
+  const icons = {success:'✓',error:'✕',info:'ℹ'};
+  const colors = {success:'var(--green)',error:'var(--red)',info:'var(--cyan)'};
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span style="color:${colors[type]};font-weight:700;font-size:1rem">${icons[type]}</span><span>${msg}</span><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:auto;font-size:1rem">×</button>`;
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.animation='slideOut .25s ease forwards';
+    setTimeout(()=>toast.remove(), 250);
+  }, duration);
+}
+
+// Patch global error handler
+window.addEventListener('unhandledrejection', e => {
+  const msg = e.reason?.message || e.reason || 'Erreur inconnue';
+  if(msg.includes('Failed to fetch')||msg.includes('network')) showToast('Problème réseau — vérifie ta connexion', 'error');
+  else if(msg.includes('JWT')||msg.includes('auth')) showToast('Session expirée — reconnecte-toi', 'error');
+});
+
+// ════════════════════════════════════════════════════
+// ONBOARDING
+// ════════════════════════════════════════════════════
+let onbStep = 0;
+const ONB_TOTAL = 5;
+
+function initOnboarding() {
+  // Show only if profile is empty (new user)
+  if(!userProfile.name && !userProfile.fc_max) {
+    openOnboarding();
+  }
+}
+
+function openOnboarding() {
+  onbStep = 0;
+  updateOnbStep();
+  document.getElementById('onboardingOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOnboarding() {
+  document.getElementById('onboardingOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  localStorage.setItem('onb_done', '1');
+}
+
+function onbNav(dir) {
+  onbStep = Math.max(0, Math.min(ONB_TOTAL-1, onbStep+dir));
+  updateOnbStep();
+  if(onbStep === ONB_TOTAL-1) {
+    document.getElementById('onbNext').textContent = 'Commencer →';
+    document.getElementById('onbNext').onclick = closeOnboarding;
+  } else {
+    document.getElementById('onbNext').textContent = 'Suivant →';
+    document.getElementById('onbNext').onclick = () => onbNav(1);
+  }
+  document.getElementById('onbPrev').style.opacity = onbStep===0?'0':'1';
+  document.getElementById('onbPrev').style.pointerEvents = onbStep===0?'none':'all';
+}
+
+function updateOnbStep() {
+  document.querySelectorAll('.onb-step').forEach((el,i)=>el.classList.toggle('active',i===onbStep));
+  // Dots
+  ['onbDots','onbDots2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML = Array.from({length:ONB_TOTAL},(_,i)=>`<div class="onb-dot${i===onbStep?' active':''}"></div>`).join('');
+  });
+}
+
+// ════════════════════════════════════════════════════
+// CGU
+// ════════════════════════════════════════════════════
+function openCGU() {
+  document.getElementById('cguOverlay').classList.add('open');
+}
+function closeCGU() {
+  document.getElementById('cguOverlay').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
@@ -2939,6 +3061,106 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 </script>
+
+<!-- ══ TOAST CONTAINER ══ -->
+
+<div id="toastContainer"></div>
+
+<!-- ══ ONBOARDING ══ -->
+
+<div id="onboardingOverlay">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:2.5rem;max-width:480px;width:100%;text-align:center">
+    <div class="onb-dots" id="onbDots"></div>
+
+```
+<div class="onb-step active" id="onb-0">
+  <div class="onb-icon">👋</div>
+  <div class="onb-title">Bienvenue sur Runner OS</div>
+  <div class="onb-desc">Ton dashboard personnel pour analyser tes sorties, préparer tes courses et progresser de façon structurée. Quelques étapes pour démarrer.</div>
+</div>
+
+<div class="onb-step" id="onb-1">
+  <div class="onb-icon">👤</div>
+  <div class="onb-title">Ton profil</div>
+  <div class="onb-desc">Renseigne ta FC max, ton seuil lactique et tes PR — le dashboard et les stratégies de course s'adaptent à tes vraies données physiologiques.</div>
+  <button class="btn-primary" style="margin-top:.5rem" onclick="closeProfil();openProfil();closeOnboarding();">Remplir mon profil →</button>
+</div>
+
+<div class="onb-step" id="onb-2">
+  <div class="onb-icon">🟠</div>
+  <div class="onb-title">Connecter Strava</div>
+  <div class="onb-desc">Tes activités se synchronisent automatiquement. Clique sur "Connecter Strava" en haut à droite pour autoriser l'accès.</div>
+</div>
+
+<div class="onb-step" id="onb-3">
+  <div class="onb-icon">🗺️</div>
+  <div class="onb-title">Préparer une course</div>
+  <div class="onb-desc">Ajoute une course dans le calendrier, uploade un GPX et laisse l'app générer ta stratégie section par section avec tes vraies zones et ton plan nutrition.</div>
+</div>
+
+<div class="onb-step" id="onb-4">
+  <div class="onb-icon">✅</div>
+  <div class="onb-title">C'est parti !</div>
+  <div class="onb-desc">Runner OS apprend de tes sorties au fil du temps — plus tu l'utilises, plus les projections sont précises.</div>
+  <div class="mono t3" style="font-size:.6rem;margin-top:.5rem">En utilisant cette app tu acceptes les <a onclick="openCGU()" style="color:var(--cyan);cursor:pointer">CGU et la politique de confidentialité</a>.</div>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
+  <button class="hbtn" id="onbPrev" onclick="onbNav(-1)">← Précédent</button>
+  <div class="onb-dots" id="onbDots2" style="margin:0"></div>
+  <button class="hbtn" id="onbNext" onclick="onbNav(1)" style="background:var(--cyan);color:#000;border-color:var(--cyan)">Suivant →</button>
+</div>
+<div style="margin-top:.75rem">
+  <button onclick="closeOnboarding()" style="background:none;border:none;color:var(--text3);font-family:var(--mono);font-size:.6rem;cursor:pointer">Passer →</button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ══ CGU ══ -->
+
+<div id="cguOverlay" onclick="if(event.target===this)closeCGU()">
+  <div class="cgu-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div style="font-family:var(--display);font-size:1.5rem">Conditions d'utilisation</div>
+      <button onclick="closeCGU()" class="hbtn">✕</button>
+    </div>
+
+```
+<div style="font-size:.82rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:70vh">
+  <div class="clabel" style="margin-bottom:.5rem">1. Objet</div>
+  <p style="margin-bottom:1rem">Runner OS est une application personnelle d'analyse de performances en course à pied et trail. Elle est fournie à titre gratuit, sans garantie de disponibilité continue.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">2. Données personnelles</div>
+  <p style="margin-bottom:.5rem">Runner OS collecte et traite les données suivantes :</p>
+  <ul style="margin-left:1.5rem;margin-bottom:1rem">
+    <li>Données de compte : email (via Supabase Auth)</li>
+    <li>Données physiologiques : FC max, poids, taille, seuil lactique (saisies volontairement)</li>
+    <li>Données d'activité : activités Strava via l'API officielle Strava</li>
+    <li>Données de course : GPX, temps, stratégies (stockées en Supabase)</li>
+  </ul>
+  <p style="margin-bottom:1rem">Ces données sont stockées dans Supabase (infrastructure européenne). Chaque utilisateur n'a accès qu'à ses propres données.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">3. Données Strava</div>
+  <p style="margin-bottom:1rem">L'accès aux données Strava est effectué via l'API officielle Strava conformément aux <a href="https://www.strava.com/legal/api" target="_blank" style="color:var(--cyan)">conditions d'utilisation de l'API Strava</a>. Les tokens d'accès sont stockés localement. Aucune donnée Strava n'est partagée avec des tiers.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">4. Analyse IA</div>
+  <p style="margin-bottom:1rem">Les analyses de sortie utilisent l'API Groq (modèle llama). Les données d'activité sont transmises à Groq pour générer l'analyse. Aucune donnée d'identification personnelle (nom, email) n'est transmise.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">5. Suppression des données</div>
+  <p style="margin-bottom:1rem">Tu peux supprimer ton compte et toutes tes données à tout moment en contactant l'administrateur de l'application. La déconnexion de Strava révoque l'accès immédiatement.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">6. Responsabilité</div>
+  <p style="margin-bottom:1rem">Les conseils de stratégie, nutrition et FC fournis par Runner OS sont indicatifs. Ils ne remplacent pas l'avis d'un médecin ou d'un entraîneur professionnel. L'utilisateur reste seul responsable de ses choix d'entraînement.</p>
+
+  <div class="clabel" style="margin-bottom:.5rem">7. Contact</div>
+  <p>Pour toute question : <a href="mailto:tony.bollecker@hotmail.fr" style="color:var(--cyan)">tony.bollecker@hotmail.fr</a></p>
+</div>
+```
+
+  </div>
+</div>
 
 </body>
 </html>
