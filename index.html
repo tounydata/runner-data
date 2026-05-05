@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -2930,20 +2930,90 @@ async function changePassword() {
   if(error){msg.textContent='❌ '+error.message;msg.style.color='var(--red)';}
   else{msg.textContent='✓ Email envoyé !';msg.style.color='var(--green)';}
 }
+let _cropState = {x:0,y:0,scale:1,startX:0,startY:0,startDist:0,dragging:false};
+
 async function uploadAvatar(event) {
-  const file=event.target.files[0];if(!file)return;
-  showToast('Upload en cours...','info',2000);
-  const ext=file.name.split('.').pop();
-  const path=`${currentUser.id}/avatar.${ext}`;
-  const {error}=await sb.storage.from('avatars').upload(path,file,{upsert:true});
-  if(error){showToast('Erreur upload : '+error.message,'error');return;}
-  const {data}=sb.storage.from('avatars').getPublicUrl(path);
-  const {error:e2}=await sb.from('profiles').upsert({id:currentUser.id,avatar_url:data.publicUrl});
-  if(e2){showToast('Erreur sauvegarde avatar','error');return;}
-  userProfile.avatar_url=data.publicUrl;
-  updateAvatar(data.publicUrl);
-  showToast('Photo de profil mise à jour ✓','success');
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const modal = document.getElementById('cropModal');
+    const img = document.getElementById('cropImage');
+    modal.style.display = 'flex';
+    img.onload = () => {
+      // Center image in 280x280 container
+      const r = Math.max(280/img.naturalWidth, 280/img.naturalHeight);
+      _cropState = {x:0, y:0, scale:r, startX:0, startY:0, startDist:0, dragging:false};
+      applyTransform();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
+
+function applyTransform() {
+  const img = document.getElementById('cropImage');
+  img.style.transform = `translate(${_cropState.x}px,${_cropState.y}px) scale(${_cropState.scale})`;
+  img.style.transformOrigin = 'top left';
+}
+
+function closeCropModal() {
+  document.getElementById('cropModal').style.display = 'none';
+}
+
+async function confirmCrop() {
+  const img = document.getElementById('cropImage');
+  const size = 400;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const s = _cropState.scale;
+  // Draw cropped area
+  ctx.drawImage(img,
+    -_cropState.x/s, -_cropState.y/s,
+    280/s, 280/s,
+    0, 0, size, size
+  );
+  closeCropModal();
+  showToast('Upload en cours...', 'info', 2000);
+  canvas.toBlob(async (blob) => {
+    const path = `${currentUser.id}/avatar.jpg`;
+    const {error} = await sb.storage.from('avatars').upload(path, blob, {upsert:true, contentType:'image/jpeg'});
+    if(error){ showToast('Erreur : '+error.message, 'error'); return; }
+    const {data} = sb.storage.from('avatars').getPublicUrl(path);
+    const url = data.publicUrl + '?t=' + Date.now();
+    await sb.from('profiles').upsert({id:currentUser.id, avatar_url:url});
+    userProfile.avatar_url = url;
+    updateAvatar(url);
+    showToast('Photo mise à jour ✓', 'success');
+  }, 'image/jpeg', 0.88);
+}
+
+// Touch & mouse events for crop
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('cropContainer');
+  if(!container) return;
+  let lastTouchDist = 0;
+
+  container.addEventListener('mousedown', e => { _cropState.dragging=true; _cropState.startX=e.clientX-_cropState.x; _cropState.startY=e.clientY-_cropState.y; });
+  document.addEventListener('mousemove', e => { if(!_cropState.dragging) return; _cropState.x=e.clientX-_cropState.startX; _cropState.y=e.clientY-_cropState.startY; applyTransform(); });
+  document.addEventListener('mouseup', () => _cropState.dragging=false);
+
+  container.addEventListener('touchstart', e => {
+    if(e.touches.length===1){ _cropState.dragging=true; _cropState.startX=e.touches[0].clientX-_cropState.x; _cropState.startY=e.touches[0].clientY-_cropState.y; }
+    if(e.touches.length===2){ lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }
+    e.preventDefault();
+  },{passive:false});
+  container.addEventListener('touchmove', e => {
+    if(e.touches.length===1 && _cropState.dragging){ _cropState.x=e.touches[0].clientX-_cropState.startX; _cropState.y=e.touches[0].clientY-_cropState.startY; applyTransform(); }
+    if(e.touches.length===2){
+      const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      _cropState.scale*=dist/lastTouchDist; lastTouchDist=dist; applyTransform();
+    }
+    e.preventDefault();
+  },{passive:false});
+  container.addEventListener('touchend', () => _cropState.dragging=false);
+});
 function updateAvatar(url) {
   const mark=document.getElementById('avatarMark');
   const preview=document.getElementById('avatarPreview');
@@ -3222,6 +3292,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 </div>
 ```
 
+  </div>
+</div>
+
+<!-- ══ CROP AVATAR ══ -->
+
+<div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:800;align-items:center;justify-content:center;padding:1.5rem;flex-direction:column;gap:1rem">
+  <div style="font-family:var(--display);font-size:1.2rem;color:#fff">Cadrer la photo</div>
+  <div style="position:relative;width:280px;height:280px;overflow:hidden;border-radius:50%;border:2px solid var(--cyan);cursor:move" id="cropContainer">
+    <img id="cropImage" style="position:absolute;user-select:none;-webkit-user-select:none;max-width:none">
+  </div>
+  <div style="color:var(--text2);font-family:var(--mono);font-size:.65rem">Glisse pour cadrer · Pince pour zoomer</div>
+  <div style="display:flex;gap:12px">
+    <button onclick="closeCropModal()" class="hbtn">Annuler</button>
+    <button onclick="confirmCrop()" class="hbtn" style="background:var(--cyan);color:#000;border-color:var(--cyan)">✓ Valider</button>
   </div>
 </div>
 
