@@ -1272,7 +1272,7 @@ function renderActivities() {
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div class="act-date">${ds}</div>
       </div>
-      <button class="btn-analyse" onclick="openAnalyse(${JSON.stringify(act).replace(/"/g,'&quot;')})">🔬 Analyser</button>
+      <button class="btn-analyse" onclick="openAnalyse(${act.id})">🔬 Analyser</button>
       <div class="act-bar" style="background:${bC(act.type)}"></div>`;
     grid.appendChild(card);
   });
@@ -1353,14 +1353,12 @@ async function openAnalyseById(actId) {
 }
 
 async function openAnalyse(actOrId) {
-  // Support passing just an ID or full activity object
   let act = typeof actOrId === 'object' ? actOrId : allActivities.find(a=>String(a.id)===String(actOrId));
-  if(!act && typeof actOrId !== 'object') {
-    // Fetch from Strava if not in local cache
-    const token = await getToken();
-    if(!token) return;
-    const r = await fetch(`https://www.strava.com/api/v3/activities/${actOrId}`,{headers:{Authorization:`Bearer ${token}`}});
-    act = await r.json();
+  if(!act) {
+    const tkn0 = await getToken();
+    if(!tkn0) return;
+    const r0 = await fetch(`https://www.strava.com/api/v3/activities/${actOrId}`,{headers:{Authorization:`Bearer ${tkn0}`}});
+    act = await r0.json();
   }
   if(!act?.id) { showToast('Activité introuvable', 'error'); return; }
   const overlay = document.getElementById('analyseOverlay');
@@ -1391,6 +1389,10 @@ async function openAnalyse(actOrId) {
   const step=Math.max(1,Math.floor(altD.length/80));
   const cA=altD.filter((_,i)=>i%step===0),cH=hrD.filter((_,i)=>i%step===0),cDist=distD.filter((_,i)=>i%step===0).map(d=>(d/1000).toFixed(2));
 
+  const linkedRaceEarly = races.find(r => r.strava_activity_id && String(r.strava_activity_id).trim() === String(act.id).trim());
+  const linkBtnStyle = linkedRaceEarly ? 'background:var(--green);color:#000;border-color:var(--green)' : 'background:var(--purple);color:#fff;border-color:var(--purple)';
+  const linkBtnText = linkedRaceEarly ? '✓ Lié à ' + linkedRaceEarly.name : '🏁 Lier à un événement';
+
   document.getElementById('analyseInner').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
       <button class="hbtn" onclick="closeAnalyse()">← Fermer</button>
@@ -1398,7 +1400,7 @@ async function openAnalyse(actOrId) {
         <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em">${act.name}</div>
         <div class="mono t2">${dateStr} · ${act.type==='TrailRun'?'⛰️ Trail':'🏃 Route'}</div>
       </div>
-      <button class="hbtn" id="btnLinkActivity" onclick="showLinkActivityPanel(${act.id})" style="background:var(--purple);color:#fff;border-color:var(--purple)">🏁 Lier à un événement</button>
+      <button class="hbtn" id="btnLinkActivity" onclick="showLinkActivityPanel(${act.id})" style="${linkBtnStyle}">${linkBtnText}</button>
     </div>
     <div id="linkActivityPanel" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:12px;margin-bottom:1rem">
       <div class="clabel" style="margin-bottom:8px">Associer à une course du calendrier</div>
@@ -1596,39 +1598,39 @@ function renderAthleteProfile(streams, act) {
 
 function renderRaceComparison(act, streams, race) {
   const section = document.getElementById('raceComparisonSection');
-  if(!section) { showToast('DEBUG: section manquante', 'error'); return; }
-  if(!race.gpx_data) { showToast('DEBUG: gpx_data vide', 'error'); return; }
+  if(!section) return;
+  if(!race.gpx_data) return;
 
   let gpxPts;
   try { gpxPts = JSON.parse(race.gpx_data); } 
-  catch(e) { showToast('DEBUG: GPX parse error: '+e.message, 'error'); return; }
-  
-  if(!gpxPts?.length) { showToast('DEBUG: GPX vide (0 points)', 'error'); return; }
-  showToast(`DEBUG: GPX OK ${gpxPts.length} pts, streams dist: ${streams.distance?.data?.length||0}`, 'info', 8000);
+  catch(e) { return; }
+  if(!gpxPts?.length) return;
 
-  // Rebuild cumDist from GPX
+  try {
+  // Compute cumulative distance from GPX
   const cumDist=[0];
   for(let i=1;i<gpxPts.length;i++) cumDist.push(cumDist[i-1]+hav(gpxPts[i-1],gpxPts[i]));
   const totalDist=cumDist[cumDist.length-1];
+  if(totalDist < 100) { showToast('GPX trop court pour comparaison', 'error'); return; }
 
-  // Build sections from GPX (500m segments)
-  const kmSecs=[];let segTarget=500,prevIdx=0;
+  // Build sections — adapt segment size to number of points
+  const segTarget = Math.max(200, totalDist / Math.min(gpxPts.length, 20));
+  const kmSecs=[];let prevIdx=0,target=segTarget;
   for(let i=0;i<cumDist.length;i++){
-    if(cumDist[i]>=segTarget||i===cumDist.length-1){
+    if(cumDist[i]>=target||i===cumDist.length-1){
       let sdp=0;
       for(let j=prevIdx+1;j<=i;j++){if(gpxPts[j]?.ele&&gpxPts[j-1]?.ele){const diff=gpxPts[j].ele-gpxPts[j-1].ele;if(diff>0)sdp+=diff;}}
       const segDist=cumDist[i]-cumDist[prevIdx];
       const elevChange=gpxPts[i]?.ele&&gpxPts[prevIdx]?.ele?gpxPts[i].ele-gpxPts[prevIdx].ele:0;
       const grade=segDist>0?(elevChange/segDist)*100:0;
       kmSecs.push({startKm:+(cumDist[prevIdx]/1000).toFixed(2),endKm:+(cumDist[i]/1000).toFixed(2),dist:segDist,dplus:Math.round(sdp),grade:+grade.toFixed(1)});
-      prevIdx=i;segTarget=cumDist[i]+500;
+      prevIdx=i;target=cumDist[i]+segTarget;
     }
   }
 
-  // Build logical sections
   const sections=buildDetailedSections(kmSecs);
 
-  // Get base pace for predictions
+  // Base pace
   let basePaceS=320;
   if(race.goal_time){
     const parts=race.goal_time.split(/[h:]/);
@@ -1636,50 +1638,47 @@ function renderRaceComparison(act, streams, race) {
     if(parts.length===2)gs=parseInt(parts[0])*60+parseInt(parts[1]);
     else if(parts.length===3)gs=parseInt(parts[0])*3600+parseInt(parts[1])*60+(parseInt(parts[2])||0);
     if(gs>0)basePaceS=gs/(totalDist/1000)*0.85;
-  } else if(userProfile.prs?.semi?.timeS){
-    basePaceS=userProfile.prs.semi.timeS/21097*1000;
   }
 
-  // Compute predicted time per section
+  // Predicted time per section
   const predicted=sections.map(s=>{
     const g=s.grade/100;
-    let pen=g>0?g*8:g<-0.2?Math.abs(g)*4:g<-0.1?Math.abs(g)*2:0;
+    const pen=g>0?g*8:g<-0.2?Math.abs(g)*4:g<-0.1?Math.abs(g)*2:0;
     return Math.round(basePaceS*(1+pen)*s.dist/1000);
   });
 
-  // Compute actual time per section from streams
+  // Actual time from Strava streams
   const distD=streams.distance?.data||[];
+  const hrD=streams.heartrate?.data||[];
   const actual=sections.map(s=>{
     if(!distD.length) return null;
-    const startIdx=distD.findIndex(d=>d>=s.startKm*1000);
-    const endIdx=distD.findIndex(d=>d>=s.endKm*1000);
-    if(startIdx<0||endIdx<0||endIdx<=startIdx) return null;
-    return endIdx-startIdx; // seconds (1 data point = 1 second on Strava)
+    let si=distD.findIndex(d=>d>=s.startKm*1000);
+    let ei=distD.findIndex(d=>d>=s.endKm*1000);
+    if(si<0) si=0;
+    if(ei<0) ei=distD.length-1;
+    return ei>si ? ei-si : null;
   });
 
-  // HR per section
-  const hrD=streams.heartrate?.data||[];
   const sectionHR=sections.map(s=>{
     if(!hrD.length||!distD.length) return null;
-    const si=distD.findIndex(d=>d>=s.startKm*1000);
-    const ei=distD.findIndex(d=>d>=s.endKm*1000);
-    if(si<0||ei<0||ei<=si) return null;
+    let si=distD.findIndex(d=>d>=s.startKm*1000);
+    let ei=distD.findIndex(d=>d>=s.endKm*1000);
+    if(si<0) si=0; if(ei<0) ei=hrD.length-1;
     const slice=hrD.slice(si,ei);
-    return slice.length ? Math.round(slice.reduce((a,b)=>a+b,0)/slice.length) : null;
+    return slice.length?Math.round(slice.reduce((a,b)=>a+b,0)/slice.length):null;
   });
 
   const cols={up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'};
   const icons={up:'⛰️',down:'🎿',flat:'➡️'};
 
-  const rows = sections.map((s,i) => {
-    const pred=predicted[i];
-    const real=actual[i];
-    const diff=real&&pred ? Math.round((real-pred)/pred*100) : null;
-    const diffColor = diff===null?'var(--text3)':Math.abs(diff)<=10?'var(--green)':Math.abs(diff)<=25?'var(--yellow)':'var(--red)';
-    const diffIcon = diff===null?'—':diff>25?'⚠️':diff>10?'~':diff<-10?'✓':'✓';
+  const rows=sections.map((s,i)=>{
+    const pred=predicted[i],real=actual[i];
+    const diff=real&&pred?Math.round((real-pred)/pred*100):null;
+    const diffColor=diff===null?'var(--text3)':Math.abs(diff)<=10?'var(--green)':Math.abs(diff)<=25?'var(--yellow)':'var(--red)';
+    const diffIcon=diff===null?'—':Math.abs(diff)<=10?'✓':Math.abs(diff)<=25?'~':'⚠️';
     return `<tr>
-      <td style="color:${cols[s.type]}">${icons[s.type]} ${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)} km</td>
-      <td class="mono">${s.type==='up'?`+${s.dplus}m`:s.type==='down'?`-${s.dminus}m`:'—'}</td>
+      <td style="color:${cols[s.type]}">${icons[s.type]} ${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)}km</td>
+      <td class="mono">${s.type==='up'?`+${s.dplus}m`:s.type==='down'?`-${s.dminus||0}m`:'—'}</td>
       <td class="mono">${fmtT(pred)}</td>
       <td class="mono">${real?fmtT(real):'—'}</td>
       <td class="mono" style="color:${diffColor};font-weight:600">${diff!==null?(diff>0?'+':'')+diff+'% '+diffIcon:'—'}</td>
@@ -1687,15 +1686,10 @@ function renderRaceComparison(act, streams, race) {
     </tr>`;
   }).join('');
 
-  // Verdict global
-  const validDiffs = sections.map((_,i)=>{
-    const p=predicted[i],r=actual[i];
-    return r&&p?(r-p)/p*100:null;
-  }).filter(d=>d!==null);
-  const uphillDiffs = sections.map((s,i)=>s.type==='up'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
-  const avgUpDiff = uphillDiffs.length ? Math.round(uphillDiffs.reduce((a,b)=>a+b,0)/uphillDiffs.length) : null;
+  const uphillDiffs=sections.map((s,i)=>s.type==='up'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
+  const avgUpDiff=uphillDiffs.length?Math.round(uphillDiffs.reduce((a,b)=>a+b,0)/uphillDiffs.length):null;
 
-  section.innerHTML = `
+  section.innerHTML=`
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
         <div class="clabel" style="margin:0">Comparaison prévu / réel — ${race.name}</div>
@@ -1707,17 +1701,14 @@ function renderRaceComparison(act, streams, race) {
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <div class="mono t3" style="font-size:.56rem;margin-top:8px">
-        ✓ = ±10% · ~ = ±25% · ⚠️ = >25% d'écart
-        ${avgUpDiff!==null && Math.abs(avgUpDiff)>10 ? `<br>💡 Coefficient personnel montée : ×${(1+avgUpDiff/100).toFixed(2)} — appliqué aux prochaines projections sur ce type de course.` : ''}
-      </div>
+      <div class="mono t3" style="font-size:.56rem;margin-top:8px">✓ = ±10% · ~ = ±25% · ⚠️ = >25% d'écart</div>
     </div>`;
 
-  // Store personal coefficient for future predictions
-  if(avgUpDiff !== null) {
-    userProfile.coeff_uphill = 1 + avgUpDiff/100;
-    sb.from('profiles').upsert({id:currentUser.id, coeff_uphill: userProfile.coeff_uphill});
+  if(avgUpDiff!==null){
+    userProfile.coeff_uphill=1+avgUpDiff/100;
+    sb.from('profiles').upsert({id:currentUser.id,coeff_uphill:userProfile.coeff_uphill});
   }
+  } catch(e) { showToast('Erreur comparaison: '+e.message, 'error', 8000); }
 }
 
 function renderActivityMap(streams, act) {
