@@ -1722,13 +1722,15 @@ function renderRaces() {
   if(next){
     const diff=Math.ceil((new Date(next.date)-now)/86400000);
     const color=diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
+    const hasGpx=!!next.gpx_data;
     nextWidget.innerHTML=`<div class="next-race-big">
       <div class="next-race-num" style="color:${color}">${diff}</div>
       <div class="next-race-unit">jours</div>
       <div style="font-weight:600;font-size:.9rem;margin-bottom:3px">${next.name}</div>
       <div class="mono t2">${next.distance||'?'}km · D+${next.elevation||'?'}m · ${next.type}</div>
       ${next.goal_time?`<div class="mono" style="color:${color};margin-top:4px">🎯 ${next.goal_time}</div>`:''}
-      <button class="btn-prepare" style="margin-top:10px" onclick='prepareRace(${JSON.stringify(next)})'>🗺️ Préparer la course</button>
+      ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green);margin-top:6px;display:inline-block">✓ GPX</span>`:''}
+      <button class="btn-prepare" style="margin-top:10px" onclick='prepareRace(${JSON.stringify(next)})'>${hasGpx?'🗺️ Voir stratégie':'🗺️ Préparer la course'}</button>
     </div>`;
   } else {nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>';}
   list.innerHTML=races.map(r=>{
