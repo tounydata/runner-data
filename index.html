@@ -1,12 +1,4 @@
-window.onerror = function (msg, url, line, col, error) {
-  document.body.innerHTML = `
-    <div style="color:red;padding:20px;">
-      ERREUR JS<br><br>
-      ${msg}<br>
-      ligne: ${line}
-    </div>
-  `;
-};
+
 <!DOCTYPE html>
 
 <html lang="fr">
@@ -88,18 +80,71 @@ body {
 
 <script>
 
-// ======================
-// SAFE FUNCTIONS
-// ======================
+// DEBUG SAFE
+window.onerror = function (msg, url, line) {
+  document.body.innerHTML =
+    '<div style="color:red;padding:20px;">' +
+    '<h2>ERREUR JS</h2>' +
+    '<p>' + msg + '</p>' +
+    '<p>Ligne: ' + line + '</p>' +
+    '</div>';
+};
 
-function safe(val){
-  return (val === undefined || val === null || isNaN(val)) ? null : Number(val);
+// SAFE
+function safe(val){ return (val==null||isNaN(val))?null:Number(val); }
+function fix(val,d=2){ const n=safe(val); return n===null?"--":n.toFixed(d); }
+
+// TEST DATA (remplace plus tard par tes vraies données)
+const activities = window.activities || [
+  {name:"Run",distance:5,time:1500,avgHR:140,elevation:10}
+];
+
+// CALCUL
+function pace(d,t){ if(!d||!t)return null; return t/d; }
+
+function formatPace(sec){
+  if(!sec) return "--";
+  const m=Math.floor(sec/60);
+  const s=Math.round(sec%60);
+  return m+":"+(s<10?"0":"")+s+"/km";
 }
 
-function fix(val, d=2){
-  const n = safe(val);
-  return n === null ? "--" : n.toFixed(d);
+// RENDER SAFE
+function render(){
+
+  let root = document.getElementById("app");
+  if(!root){
+    root = document.createElement("div");
+    root.id="app";
+    document.body.appendChild(root);
+  }
+
+  root.innerHTML="";
+
+  activities.forEach(a=>{
+
+    const p = pace(a.distance,a.time);
+
+    const div=document.createElement("div");
+    div.style.padding="20px";
+    div.style.margin="10px";
+    div.style.background="#111827";
+    div.style.borderRadius="10px";
+
+    div.innerHTML =
+      "<b>"+(a.name||"activité")+"</b><br>" +
+      "Distance: "+fix(a.distance)+" km<br>" +
+      "Allure: "+formatPace(p)+"<br>" +
+      "FC: "+fix(a.avgHR,0)+" bpm";
+
+    root.appendChild(div);
+  });
 }
+
+render();
+
+</script>
+
 
 // ======================
 // DATA (NE PAS TOUCHER STRUCTURE)
