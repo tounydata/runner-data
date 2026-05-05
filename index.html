@@ -1596,11 +1596,15 @@ function renderAthleteProfile(streams, act) {
 
 function renderRaceComparison(act, streams, race) {
   const section = document.getElementById('raceComparisonSection');
-  if(!section || !race.gpx_data) return;
+  if(!section) { showToast('DEBUG: section manquante', 'error'); return; }
+  if(!race.gpx_data) { showToast('DEBUG: gpx_data vide', 'error'); return; }
 
-  // Parse GPX points
   let gpxPts;
-  try { gpxPts = JSON.parse(race.gpx_data); } catch { return; }
+  try { gpxPts = JSON.parse(race.gpx_data); } 
+  catch(e) { showToast('DEBUG: GPX parse error: '+e.message, 'error'); return; }
+  
+  if(!gpxPts?.length) { showToast('DEBUG: GPX vide (0 points)', 'error'); return; }
+  showToast(`DEBUG: GPX OK ${gpxPts.length} pts, streams dist: ${streams.distance?.data?.length||0}`, 'info', 8000);
 
   // Rebuild cumDist from GPX
   const cumDist=[0];
