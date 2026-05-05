@@ -309,7 +309,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <div id="appShell">
 <header>
   <div class="logo" style="cursor:pointer" onclick="openProfil()">
-    <div class="logo-mark" id="avatarMark" style="overflow:hidden;padding:0">AO</div>
+    <div class="logo-mark" id="avatarMark" style="overflow:hidden;padding:0;font-size:13px;letter-spacing:0">AO</div>
     <div><div class="logo-name" id="headerName" style="font-size:.75rem;font-weight:600;color:var(--text)">Runner OS</div></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -723,6 +723,23 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="handleZipFile(event)">
   <div id="histStats" style="display:none" class="hist-stats mt2"></div>
 </div>
+
+<!-- NUTRITION PRODUCTS -->
+<div class="card" style="margin-top:1rem">
+  <div class="clabel">Mes produits nutrition</div>
+  <div class="mono t2" style="margin-bottom:1rem">Sélectionne tes marques puis coche tes produits.</div>
+
+  <div class="clabel" style="color:var(--cyan);margin-bottom:.5rem">Gels & Barres</div>
+  <div id="nutrGelBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
+  <div id="nutrGelList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1.25rem"></div>
+
+  <div class="clabel" style="color:var(--purple);margin-bottom:.5rem">Boissons isotoniques</div>
+  <div id="nutrDrinkBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
+  <div id="nutrDrinkList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1rem"></div>
+
+  <button class="save-btn" onclick="saveNutritionProducts()">💾 Sauvegarder mes produits</button>
+  <div class="mono t3" id="nutrSaveMsg" style="margin-top:6px"></div>
+</div>
 ```
 
   </div>
@@ -929,6 +946,7 @@ async function loadProfile() {
     set('p-goals', data.goals);
     if (data.name) document.getElementById('headerName').textContent = data.name;
     if (data.avatar_url) updateAvatar(data.avatar_url);
+    if (data.nutrition_products) userProfile.nutrition_products = data.nutrition_products;
     if (data.prs) {
       const p = data.prs; userProfile.prs = p;
       const sp = (id,v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
@@ -1145,7 +1163,6 @@ function renderDashboard() {
 function renderAnnualChart() {
   if (annualChartInst) { annualChartInst.destroy(); annualChartInst=null; }
 
-  // All runs including history
   const allRuns = [
     ...allActivities,
     ...historyActivities.map(h=>({
@@ -1155,28 +1172,33 @@ function renderAnnualChart() {
     }))
   ].filter(a => isRun(a.type) && a.distance>0);
 
-  // Group by year and month
   const years = {};
   allRuns.forEach(a => {
     const d = new Date(a.start_date);
     if (isNaN(d.getTime())) return;
     const y = d.getFullYear();
-    const m = d.getMonth(); // 0-11
+    const m = d.getMonth();
     if (!years[y]) years[y] = Array(12).fill(0);
     years[y][m] += a.distance/1000;
   });
 
-  const sortedYears = Object.keys(years).sort().slice(-2); // last 2 years
+  const sortedYears = Object.keys(years).sort().slice(-2);
   if (!sortedYears.length) return;
 
-  const colors = ['#6b7d94','#a78bfa','#fbbf24','#00d4ff'];
+  const colors = ['#6b7d94','#00d4ff'];
   const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-based
 
-  // Cumulative per year
   const datasets = sortedYears.map((y,i) => {
     let cum = 0;
-    const data = years[y].map(v => { cum+=v; return Math.round(cum); });
-    return { label: y, data, borderColor: colors[i%colors.length], backgroundColor:'transparent', tension:.4, pointRadius:2, borderWidth:1.5 };
+    const data = years[y].map((v,m) => {
+      // For current year, stop at current month
+      if(parseInt(y)===currentYear && m>currentMonth) return null;
+      cum+=v;
+      return Math.round(cum);
+    });
+    return { label: y, data, borderColor: colors[i%colors.length], backgroundColor:'transparent', tension:.4, pointRadius:2, borderWidth:1.5, spanGaps:false };
   });
 
   annualChartInst = new Chart(document.getElementById('annualChart'), {
@@ -1973,27 +1995,62 @@ async function analyzeGPX(points, fname) {
     }
   }
 
-  // Base pace from PRs or race goal time
-  let basePaceS=320; // 5:20/km default trail
-  // Priority 1: race goal time if set
+  // ── ALGO PROGRESSION ──
+  // Compute performance index from recent quality sessions (>20% time in Z3+)
+  function computeProgressionFactor() {
+    if(!allActivities.length) return 1;
+    const fcMax=userProfile.fc_max||205;
+    const z3min=Math.round(fcMax*.80);
+    // Get quality sessions with HR data
+    const qualitySessions=allActivities.filter(a=>{
+      if(!isRun(a.type)) return false;
+      if(!a.average_heartrate) return false;
+      // Proxy: avg HR > 80% FCmax = quality session
+      return a.average_heartrate > z3min && a.distance > 3000;
+    }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+    if(qualitySessions.length<4) return 1;
+    // Split into first half / second half
+    const half=Math.floor(qualitySessions.length/2);
+    const early=qualitySessions.slice(0,half);
+    const recent=qualitySessions.slice(-half);
+    // Compute normalized pace (speed m/s) for each group — lower is better
+    const avgPaceEarly=early.reduce((s,a)=>s+a.average_speed,0)/early.length;
+    const avgPaceRecent=recent.reduce((s,a)=>s+a.average_speed,0)/recent.length;
+    if(avgPaceEarly<=0) return 1;
+    const factor=avgPaceRecent/avgPaceEarly; // >1 = improvement
+    // Cap between 0.90 and 1.10 (±10% max)
+    return Math.min(1.10, Math.max(0.90, factor));
+  }
+
+  const progressionFactor = computeProgressionFactor();
+  const qualityCount = allActivities.filter(a=>isRun(a.type)&&a.average_heartrate>(userProfile.fc_max||205)*.80&&a.distance>3000).length;
+
+  // Base pace from goal time, progression-adjusted PR, or default
+  let basePaceS=320;
+  let projSource='';
   if(currentRaceContext?.goal_time) {
     const gt=currentRaceContext.goal_time;
     const parts=gt.split(/[h:]/);
     let goalS=0;
     if(parts.length===2)goalS=parseInt(parts[0])*60+parseInt(parts[1]);
-    else if(parts.length===3)goalS=parseInt(parts[0])*3600+parseInt(parts[1])*60+parseInt(parts[2]||0);
+    else if(parts.length===3)goalS=parseInt(parts[0])*3600+parseInt(parts[1])*60+(parseInt(parts[2])||0);
     if(goalS>0){
-      // Back-calculate flat equivalent pace
-      const flatEquivS=goalS/(totalDist/1000);
-      basePaceS=flatEquivS*0.85; // trail penalty correction
+      basePaceS=(goalS/(totalDist/1000))*0.85;
+      projSource=`🎯 Objectif ${currentRaceContext.goal_time}`;
     }
-  }
-  // Priority 2: best PR via Riegel
-  else if(userProfile.prs){
+  } else if(userProfile.prs){
     const prs=userProfile.prs;
     const candidates=['semi','10k','15k','marathon','5k'].filter(k=>prs[k]?.timeS&&prs[k]?.dist);
-    if(candidates.length){const pr=prs[candidates[0]];basePaceS=pr.timeS/pr.dist*1000;}
+    if(candidates.length){
+      const pr=prs[candidates[0]];
+      const rawPace=pr.timeS/pr.dist*1000;
+      // Apply progression factor and coeff_uphill
+      basePaceS=rawPace/progressionFactor;
+      const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}% progression`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}% régression`:'stable';
+      projSource=`📊 PR ${candidates[0].toUpperCase()} ajusté progression (${prog}${qualityCount>=4?`, ${qualityCount} séances qualité`:', données insuffisantes'})`;
+    }
   }
+  if(!projSource) projSource='⚙️ Estimation par défaut — renseigne tes PR ou ton objectif temps';
 
   // Build sections
   const sections=buildDetailedSections(kmSecs);
@@ -2016,9 +2073,19 @@ async function analyzeGPX(points, fname) {
   res.style.display='block';
   document.getElementById('gpxDrop').style.display='none';
 
+  const isTrail=isTrailRace();
+
   res.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:1.25rem">
-      <div><div style="font-family:var(--display);font-size:2rem;letter-spacing:.03em">${raceName}</div>${raceDate?`<div class="mono t2">${raceDate}</div>`:''}</div>
+      <div>
+        <div style="font-family:var(--display);font-size:2rem;letter-spacing:.03em">${raceName}</div>
+        ${raceDate?`<div class="mono t2">${raceDate}</div>`:''}
+        <div class="mono t2" style="font-size:.6rem;margin-top:4px">${projSource}</div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <span class="strat-tag" style="border-color:${isTrail?'var(--orange)40':'var(--cyan)40'};color:${isTrail?'var(--orange)':'var(--cyan)'}">${isTrail?'⛰️ Trail — RPE':'🏃 Route — FC structurée'}</span>
+          ${qualityCount>=4?`<span class="strat-tag" style="border-color:var(--green)40;color:var(--green)">📈 ${qualityCount} séances qualité analysées</span>`:'<span class="strat-tag" style="border-color:var(--text3)40;color:var(--text3)">Fais plus de séances qualité pour affiner</span>'}
+        </div>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-print">
         <button onclick="resetStrategy()" class="hbtn">← Changer de GPX</button>
         ${currentRaceContext?.id
@@ -2276,27 +2343,111 @@ function buildDetailedSections(kmSecs){
   return out;
 }
 
+function isTrailRace() {
+  // Check currentRaceContext type or default to trail if GPX has significant D+
+  if(currentRaceContext?.type) return ['Trail','TrailRun','trail'].includes(currentRaceContext.type);
+  const pts = window._gpxPoints||[];
+  if(!pts.length) return true;
+  let dplus=0;
+  for(let i=1;i<pts.length;i++){const d=pts[i].ele-pts[i-1].ele;if(d>0)dplus+=d;}
+  const dist=(window._gpxDistKm||1);
+  return dplus/dist > 20; // >20m D+/km = trail
+}
+
+// RPE Scale
+const RPE_SCALE = [
+  {rpe:1,label:'Très facile',desc:'Marche, échauffement — tu pourrais chanter'},
+  {rpe:2,label:'Très facile',desc:'Footing très lent, conversation fluide sans effort'},
+  {rpe:3,label:'Facile',desc:'Footing Z2, tu parles en phrases complètes, pourrait durer des heures'},
+  {rpe:4,label:'Facile',desc:'Rythme confortable, phrases courtes aisées, respiration légèrement audible'},
+  {rpe:5,label:'Modéré',desc:'Allure marathon, phrases courtes, respiration audible mais contrôlée'},
+  {rpe:6,label:'Modéré-difficile',desc:'Allure semi, 2-3 mots entre respirations, rythme soutenu'},
+  {rpe:7,label:'Difficile',desc:'Allure 10k/montée trail soutenue, 1-2 mots max, souffle court'},
+  {rpe:8,label:'Très difficile',desc:'Limite à tenir, quasi impossible de parler, fort essoufflement'},
+  {rpe:9,label:'Extrême',desc:'Sprint long, impossible de parler, insoutenable >2min'},
+  {rpe:10,label:'Maximum',desc:'Effort total, insoutenable >30 secondes'},
+];
+
 function renderDetailedSection(s, secTimeS, idx=0){
-  const fcMax=userProfile.fc_max||205;
-  const pct88=Math.round(fcMax*.88),pct84=Math.round(fcMax*.84),pct79=Math.round(fcMax*.79);
+  const trail = isTrailRace();
+  const fcMax = userProfile.fc_max||205;
+  const lthr = userProfile.lactate_threshold||Math.round(fcMax*.88);
+  const z2top = userProfile.fc_z2_top || Math.round(fcMax*.70);
+  const z3top = userProfile.fc_z3_top || Math.round(fcMax*.80);
+  const z4top = lthr;
+
   const cols={up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'};
   const icons={up:'⛰️',down:'🎿',flat:'➡️'};
   const names={up:'Montée',down:'Descente',flat:'Plat / Liaison'};
   const distKm=(s.dist/1000).toFixed(2);
-  let tags=[],advice='';
+  let tags=[],advice='',rpeBadge='';
 
   if(s.type==='up'){
     const steep=Math.abs(s.grade)>10;
     const vam=s.dplus>0?Math.round(s.dplus/(secTimeS/3600)):0;
-    tags=[{l:`${distKm} km`,c:'var(--orange)'},{l:`+${s.dplus}m D+`,c:'var(--orange)'},{l:`${Math.abs(s.grade).toFixed(1)}% pente moy`,c:'var(--yellow)'},{l:`FC max ${steep?pct84:pct88} bpm`,c:'var(--cyan)'},{l:steep?'Marche active recommandée':'Courir régulier',c:'var(--green)'}];
-    advice=`${steep?`Montée raide (${Math.abs(s.grade).toFixed(1)}%). Passer en marche active si FC > ${pct84} bpm — plus efficace énergétiquement que forcer la course (Millet et al., 2002). Cadence courte, appuis avant-pied, bras actifs.`:`Montée modérée (${Math.abs(s.grade).toFixed(1)}%). Raccourcir la foulée, garder une respiration rythmée. Gérer à la FC plutôt qu'à l'allure. Plafond ${pct88} bpm.`}${vam>0?` VAM requise : ~${vam} m/h.`:''}`;
+
+    if(trail){
+      const rpe=steep?7:6;
+      rpeBadge=`<span class="strat-tag" style="border-color:var(--orange)40;color:var(--orange);font-weight:700">RPE ${rpe}/10</span>`;
+      tags=[
+        {l:`${distKm} km`,c:'var(--orange)'},
+        {l:`+${s.dplus}m D+`,c:'var(--orange)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
+        {l:steep?'RPE 7 max — marche si > 8':'RPE 6-7 max',c:'var(--cyan)'},
+        {l:steep?'Marche active recommandée':'Courir régulier',c:'var(--green)'}
+      ];
+      advice=steep
+        ? `<strong>Montée raide (${Math.abs(s.grade).toFixed(1)}%)</strong> — passe en <strong>marche active</strong> dès que tu ne peux plus tenir une conversation (RPE 8+). La marche rapide est souvent plus efficace que courir en souffrant ici.<br><span class="mono t3" style="font-size:.6rem">FC indicative : si tu dépasses Z4 (≥${z4top} bpm) durablement, ralentis.</span>${vam>0?`<br>VAM requise ~${vam} m/h.`:''}`
+        : `<strong>Montée modérée (${Math.abs(s.grade).toFixed(1)}%)</strong> — foulée courte et fréquente, appuis avant-pied, bras actifs. Vise RPE 6-7 : tu dois pouvoir dire 2-3 mots entre chaque respiration.<br><span class="mono t3" style="font-size:.6rem">FC indicative : Z4 (${z3top}-${z4top} bpm) acceptable, attention si ça dure.</span>${vam>0?`<br>VAM requise ~${vam} m/h.`:''}`;
+    } else {
+      // Route — basé sur FC structurée
+      const fcCible=steep?Math.round(z4top*.96):Math.round(z4top*.92);
+      tags=[
+        {l:`${distKm} km`,c:'var(--orange)'},
+        {l:`+${s.dplus}m D+`,c:'var(--orange)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
+        {l:`FC < ${fcCible} bpm`,c:'var(--cyan)'},
+      ];
+      advice=`<strong>Côte (${Math.abs(s.grade).toFixed(1)}%)</strong> — maintenir FC sous <strong>${fcCible} bpm</strong> (${steep?'96':'92'}% LTHR). Raccourcir la foulée, ne pas chercher à maintenir l'allure — la FC est ton gouverneur ici.`;
+    }
+
   } else if(s.type==='down'){
     const technical=Math.abs(s.grade)>12;
-    tags=[{l:`${distKm} km`,c:'var(--purple)'},{l:`-${s.dminus}m D-`,c:'var(--purple)'},{l:`${Math.abs(s.grade).toFixed(1)}% pente moy`,c:'var(--yellow)'},{l:'Foulées courtes rapides',c:'var(--cyan)'},{l:'Économise les quadris',c:'var(--green)'}];
-    advice=technical?`Descente technique (${Math.abs(s.grade).toFixed(1)}%). Foulées très courtes, regard 2-3m devant, légèrement penché en avant. Ne pas freiner avec les talons — forces d'impact 3-4× le poids (Gottschall & Kram, 2005). Laisser la FC descendre naturellement.`:`Descente douce (${Math.abs(s.grade).toFixed(1)}%). Profite pour récupérer. Foulées courtes et rapides sans forcer. Bonne opportunité pour récupérer du temps.`;
+    if(trail){
+      tags=[
+        {l:`${distKm} km`,c:'var(--purple)'},
+        {l:`-${s.dminus}m D-`,c:'var(--purple)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
+        {l:'RPE 3-4',c:'var(--cyan)'},
+        {l:'Récupération active',c:'var(--green)'}
+      ];
+      advice=technical
+        ? `<strong>Descente technique (${Math.abs(s.grade).toFixed(1)}%)</strong> — foulées très courtes et rapides, regard 2-3m devant, léger penché avant. Ne jamais freiner avec les talons (impact 3-4× ton poids). RPE 4 max — c'est du temps récupéré "gratuit" si tu gères bien.<br><span class="mono t3" style="font-size:.6rem">FC : elle va naturellement redescendre ici, profite-en.</span>`
+        : `<strong>Descente douce (${Math.abs(s.grade).toFixed(1)}%)</strong> — foulées courtes et rapides, laisse la FC descendre sous Z3 (${z2top}-${z3top} bpm). C'est ta fenêtre de récupération. RPE 3-4.`;
+    } else {
+      tags=[
+        {l:`${distKm} km`,c:'var(--purple)'},
+        {l:`-${s.dminus}m D-`,c:'var(--purple)'},
+        {l:'Récupération',c:'var(--green)'},
+      ];
+      advice=`<strong>Descente</strong> — allure légèrement accélérée, contrôlée. FC qui redescend sous ${z3top} bpm. Profite pour récupérer avant la prochaine côte.`;
+    }
+
   } else {
-    tags=[{l:`${distKm} km`,c:'var(--cyan)'},{l:`FC < ${pct79} bpm`,c:'var(--green)'},{l:'Récupération active',c:'var(--cyan)'}];
-    advice=`Section de liaison. Descendre la FC sous ${pct79} bpm, reprendre la ventilation. Ne pas forcer. Ravitailler si durée totale > 75min.`;
+    if(trail){
+      tags=[
+        {l:`${distKm} km`,c:'var(--cyan)'},
+        {l:'RPE 4-5',c:'var(--green)'},
+        {l:'Récupération active',c:'var(--cyan)'}
+      ];
+      advice=`<strong>Section plate / liaison</strong> — laisse la FC redescendre, reprends la respiration. RPE 4-5 : tu dois pouvoir parler en phrases courtes. Si tu as un ravito, c'est ici qu'on mange et qu'on boit.`;
+    } else {
+      tags=[
+        {l:`${distKm} km`,c:'var(--cyan)'},
+        {l:`FC cible ${Math.round(z4top*.9)}-${Math.round(z4top*.95)} bpm`,c:'var(--green)'},
+      ];
+      advice=`<strong>Section plate</strong> — allure cible, FC maintenue entre ${Math.round(z4top*.9)} et ${Math.round(z4top*.95)} bpm (90-95% LTHR). C'est ton allure de croisière sur route.`;
+    }
   }
 
   return `<div class="section-block" style="border-left-color:${cols[s.type]}" onclick="highlightSection(${idx})" data-idx="${idx}">
@@ -2328,15 +2479,123 @@ function buildSplitsTable(kmSecs, basePaceS){
   return rows;
 }
 
-function genNutrition(distM,estTimeS){
-  const rows=[],dh=estTimeS/3600,dk=distM/1000;
-  rows.push(`<tr><td class="mono">Départ -3h</td><td>Repas solide (pâtes + légumes)</td><td>~80g</td><td>Charge glycogénique endogène (~400-500g glycogène musculaire)</td></tr>`);
-  rows.push(`<tr><td class="mono">Départ -30min</td><td>Banane ou barre céréales</td><td>~30g</td><td>Dernier apport solide sans risque GI</td></tr>`);
-  rows.push(`<tr><td class="mono">Départ -15min</td><td>Eau uniquement (150ml)</td><td>0g</td><td>Éviter pic insulinique · Costill & Hargreaves, 1992</td></tr>`);
-  if(dh<1.25){rows.push(`<tr style="background:rgba(46,204,113,.04)"><td class="mono">Pendant</td><td><strong>Eau selon la soif</strong></td><td>0g</td><td>Durée &lt; 75min : réserves endogènes suffisantes · Burke et al., 2011</td></tr>`);}
-  else if(dh<2.5){rows.push(`<tr><td class="mono">~${Math.round(dk*.35)} km</td><td>Gel glucose + eau obligatoire</td><td>25-30g</td><td>Début apport après 30-40min · max 30g/h glucose pur · Jeukendrup, 2004</td></tr>`);if(dh>1.5)rows.push(`<tr><td class="mono">~${Math.round(dk*.65)} km</td><td>Gel + eau</td><td>25-30g</td><td>Maintien glycémie. Eau obligatoire pour prévenir crampes GI</td></tr>`);}
-  else{rows.push(`<tr><td class="mono">~${Math.round(dk*.2)} km</td><td>Gel + eau</td><td>20-25g</td><td>60g/h · mixte gluc+fruct 2:1 — transporteurs SGLT1+GLUT5 · Currell & Jeukendrup, 2008</td></tr>`);rows.push(`<tr><td class="mono">~${Math.round(dk*.4)} km</td><td>Boisson gluc+fruct + eau</td><td>30-35g</td><td>Max 30g/h glucose pur (saturation SGLT1) · Jeukendrup, 2004</td></tr>`);rows.push(`<tr><td class="mono">~${Math.round(dk*.6)} km</td><td>Gel + solide (datte, banane)</td><td>25-30g</td><td>Au-delà de 2h30 : solide mieux toléré. Diversifier les sources</td></tr>`);if(dh>3)rows.push(`<tr><td class="mono">~${Math.round(dk*.8)} km</td><td>Boisson + gel + sel</td><td>30-35g</td><td>Ultra >3h : 90g/h possible si intestin entraîné · Rowlands et al., 2015</td></tr>`);}
-  rows.push(`<tr style="background:rgba(0,212,255,.04)"><td class="mono tg">Post-course &lt;30min</td><td><strong>Protéines + glucides rapides</strong></td><td>60g + 30g prot</td><td>Fenêtre anabolique : resynthèse glycogène max · Ivy, 1998</td></tr>`);
+// ── BDD PRODUITS NUTRITION ──
+const NUTRITION_DB = {
+  gels:[
+    {id:'naak-ultra',brand:'Näak',name:'Ultra Energy Gel',carbs:27,caffeine:35,water:false,note:'Semi-liquide, sans eau requis'},
+    {id:'naak-boost25',brand:'Näak',name:'Boost Gel 25',carbs:25,caffeine:0,water:false,note:'Sans eau requis'},
+    {id:'naak-boost30',brand:'Näak',name:'Boost Gel 30',carbs:30,caffeine:0,water:false,note:'Sans eau requis'},
+    {id:'naak-boost-caf',brand:'Näak',name:'Boost Gel Thé Pêche (caféine)',carbs:30,caffeine:100,water:false,note:'Sans eau, 100mg caféine'},
+    {id:'ta-gel',brand:'TA Energy',name:'Énergie Gel',carbs:33,caffeine:0,water:true,note:'Avec eau obligatoire'},
+    {id:'ta-gel-caf',brand:'TA Energy',name:'Énergie Gel Caféiné',carbs:33,caffeine:50,water:true,note:'Avec eau, 50mg caféine'},
+    {id:'ta-gommes',brand:'TA Energy',name:'Gommes Énergie',carbs:24,caffeine:0,water:true,note:'3 gommes/sachet, avec eau'},
+    {id:'ta-gommes-caf',brand:'TA Energy',name:'Gommes Énergie Caféinées',carbs:24,caffeine:50,water:true,note:'50mg caféine, avec eau'},
+    {id:'maurten-100',brand:'Maurten',name:'Gel 100',carbs:25,caffeine:0,water:false,note:'Hydrogel, sans eau'},
+    {id:'maurten-100-caf',brand:'Maurten',name:'Gel 100 Caf 100',carbs:25,caffeine:100,water:false,note:'Hydrogel, 100mg caféine'},
+    {id:'maurten-160',brand:'Maurten',name:'Gel 160',carbs:40,caffeine:0,water:false,note:'Hydrogel haute énergie, sans eau'},
+    {id:'deca-gel',brand:'Decathlon',name:'Energy Gel (<3h)',carbs:30,caffeine:0,water:true,note:'Avec eau obligatoire'},
+    {id:'deca-gel-caf',brand:'Decathlon',name:'Energy Gel+ Caféiné',carbs:22,caffeine:20,water:true,note:'Avec eau, 20mg caféine'},
+    {id:'nduranz-gel',brand:'Nduranz',name:'Nrgy Unit Gel',carbs:45,caffeine:0,water:false,note:'Isotonique, sans eau — très haute énergie'},
+    {id:'baouw-gel',brand:'Baouw',name:'Gel Extra',carbs:30,caffeine:0,water:true,note:'Bio, avec eau'},
+  ],
+  barres:[
+    {id:'naak-bar',brand:'Näak',name:'Ultra Energy Bar',carbs:29,caffeine:0,water:false,note:'50g, protéines végétales'},
+    {id:'naak-bar-caf',brand:'Näak',name:'Ultra Energy Bar Caféine',carbs:27,caffeine:35,water:false,note:'50g, 35mg caféine'},
+    {id:'ta-barre',brand:'TA Energy',name:'Barre Bio',carbs:20,caffeine:0,water:false,note:'38g, texture moelleuse'},
+    {id:'baouw-barre',brand:'Baouw',name:'Extra Bar 50g',carbs:24,caffeine:0,water:false,note:'Bio, sans gluten'},
+  ],
+  boissons:[
+    {id:'maurten-160d',brand:'Maurten',name:'Drink Mix 160',carbs:40,per:'500ml',water:true,note:'À diluer'},
+    {id:'maurten-320d',brand:'Maurten',name:'Drink Mix 320',carbs:80,per:'500ml',water:true,note:'Haute énergie, à diluer'},
+    {id:'deca-iso',brand:'Decathlon',name:'ISO (poudre)',carbs:33,per:'500ml',water:true,note:'À diluer'},
+    {id:'deca-iso-plus',brand:'Decathlon',name:'ISO+ (poudre)',carbs:33,per:'500ml',water:true,note:'À diluer'},
+    {id:'deca-iso-rtd',brand:'Decathlon',name:'ISO prête à boire',carbs:27,per:'500ml',water:false,note:'Prête à l\'emploi'},
+    {id:'nduranz-drink',brand:'Nduranz',name:'Nrgy Drink',carbs:45,per:'500ml',water:true,note:'À diluer'},
+    {id:'nduranz-drink90',brand:'Nduranz',name:'Nrgy Drink 90',carbs:90,per:'500ml',water:true,note:'Haute énergie ultra distance'},
+  ]
+};
+
+function getUserGels(){
+  const sel = userProfile.nutrition_products||[];
+  const gels = NUTRITION_DB.gels.filter(g=>sel.includes(g.id));
+  const barres = NUTRITION_DB.barres.filter(b=>sel.includes(b.id));
+  return [...gels,...barres];
+}
+function getUserBoissons(){
+  const sel = userProfile.nutrition_products||[];
+  return NUTRITION_DB.boissons.filter(b=>sel.includes(b.id));
+}
+
+function genNutrition(distM, estTimeS){
+  const dh = estTimeS/3600;
+  const dk = distM/1000;
+  const userGels = getUserGels();
+  const userBoissons = getUserBoissons();
+  const hasProducts = userGels.length>0 || userBoissons.length>0;
+  const rows = [];
+
+  // Avant course — commun
+  rows.push(`<tr><td class="mono">Départ −3h</td><td>Repas solide (pâtes, riz)</td><td>~80g</td><td>Charge glycogénique endogène · Burke et al., 2011</td></tr>`);
+  rows.push(`<tr><td class="mono">Départ −30min</td><td>Banane ou barre céréales</td><td>~30g</td><td>Dernier solide sans risque digestif</td></tr>`);
+  rows.push(`<tr><td class="mono">Départ −15min</td><td>Eau uniquement 150ml</td><td>0g</td><td>Éviter pic insulinique · Costill & Hargreaves, 1992</td></tr>`);
+
+  if(dh < 1.5){
+    // < 1h30 : hydratation simple selon température
+    rows.push(`<tr style="background:rgba(46,204,113,.05)"><td class="mono">Pendant</td><td><strong>Eau selon la soif</strong>${dh>0.75?' + électrolytes si >25°C':''}</td><td>0g glucides</td><td>< 1h30 : réserves glycogéniques suffisantes. Électrolytes si forte chaleur uniquement · Burke et al., 2011</td></tr>`);
+    if(userBoissons.length){
+      const b=userBoissons[0];
+      rows.push(`<tr><td class="mono">Option chaleur</td><td>${b.brand} ${b.name} dilué ×2</td><td>~${Math.round(b.carbs/2)}g</td><td>Si T° > 25°C uniquement. Diluer pour réduire l'apport sucré.</td></tr>`);
+    }
+  } else {
+    // ≥ 1h30 : protocole complet
+    const targetCarbsPerH = dh < 2.5 ? 40 : 60;
+
+    // Premier ravitaillement ~30-35min
+    const t1km = Math.round(dk*0.30);
+    if(hasProducts && userGels.length){
+      const gel1 = userGels.find(g=>g.caffeine===0) || userGels[0];
+      rows.push(`<tr><td class="mono">~${t1km} km<br><span style="font-size:.55rem;opacity:.7">${Math.round(t1km/dk*estTimeS/60)}min</span></td><td><strong>${gel1.brand} ${gel1.name}</strong>${gel1.water?' <span style="color:var(--cyan)">+ eau obligatoire</span>':''}</td><td>${gel1.carbs}g</td><td>Premier apport glucidique après 30min. Sans caféine — adrénaline déjà élevée au départ.</td></tr>`);
+    } else {
+      rows.push(`<tr><td class="mono">~${t1km} km</td><td>Gel sans caféine + eau</td><td>25-30g</td><td>Premier apport après 30min · Jeukendrup, 2004</td></tr>`);
+    }
+
+    // Boisson si disponible
+    if(userBoissons.length && dh >= 1.75){
+      const b=userBoissons[0];
+      const t2km=Math.round(dk*0.50);
+      rows.push(`<tr><td class="mono">~${t2km} km<br><span style="font-size:.55rem;opacity:.7">${Math.round(t2km/dk*estTimeS/60)}min</span></td><td><strong>${b.brand} ${b.name}</strong> 200ml</td><td>${Math.round(b.carbs*0.4)}g</td><td>Hydratation + glucides. ${b.water?'Dilué dans eau froide.':'Prêt à boire.'}</td></tr>`);
+    }
+
+    // Deuxième gel — caféiné si dispo, après 60-70% de la course
+    const t3km = Math.round(dk*0.65);
+    if(hasProducts && userGels.length){
+      const gelCaf = userGels.find(g=>g.caffeine>0);
+      const gel2 = gelCaf || (userGels.find(g=>g.caffeine===0) || userGels[0]);
+      rows.push(`<tr><td class="mono">~${t3km} km<br><span style="font-size:.55rem;opacity:.7">${Math.round(t3km/dk*estTimeS/60)}min</span></td><td><strong>${gel2.brand} ${gel2.name}</strong>${gel2.water?' <span style="color:var(--cyan)">+ eau obligatoire</span>':''} ${gelCaf?'<span style="color:var(--yellow)">☕ Caféine</span>':''}</td><td>${gel2.carbs}g</td><td>${gelCaf?`${gel2.caffeine}mg caféine — pic d'effet 30-45min après. Timing idéal pour la dernière ligne droite ou montée finale.`:'Maintien glycémie sur derniers km.'}</td></tr>`);
+    } else {
+      rows.push(`<tr><td class="mono">~${t3km} km</td><td>Gel <strong>caféiné</strong> + eau</td><td>25-30g</td><td>Caféine : pic 30-45min après prise — timing pour fin de course.</td></tr>`);
+    }
+
+    // Ultra > 2h30
+    if(dh >= 2.5){
+      const t4km=Math.round(dk*0.80);
+      if(userGels.find(g=>g.id.includes('barre')||g.note?.includes('Bar'))){
+        const bar=userGels.find(g=>g.note?.includes('Bar')||g.id.includes('bar')||g.id.includes('barre'));
+        rows.push(`<tr><td class="mono">~${t4km} km</td><td><strong>${bar.brand} ${bar.name}</strong> (solide)</td><td>${bar.carbs}g</td><td>Après 2h+ : le solide est mieux toléré que les gels en continu. Mâcher = stimulation cognitive (Ebersole et al.).</td></tr>`);
+      } else {
+        rows.push(`<tr><td class="mono">~${t4km} km</td><td>Solide (barre, datte, banane) + eau</td><td>25-35g</td><td>Après 2h+ : diversifier les sources. Le solide est mieux toléré. Mâcher aide cognitivement.</td></tr>`);
+      }
+    }
+
+    // Conseil eau général
+    if(userGels.filter(g=>g.water).length > 0){
+      rows.push(`<tr style="background:rgba(0,212,255,.04)"><td class="mono t2" colspan="4">💧 <strong>Rappel eau :</strong> tes gels nécessitent de l'eau. Toujours 150-200ml d'eau avec chaque prise. Ne jamais prendre gel + boisson sucrée en même temps.</td></tr>`);
+    }
+  }
+
+  // Post-course
+  rows.push(`<tr style="background:rgba(46,204,113,.05)"><td class="mono tg">Post &lt;30min</td><td>Protéines + glucides rapides</td><td>60g + 20g prot</td><td>Fenêtre anabolique · resynthèse glycogène max · Ivy, 1998</td></tr>`);
+
   return rows.join('');
 }
 
@@ -2489,10 +2748,76 @@ function selectRaceForStrategy(race){
 // ════════════════════════════════════════════════════
 // PROFIL OVERLAY
 // ════════════════════════════════════════════════════
+let _nutrActiveBrandGel = null;
+let _nutrActiveBrandDrink = null;
+
+function renderNutritionProducts() {
+  const sel = userProfile.nutrition_products||[];
+  const allGels = [...NUTRITION_DB.gels, ...NUTRITION_DB.barres];
+  const allDrinks = NUTRITION_DB.boissons;
+
+  const gelBrands = [...new Set(allGels.map(p=>p.brand))];
+  const drinkBrands = [...new Set(allDrinks.map(p=>p.brand))];
+
+  // Init active brand if not set
+  if(!_nutrActiveBrandGel) _nutrActiveBrandGel = gelBrands[0];
+  if(!_nutrActiveBrandDrink) _nutrActiveBrandDrink = drinkBrands[0];
+
+  const mkBrandBtn = (brand, active, onclick) =>
+    `<button onclick="${onclick}" style="padding:5px 12px;border-radius:20px;border:1px solid ${active?'var(--cyan)':'var(--border2)'};background:${active?'rgba(0,212,255,.12)':'var(--bg4)'};color:${active?'var(--cyan)':'var(--text2)'};font-family:var(--mono);font-size:.6rem;cursor:pointer;transition:all .2s">${brand}</button>`;
+
+  const mkCard = (p) => {
+    const checked = sel.includes(p.id);
+    return `<label style="display:flex;align-items:flex-start;gap:10px;background:var(--bg4);border:1px solid ${checked?'var(--cyan)':'var(--border)'};border-radius:9px;padding:10px 12px;cursor:pointer;transition:border-color .2s">
+      <input type="checkbox" data-nutr="${p.id}" ${checked?'checked':''} style="margin-top:2px;accent-color:var(--cyan)" onchange="this.closest('label').style.borderColor=this.checked?'var(--cyan)':'var(--border)'">
+      <div>
+        <div style="font-size:.78rem;font-weight:600">${p.name}</div>
+        <div class="mono t2" style="font-size:.58rem">${p.carbs}g glucides${p.caffeine?` · ☕ ${p.caffeine}mg caféine`:''}</div>
+        <div class="mono t3" style="font-size:.55rem">${p.note||''}</div>
+      </div>
+    </label>`;
+  };
+
+  // Gel brands
+  const gelBrandEl = document.getElementById('nutrGelBrands');
+  if(gelBrandEl) gelBrandEl.innerHTML = gelBrands.map(b=>mkBrandBtn(b,b===_nutrActiveBrandGel,`filterNutrBrand('gel','${b}')`)).join('');
+
+  // Gel products filtered
+  const gelListEl = document.getElementById('nutrGelList');
+  if(gelListEl) gelListEl.innerHTML = allGels.filter(p=>p.brand===_nutrActiveBrandGel).map(mkCard).join('');
+
+  // Drink brands
+  const drinkBrandEl = document.getElementById('nutrDrinkBrands');
+  if(drinkBrandEl) drinkBrandEl.innerHTML = drinkBrands.map(b=>mkBrandBtn(b,b===_nutrActiveBrandDrink,`filterNutrBrand('drink','${b}')`)).join('');
+
+  // Drink products filtered
+  const drinkListEl = document.getElementById('nutrDrinkList');
+  if(drinkListEl) drinkListEl.innerHTML = allDrinks.filter(p=>p.brand===_nutrActiveBrandDrink).map(mkCard).join('');
+}
+
+function filterNutrBrand(type, brand) {
+  // Save current checked state before re-rendering
+  const checked = [...document.querySelectorAll('input[data-nutr]:checked')].map(i=>i.dataset.nutr);
+  userProfile.nutrition_products = [...new Set([...(userProfile.nutrition_products||[]),...checked])];
+  if(type==='gel') _nutrActiveBrandGel = brand;
+  else _nutrActiveBrandDrink = brand;
+  renderNutritionProducts();
+}
+
+async function saveNutritionProducts() {
+  const checked = [...document.querySelectorAll('input[data-nutr]:checked')].map(i=>i.dataset.nutr);
+  userProfile.nutrition_products = checked;
+  const msg = document.getElementById('nutrSaveMsg');
+  const {error} = await sb.from('profiles').upsert({id:currentUser.id, nutrition_products: checked});
+  if(error){msg.textContent='❌ Erreur';msg.style.color='var(--red)';}
+  else{msg.textContent=`✓ ${checked.length} produit(s) sauvegardé(s)`;msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',3000);}
+}
+
 function openProfil() {
   document.getElementById('profilOverlay').classList.add('open');
   document.body.style.overflow='hidden';
   if(currentUser?.email) document.getElementById('p-email').value=currentUser.email;
+  renderNutritionProducts();
 }
 function closeProfil() {
   document.getElementById('profilOverlay').classList.remove('open');
