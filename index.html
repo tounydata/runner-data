@@ -673,7 +673,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
     <div class="clabel">Données physiologiques</div>
     <div class="fg"><label class="fl">Prénom / Nom</label><input class="fi" id="p-name" placeholder=""></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Âge</label><input class="fi" type="number" id="p-age" placeholder=""></div>
+      <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" id="p-birthdate"></div>
       <div class="fg"><label class="fl">Sexe</label><select class="fi" id="p-sex"><option value="">—</option><option value="M">Homme</option><option value="F">Femme</option></select></div>
       <div class="fg"><label class="fl">Poids (kg)</label><input class="fi" type="number" id="p-weight" placeholder="" step="0.1"></div>
       <div class="fg"><label class="fl">Taille (cm)</label><input class="fi" type="number" id="p-height" placeholder=""></div>
@@ -975,7 +975,7 @@ async function loadProfile() {
     userProfile = { pain_zones: [], ...data };
     userProfile.pain_zones = userProfile.pain_zones || [];
     const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
-    set('p-name', data.name); set('p-age', data.age); set('p-sex', data.sex);
+    set('p-name', data.name); set('p-birthdate', data.birthdate); set('p-sex', data.sex);
     set('p-weight', data.weight); set('p-height', data.height);
     set('p-vo2max', data.vo2max); set('p-fcmax', data.fc_max);
     set('p-lactate', data.lactate_threshold); set('p-lactate-pace', data.lactate_pace);
@@ -1000,7 +1000,8 @@ async function saveProfile() {
   const profile = {
     id: currentUser.id,
     name: document.getElementById('p-name').value||null,
-    age: parseInt(document.getElementById('p-age').value)||null,
+    birthdate: document.getElementById('p-birthdate').value||null,
+    age: document.getElementById('p-birthdate').value ? Math.floor((new Date()-new Date(document.getElementById('p-birthdate').value))/31557600000) : null,
     sex: document.getElementById('p-sex').value||null,
     weight: parseFloat(document.getElementById('p-weight').value)||null,
     height: parseFloat(document.getElementById('p-height').value)||null,
@@ -1745,6 +1746,11 @@ function renderRaces() {
     if(!past){
       buttons+=`<button onclick='prepareRace(${JSON.stringify(r)})' class="btn-prepare">${hasGpx?'🗺️ Voir stratégie':'🗺️ Préparer'}</button>`;
     } else {
+      if(hasGpx){
+        buttons+=`<button onclick='prepareRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border2)">📊 Voir stratégie</button>`;
+      } else {
+        buttons+=`<button onclick='importOrgGpx(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border2)">📥 GPX organisateur</button>`;
+      }
       if(hasActivity){
         buttons+=`<button onclick='linkActivityFromRace(${JSON.stringify(r)})' class="btn-prepare" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border2);font-size:.52rem">↺ Changer</button>`;
       } else {
@@ -1830,6 +1836,37 @@ async function saveGpxToRace() {
       setTimeout(()=>{if(btn){btn.textContent=`💾 Associé à ${currentRaceContext.name}`;btn.disabled=true;}},2000);
     }
   }
+}
+
+function importOrgGpx(race) {
+  // Create hidden file input and trigger click
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.gpx';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    showToast('Analyse du GPX...', 'info');
+    const text = await file.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    const trkpts = [...xml.querySelectorAll('trkpt')];
+    if(!trkpts.length){ showToast('GPX invalide — aucun point trouvé', 'error'); return; }
+    const points = trkpts.map(p=>({
+      lat: parseFloat(p.getAttribute('lat')),
+      lon: parseFloat(p.getAttribute('lon')),
+      ele: parseFloat(p.querySelector('ele')?.textContent||0)
+    }));
+    // Sample every 5 points to reduce size
+    const sampled = points.filter((_,i)=>i%5===0);
+    const {error} = await sb.from('race_calendar')
+      .update({gpx_data: JSON.stringify(sampled)})
+      .eq('id', race.id);
+    if(error){ showToast('Erreur sauvegarde GPX', 'error'); return; }
+    await loadRaces();
+    showToast(`GPX associé à ${race.name} ✓`, 'success');
+  };
+  input.click();
 }
 
 async function linkActivityFromRace(race) {
@@ -2688,14 +2725,36 @@ function openSectionPopup(idx) {
   document.getElementById('sectionPopupStats').innerHTML=statData.map(d=>`<div class="s-stat"><div class="s-sv" style="${d.c?`color:${d.c}`:''}">${d.v}</div><div class="s-sl">${d.l}</div></div>`).join('');
 
   // Advice
+  const trail = isTrailRace();
+  const lthr = userProfile.lactate_threshold || Math.round(fcMax*.88);
+  const z3top = Math.round(fcMax*.80);
+  const z4top = lthr;
   let advice='';
   if(s.type==='up'){
     const steep=Math.abs(s.grade)>10;
-    advice=steep?`Montée raide. Marche active si FC > ${pct84} bpm. Cadence courte, appuis avant-pied, bras actifs. Ne jamais dépasser ${pct88} bpm.`:`Montée modérée. Raccourcir la foulée, respiration rythmée. Gérer à la FC. Plafond ${pct88} bpm.`;
+    if(trail){
+      advice=steep
+        ? `<strong>Montée raide (${Math.abs(s.grade).toFixed(1)}%)</strong> — RPE 7 max. Marche active si tu ne peux plus parler (RPE 8+). Cadence courte, appuis avant-pied, bras actifs.<br><span class="mono t3" style="font-size:.6rem">FC indicative : si tu dépasses Z4 (≥${z4top} bpm) durablement → ralentis.</span>`
+        : `<strong>Montée modérée (${Math.abs(s.grade).toFixed(1)}%)</strong> — RPE 6-7. Tu dois pouvoir dire 2-3 mots entre chaque respiration.<br><span class="mono t3" style="font-size:.6rem">FC indicative : Z3-Z4 (${z3top}-${z4top} bpm) acceptable.</span>`;
+    } else {
+      const fcCible = steep ? Math.round(z4top*.96) : Math.round(z4top*.92);
+      advice=`<strong>Côte (${Math.abs(s.grade).toFixed(1)}%)</strong> — maintenir FC sous <strong>${fcCible} bpm</strong> (${steep?'96':'92'}% LTHR). Raccourcir la foulée, ne pas chercher à maintenir l'allure.`;
+    }
   } else if(s.type==='down'){
-    advice=Math.abs(s.grade)>12?`Descente technique. Foulées très courtes, regard 2-3m devant. Ne pas freiner avec les talons — forces d'impact 3-4× le poids (Gottschall & Kram, 2005). Laisser la FC descendre.`:`Descente douce. Foulées courtes rapides. Récupère sans forcer.`;
+    const technical=Math.abs(s.grade)>12;
+    if(trail){
+      advice=technical
+        ? `<strong>Descente technique (${Math.abs(s.grade).toFixed(1)}%)</strong> — RPE 4. Foulées très courtes, regard 2-3m devant. Ne pas freiner avec les talons. FC redescend naturellement.`
+        : `<strong>Descente douce (${Math.abs(s.grade).toFixed(1)}%)</strong> — RPE 3-4. Foulées courtes rapides. Laisse la FC redescendre sous Z3 (${z3top} bpm).`;
+    } else {
+      advice=`<strong>Descente</strong> — allure légèrement accélérée. FC qui redescend sous ${z3top} bpm. Récupère avant la prochaine côte.`;
+    }
   } else {
-    advice=`Liaison. Descendre sous ${pct79} bpm, reprendre la ventilation. Ravitailler si durée totale > 75min.`;
+    if(trail){
+      advice=`<strong>Liaison plate</strong> — RPE 4-5. Laisse la FC redescendre, reprends la respiration. Tu dois pouvoir parler en phrases courtes. Ravitaille ici si besoin.`;
+    } else {
+      advice=`<strong>Plat</strong> — allure cible, FC entre ${Math.round(z4top*.90)} et ${Math.round(z4top*.95)} bpm (90-95% LTHR).`;
+    }
   }
   document.getElementById('sectionPopupAdvice').innerHTML=`<div class="clabel">Conseils</div><div style="font-size:.82rem;line-height:1.6;color:var(--text2)">${advice}</div>`;
 
@@ -2873,15 +2932,17 @@ async function changePassword() {
 }
 async function uploadAvatar(event) {
   const file=event.target.files[0];if(!file)return;
+  showToast('Upload en cours...','info',2000);
   const ext=file.name.split('.').pop();
   const path=`${currentUser.id}/avatar.${ext}`;
   const {error}=await sb.storage.from('avatars').upload(path,file,{upsert:true});
-  if(!error){
-    const {data}=sb.storage.from('avatars').getPublicUrl(path);
-    await sb.from('profiles').upsert({id:currentUser.id,avatar_url:data.publicUrl});
-    userProfile.avatar_url=data.publicUrl;
-    updateAvatar(data.publicUrl);
-  }
+  if(error){showToast('Erreur upload : '+error.message,'error');return;}
+  const {data}=sb.storage.from('avatars').getPublicUrl(path);
+  const {error:e2}=await sb.from('profiles').upsert({id:currentUser.id,avatar_url:data.publicUrl});
+  if(e2){showToast('Erreur sauvegarde avatar','error');return;}
+  userProfile.avatar_url=data.publicUrl;
+  updateAvatar(data.publicUrl);
+  showToast('Photo de profil mise à jour ✓','success');
 }
 function updateAvatar(url) {
   const mark=document.getElementById('avatarMark');
