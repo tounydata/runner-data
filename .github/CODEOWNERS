@@ -1,0 +1,7 @@
+# Default owner for all files
+* @tounydata
+
+# Architecture decisions require explicit review
+docs/architecture/ @tounydata
+supabase/migrations/ @tounydata
+.github/ @tounydata
