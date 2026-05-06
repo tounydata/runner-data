@@ -47,8 +47,8 @@ select.fi{cursor:pointer;}
 #appShell.show{display:block;}
 
 /* ── HEADER ── */
-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(–border);position:sticky;top:0;z-index:200;background:rgba(6,8,16,.97);backdrop-filter:blur(12px);}
-[data-light] header{background:rgba(240,244,248,.97);backdrop-filter:blur(12px);}
+header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(–border);position:fixed;top:0;left:0;right:0;z-index:200;background:var(–bg,#060810);backdrop-filter:blur(12px);}
+[data-light] header{background:var(–bg,#f0f4f8);backdrop-filter:blur(12px);}
 
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(–cyan),var(–purple));display:flex;align-items:center;justify-content:center;font-family:var(–display);font-size:17px;color:#000;cursor:pointer;}
@@ -65,11 +65,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.9r
 .nbtn{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(–text2);transition:all .2s;white-space:nowrap;}
 .nbtn.active{background:var(–bg4);color:var(–text);border:1px solid var(–border2);}
 .nbtn:hover:not(.active){color:var(–text);}
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(–bg2);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(–bg2,#0d1117);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(–text3);cursor:pointer;font-family:var(–mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
 .tab-btn.active{color:var(–cyan);}
 .tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-main{padding:1.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
+main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 .panel{display:none;animation:fadeUp .3s ease;}
 .panel.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
