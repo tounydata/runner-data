@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -28,97 +27,97 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 /* ── AUTH ── */
 #authScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
 #authScreen.show{display:flex;}
-.auth-box{background:var(–bg2);border:1px solid var(–border2);border-radius:16px;padding:2.5rem;width:100%;max-width:400px;}
+.auth-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:2.5rem;width:100%;max-width:400px;}
 .auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem;}
-.auth-mark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(–cyan),var(–purple));display:flex;align-items:center;justify-content:center;font-family:var(–display);font-size:24px;color:#000;}
-.auth-tabs{display:flex;gap:2px;background:var(–bg4);border-radius:8px;padding:3px;margin-bottom:1.5rem;}
-.auth-tab{flex:1;padding:7px;border-radius:6px;border:none;background:transparent;color:var(–text2);cursor:pointer;font-family:var(–mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
-.auth-tab.active{background:var(–bg2);color:var(–text);}
-.fi{width:100%;background:var(–bg3);border:1px solid var(–border2);border-radius:8px;padding:10px 14px;color:var(–text);font-family:var(–body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
-.fi:focus{border-color:var(–cyan);}
-.fi::placeholder{color:var(–text3);}
+.auth-mark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:24px;color:#000;}
+.auth-tabs{display:flex;gap:2px;background:var(--bg4);border-radius:8px;padding:3px;margin-bottom:1.5rem;}
+.auth-tab{flex:1;padding:7px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
+.auth-tab.active{background:var(--bg2);color:var(--text);}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
+.fi:focus{border-color:var(--cyan);}
+.fi::placeholder{color:var(--text3);}
 select.fi{cursor:pointer;}
-.btn-primary{width:100%;background:var(–cyan);color:#000;border:none;border-radius:8px;padding:11px;font-family:var(–body);font-weight:700;font-size:.88rem;cursor:pointer;transition:opacity .2s;}
+.btn-primary{width:100%;background:var(--cyan);color:#000;border:none;border-radius:8px;padding:11px;font-family:var(--body);font-weight:700;font-size:.88rem;cursor:pointer;transition:opacity .2s;}
 .btn-primary:hover{opacity:.88;}
-.auth-msg{font-family:var(–mono);font-size:.65rem;text-align:center;margin-top:.75rem;min-height:1rem;}
+.auth-msg{font-family:var(--mono);font-size:.65rem;text-align:center;margin-top:.75rem;min-height:1rem;}
 
 /* ── APP ── */
 #appShell{display:none;}
 #appShell.show{display:block;}
 
 /* ── HEADER ── */
-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(–border);position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
-[data-light] header{background:var(–bg,#f0f4f8);backdrop-filter:blur(12px);}
+header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(--border);position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+[data-light] header{background:var(--bg,#f0f4f8);backdrop-filter:blur(12px);}
 
 .logo{display:flex;align-items:center;gap:10px;}
-.logo-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(–cyan),var(–purple));display:flex;align-items:center;justify-content:center;font-family:var(–display);font-size:17px;color:#000;cursor:pointer;}
-.logo-name{font-family:var(–mono);font-size:.6rem;color:var(–text3);letter-spacing:.08em;text-transform:uppercase;}
-.hbtn{padding:6px 12px;border-radius:7px;border:1px solid var(–border2);background:var(–bg3);color:var(–text2);cursor:pointer;font-family:var(–mono);font-size:.6rem;transition:all .2s;white-space:nowrap;}
-.hbtn:hover{border-color:var(–cyan);color:var(–cyan);}
+.logo-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:17px;color:#000;cursor:pointer;}
+.logo-name{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.hbtn{padding:6px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.6rem;transition:all .2s;white-space:nowrap;}
+.hbtn:hover{border-color:var(--cyan);color:var(--cyan);}
 .hbtn.strava{background:#fc4c02;color:#fff;border-color:#fc4c02;}
 .hbtn.strava:hover{opacity:.88;color:#fff;}
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.dot-on{background:var(–green);box-shadow:0 0 6px var(–green);animation:blink 2s infinite;}
-.dot-off{background:var(–text3);}
+.dot-on{background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+.dot-off{background:var(--text3);}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.strava-pill{display:flex;align-items:center;gap:6px;background:var(–bg3);border:1px solid var(–border2);border-radius:20px;padding:5px 11px;font-family:var(–mono);font-size:.6rem;color:var(–text2);}
-.nbtn{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(–text2);transition:all .2s;white-space:nowrap;}
-.nbtn.active{background:var(–bg4);color:var(–text);border:1px solid var(–border2);}
-.nbtn:hover:not(.active){color:var(–text);}
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
-.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(–text3);cursor:pointer;font-family:var(–mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
-.tab-btn.active{color:var(–cyan);}
+.strava-pill{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;font-family:var(--mono);font-size:.6rem;color:var(--text2);}
+.nbtn{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--text2);transition:all .2s;white-space:nowrap;}
+.nbtn.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2);}
+.nbtn:hover:not(.active){color:var(--text);}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
+.tab-btn.active{color:var(--cyan);}
 .tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
+main{padding:5.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 .panel{display:none;animation:fadeUp .3s ease;}
 .panel.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── CARDS ── */
-.card{background:var(–bg2);border:1px solid var(–border);border-radius:var(–r);padding:1.25rem;}
-.clabel{font-family:var(–mono);font-size:.56rem;color:var(–text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;}
+.clabel{font-family:var(--mono);font-size:.56rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
 
 /* ── STRIP ── */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(–border);border-radius:var(–r);overflow:hidden;margin-bottom:1.25rem;}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
 @media(max-width:800px){.strip{grid-template-columns:repeat(3,1fr)}}
-.scell{background:var(–bg2);padding:12px 16px;text-align:center;}
-.sval{font-family:var(–display);font-size:1.4rem;letter-spacing:.03em;line-height:1;}
-.slbl{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
-.sdelta{font-family:var(–mono);font-size:.56rem;margin-top:2px;}
+.scell{background:var(--bg2);padding:12px 16px;text-align:center;}
+.sval{font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;line-height:1;}
+.slbl{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
+.sdelta{font-family:var(--mono);font-size:.56rem;margin-top:2px;}
 
 /* ── ONBOARDING ── */
 .onboard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:1.5rem;text-align:center;padding:2rem;}
 .onboard-icon{font-size:4rem;opacity:.3;}
-.onboard-title{font-family:var(–display);font-size:2rem;letter-spacing:.03em;}
-.onboard-sub{font-size:.88rem;color:var(–text2);max-width:400px;line-height:1.6;}
+.onboard-title{font-family:var(--display);font-size:2rem;letter-spacing:.03em;}
+.onboard-sub{font-size:.88rem;color:var(--text2);max-width:400px;line-height:1.6;}
 .onboard-steps{display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px;}
-.onboard-step{display:flex;align-items:center;gap:12px;background:var(–bg2);border:1px solid var(–border);border-radius:9px;padding:12px 16px;font-size:.82rem;}
-.onboard-step.done{border-color:var(–green);background:rgba(46,204,113,.05);}
-.step-num{font-family:var(–display);font-size:1.2rem;color:var(–text3);min-width:20px;}
-.step-num.done{color:var(–green);}
+.onboard-step{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;font-size:.82rem;}
+.onboard-step.done{border-color:var(--green);background:rgba(46,204,113,.05);}
+.step-num{font-family:var(--display);font-size:1.2rem;color:var(--text3);min-width:20px;}
+.step-num.done{color:var(--green);}
 
 /* ── STATS GRID ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:1.25rem;}
-.stat-card{background:var(–bg3);border:1px solid var(–border);border-radius:9px;padding:14px 16px;}
-.stat-val{font-family:var(–display);font-size:1.8rem;line-height:1;}
-.stat-lbl{font-family:var(–mono);font-size:.56rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
-.stat-delta{font-family:var(–mono);font-size:.6rem;margin-top:4px;}
-.delta-up{color:var(–green);}
-.delta-down{color:var(–red);}
-.delta-eq{color:var(–text3);}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px 16px;}
+.stat-val{font-family:var(--display);font-size:1.8rem;line-height:1;}
+.stat-lbl{font-family:var(--mono);font-size:.56rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
+.stat-delta{font-family:var(--mono);font-size:.6rem;margin-top:4px;}
+.delta-up{color:var(--green);}
+.delta-down{color:var(--red);}
+.delta-eq{color:var(--text3);}
 
 /* ── ACTIVITIES ── */
 .acts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:10px;}
-.act-card{background:var(–bg3);border:1px solid var(–border);border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;transition:border-color .2s;}
-.act-card:hover{border-color:var(–border2);}
+.act-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;transition:border-color .2s;}
+.act-card:hover{border-color:var(--border2);}
 .act-name{font-weight:600;font-size:.82rem;line-height:1.3;flex:1;}
-.act-badge{font-family:var(–mono);font-size:.56rem;padding:2px 6px;border-radius:7px;background:var(–bg4);color:var(–text2);white-space:nowrap;}
+.act-badge{font-family:var(--mono);font-size:.56rem;padding:2px 6px;border-radius:7px;background:var(--bg4);color:var(--text2);white-space:nowrap;}
 .act-stats{display:flex;gap:10px;flex-wrap:wrap;}
-.asv{font-family:var(–mono);font-size:.78rem;font-weight:500;}
-.asl{font-size:.58rem;color:var(–text3);text-transform:uppercase;letter-spacing:.05em;}
-.act-date{font-family:var(–mono);font-size:.58rem;color:var(–text3);}
-.btn-analyse{width:100%;margin-top:4px;background:var(–bg4);border:1px solid var(–border2);color:var(–text2);border-radius:7px;padding:7px;cursor:pointer;font-family:var(–mono);font-size:.58rem;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
-.btn-analyse:hover{border-color:var(–cyan);color:var(–cyan);background:rgba(0,212,255,.06);}
+.asv{font-family:var(--mono);font-size:.78rem;font-weight:500;}
+.asl{font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.act-date{font-family:var(--mono);font-size:.58rem;color:var(--text3);}
+.btn-analyse{width:100%;margin-top:4px;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:7px;padding:7px;cursor:pointer;font-family:var(--mono);font-size:.58rem;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-analyse:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06);}
 .act-bar{height:3px;border-radius:2px;margin-top:3px;opacity:.4;}
 
 /* ── ANALYSE OVERLAY ── */
@@ -127,106 +126,106 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 .overlay-inner{max-width:920px;margin:0 auto;}
 
 /* ── AI ANALYSIS ── */
-.ai-analysis{background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(167,139,250,.06));border:1px solid rgba(0,212,255,.2);border-radius:var(–r);padding:1.25rem;margin-bottom:1.25rem;}
+.ai-analysis{background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(167,139,250,.06));border:1px solid rgba(0,212,255,.2);border-radius:var(--r);padding:1.25rem;margin-bottom:1.25rem;}
 .ai-header{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;}
 .ai-icon{font-size:1.2rem;}
-.ai-title{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(–cyan);}
-.ai-text{font-size:.82rem;line-height:1.7;color:var(–text2);}
-.ai-loading{display:flex;align-items:center;gap:8px;font-family:var(–mono);font-size:.65rem;color:var(–text2);}
+.ai-title{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cyan);}
+.ai-text{font-size:.82rem;line-height:1.7;color:var(--text2);}
+.ai-loading{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.65rem;color:var(--text2);}
 
 /* ── AUTOPSY STATS ── */
 .a-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:1.25rem;}
-.a-stat{background:var(–bg3);border:1px solid var(–border);border-radius:9px;padding:9px 12px;}
-.a-sv{font-family:var(–display);font-size:1.3rem;line-height:1;}
-.a-sl{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
-.a-ss{font-size:.65rem;color:var(–text2);margin-top:2px;}
+.a-stat{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 12px;}
+.a-sv{font-family:var(--display);font-size:1.3rem;line-height:1;}
+.a-sl{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.a-ss{font-size:.65rem;color:var(--text2);margin-top:2px;}
 
 /* ── GAP ── */
-.gap-widget{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.gap-widget{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.25rem;}
 .gap-factors{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
-.gap-factor{display:flex;align-items:center;gap:6px;background:var(–bg4);border-radius:7px;padding:6px 10px;border:1px solid var(–border);}
-.gap-result{display:flex;align-items:center;gap:12px;padding:9px 13px;background:var(–bg4);border-radius:8px;}
+.gap-factor{display:flex;align-items:center;gap:6px;background:var(--bg4);border-radius:7px;padding:6px 10px;border:1px solid var(--border);}
+.gap-result{display:flex;align-items:center;gap:12px;padding:9px 13px;background:var(--bg4);border-radius:8px;}
 
 /* ── CHARTS ── */
 .chart-wrap{position:relative;width:100%;}
-.insight{border-left:3px solid;border-radius:0 8px 8px 0;background:var(–bg3);padding:9px 12px;margin-bottom:7px;}
+.insight{border-left:3px solid;border-radius:0 8px 8px 0;background:var(--bg3);padding:9px 12px;margin-bottom:7px;}
 .insight-title{font-weight:700;font-size:.8rem;margin-bottom:3px;}
-.insight-body{font-size:.74rem;color:var(–text2);line-height:1.5;}
-.insight-ref{font-family:var(–mono);font-size:.56rem;color:var(–text3);margin-top:3px;font-style:italic;}
+.insight-body{font-size:.74rem;color:var(--text2);line-height:1.5;}
+.insight-ref{font-family:var(--mono);font-size:.56rem;color:var(--text3);margin-top:3px;font-style:italic;}
 
 /* ── STRATEGY ── */
-.upload-zone{border:2px dashed var(–border2);border-radius:var(–r);padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(–bg2);}
-.upload-zone:hover,.upload-zone.drag{border-color:var(–cyan);background:rgba(0,212,255,.03);}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:rgba(0,212,255,.03);}
 .s-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:1.25rem;}
-.s-stat{background:var(–bg3);border:1px solid var(–border);border-radius:9px;padding:9px 13px;}
-.s-sv{font-family:var(–display);font-size:1.4rem;line-height:1;}
-.s-sl{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
-.section-block{border-left:4px solid;border-radius:0 var(–r) var(–r) 0;background:var(–bg2);padding:1rem 1.25rem;margin-bottom:9px;border-top:1px solid var(–border);border-right:1px solid var(–border);border-bottom:1px solid var(–border);}
-.strat-km{font-family:var(–mono);font-size:.6rem;color:var(–text3);}
-.strat-name{font-family:var(–display);font-size:1.05rem;letter-spacing:.03em;margin:.2rem 0 .4rem;}
+.s-stat{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 13px;}
+.s-sv{font-family:var(--display);font-size:1.4rem;line-height:1;}
+.s-sl{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.section-block{border-left:4px solid;border-radius:0 var(--r) var(--r) 0;background:var(--bg2);padding:1rem 1.25rem;margin-bottom:9px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.strat-km{font-family:var(--mono);font-size:.6rem;color:var(--text3);}
+.strat-name{font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin:.2rem 0 .4rem;}
 .strat-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.4rem;}
-.strat-tag{font-family:var(–mono);font-size:.56rem;padding:2px 7px;border-radius:16px;border:1px solid;}
-.strat-body{font-size:.76rem;color:var(–text2);line-height:1.6;}
+.strat-tag{font-family:var(--mono);font-size:.56rem;padding:2px 7px;border-radius:16px;border:1px solid;}
+.strat-body{font-size:.76rem;color:var(--text2);line-height:1.6;}
 .nutr-table{width:100%;border-collapse:collapse;font-size:.75rem;}
-.nutr-table th{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;padding:7px 11px;text-align:left;border-bottom:1px solid var(–border);}
-.nutr-table td{padding:8px 11px;border-bottom:1px solid var(–border);vertical-align:top;}
+.nutr-table th{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:7px 11px;text-align:left;border-bottom:1px solid var(--border);}
+.nutr-table td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:top;}
 .nutr-table tr:last-child td{border-bottom:none;}
-.time-proj{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1rem 1.25rem;}
+.time-proj{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.25rem;}
 
 /* ── PROFILE ── */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:800px){.profile-grid{grid-template-columns:1fr}}
 .fg{margin-bottom:1rem;}
-.fl{font-family:var(–mono);font-size:.58rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block;}
+.fl{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block;}
 .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px;}
-.pain-zone{display:flex;align-items:center;gap:8px;background:var(–bg3);border:1px solid var(–border);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .2s;}
-.pain-zone.active{background:rgba(244,63,94,.08);border-color:var(–red);}
-.pain-zone input{cursor:pointer;accent-color:var(–red);}
-.save-btn{background:var(–cyan);color:#000;border:none;border-radius:8px;padding:10px 24px;font-family:var(–body);font-weight:700;font-size:.85rem;cursor:pointer;transition:opacity .2s;margin-top:.5rem;}
+.pain-zone{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .2s;}
+.pain-zone.active{background:rgba(244,63,94,.08);border-color:var(--red);}
+.pain-zone input{cursor:pointer;accent-color:var(--red);}
+.save-btn{background:var(--cyan);color:#000;border:none;border-radius:8px;padding:10px 24px;font-family:var(--body);font-weight:700;font-size:.85rem;cursor:pointer;transition:opacity .2s;margin-top:.5rem;}
 .save-btn:hover{opacity:.88;}
-.upload-hist{border:2px dashed var(–border2);border-radius:var(–r);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(–bg2);margin-top:.5rem;}
-.upload-hist:hover{border-color:var(–purple);background:rgba(167,139,250,.03);}
-.hist-stats{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1rem;margin-top:.75rem;}
-.hsr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(–border);font-size:.8rem;}
+.upload-hist{border:2px dashed var(--border2);border-radius:var(--r);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);margin-top:.5rem;}
+.upload-hist:hover{border-color:var(--purple);background:rgba(167,139,250,.03);}
+.hist-stats{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1rem;margin-top:.75rem;}
+.hsr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem;}
 .hsr:last-child{border-bottom:none;}
 
 /* ── RACE CALENDAR ── */
 .race-list{display:flex;flex-direction:column;gap:8px;}
-.race-item{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(–bg3);border:1px solid var(–border);border-radius:9px;}
-.race-cd{font-family:var(–display);font-size:1.8rem;letter-spacing:.02em;min-width:60px;text-align:center;line-height:1;}
-.race-cd-lbl{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;text-align:center;}
+.race-item{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;}
+.race-cd{font-family:var(--display);font-size:1.8rem;letter-spacing:.02em;min-width:60px;text-align:center;line-height:1;}
+.race-cd-lbl{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;text-align:center;}
 .race-info{flex:1;}
 .race-name{font-weight:600;font-size:.88rem;margin-bottom:3px;}
-.race-meta{font-family:var(–mono);font-size:.6rem;color:var(–text2);}
+.race-meta{font-family:var(--mono);font-size:.6rem;color:var(--text2);}
 .race-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
-.race-tag{font-family:var(–mono);font-size:.56rem;padding:2px 7px;border-radius:10px;border:1px solid;}
-.add-race-btn{background:var(–bg4);border:1px dashed var(–border2);border-radius:9px;padding:12px;text-align:center;cursor:pointer;font-family:var(–mono);font-size:.6rem;color:var(–text2);transition:all .2s;}
-.add-race-btn:hover{border-color:var(–cyan);color:var(–cyan);}
-.race-form{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1.25rem;margin-top:.75rem;display:none;}
+.race-tag{font-family:var(--mono);font-size:.56rem;padding:2px 7px;border-radius:10px;border:1px solid;}
+.add-race-btn{background:var(--bg4);border:1px dashed var(--border2);border-radius:9px;padding:12px;text-align:center;cursor:pointer;font-family:var(--mono);font-size:.6rem;color:var(--text2);transition:all .2s;}
+.add-race-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.race-form{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1.25rem;margin-top:.75rem;display:none;}
 .race-form.open{display:block;animation:fadeUp .2s ease;}
 .race-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 @media(max-width:600px){.race-form-grid{grid-template-columns:1fr}}
 
 /* ── NEXT RACE ── */
 .next-race-big{text-align:center;padding:.5rem;}
-.next-race-num{font-family:var(–display);font-size:4rem;line-height:1;}
-.next-race-unit{font-family:var(–mono);font-size:.6rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.next-race-num{font-family:var(--display);font-size:4rem;line-height:1;}
+.next-race-unit{font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
 
 /* ── MISC ── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:800px){.grid-2{grid-template-columns:1fr}}
 .mt1{margin-top:6px}.mt2{margin-top:12px}.mt3{margin-top:1.5rem}
-.divider{height:1px;background:var(–border);margin:12px 0;}
-.tc{color:var(–cyan)}.to{color:var(–orange)}.tg{color:var(–green)}.tp{color:var(–purple)}.ty{color:var(–yellow)}.tr{color:var(–red)}.t2{color:var(–text2)}.t3{color:var(–text3)}
-.mono{font-family:var(–mono);font-size:.62rem;color:var(–text2);}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.tc{color:var(--cyan)}.to{color:var(--orange)}.tg{color:var(--green)}.tp{color:var(--purple)}.ty{color:var(--yellow)}.tr{color:var(--red)}.t2{color:var(--text2)}.t3{color:var(--text3)}
+.mono{font-family:var(--mono);font-size:.62rem;color:var(--text2);}
 .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:10px;}
-.spinner{width:24px;height:24px;border:2px solid var(–border2);border-top-color:var(–cyan);border-radius:50%;animation:spin .8s linear infinite;}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.stitle{font-family:var(–display);font-size:1.5rem;letter-spacing:.03em;margin-bottom:.75rem;}
+.stitle{font-family:var(--display);font-size:1.5rem;letter-spacing:.03em;margin-bottom:.75rem;}
 
 /* ── TOASTS ── */
 #toastContainer{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
-.toast{background:var(–bg2);border:1px solid var(–border2);border-radius:10px;padding:12px 16px;font-size:.8rem;display:flex;align-items:center;gap:10px;max-width:320px;pointer-events:all;animation:slideIn .25s ease;box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:.8rem;display:flex;align-items:center;gap:10px;max-width:320px;pointer-events:all;animation:slideIn .25s ease;box-shadow:0 4px 24px rgba(0,0,0,.4);}
 .toast.success{border-color:rgba(46,204,113,.4);}
 .toast.error{border-color:rgba(244,63,94,.4);}
 .toast.info{border-color:rgba(0,212,255,.3);}
@@ -239,34 +238,34 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 .onb-step{display:none;text-align:center;max-width:480px;width:100%;}
 .onb-step.active{display:block;}
 .onb-icon{font-size:4rem;margin-bottom:1rem;}
-.onb-title{font-family:var(–display);font-size:2rem;letter-spacing:.03em;margin-bottom:.5rem;}
-.onb-desc{color:var(–text2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem;}
+.onb-title{font-family:var(--display);font-size:2rem;letter-spacing:.03em;margin-bottom:.5rem;}
+.onb-desc{color:var(--text2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem;}
 .onb-dots{display:flex;gap:6px;justify-content:center;margin-bottom:1.5rem;}
-.onb-dot{width:8px;height:8px;border-radius:50%;background:var(–border2);transition:background .2s;}
-.onb-dot.active{background:var(–cyan);}
+.onb-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .2s;}
+.onb-dot.active{background:var(--cyan);}
 
 /* ── CGU ── */
 #cguOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto;}
 #cguOverlay.open{display:flex;}
-.cgu-inner{background:var(–bg2);border:1px solid var(–border2);border-radius:var(–r);padding:2rem;max-width:700px;width:100%;margin:auto;}
+.cgu-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:2rem;max-width:700px;width:100%;margin:auto;}
 
 /* ── FOOTER ── */
-.app-footer{text-align:center;padding:1rem 2rem;font-family:var(–mono);font-size:.56rem;color:var(–text3);border-top:1px solid var(–border);margin-top:2rem;}
-.app-footer a{color:var(–text2);cursor:pointer;text-decoration:underline;}
-.renfo-tab{padding:8px 18px;border-radius:8px;border:1px solid var(–border2);background:var(–bg3);color:var(–text2);cursor:pointer;font-family:var(–mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
-.renfo-tab.active{background:var(–cyan);color:#000;border-color:var(–cyan);}
+.app-footer{text-align:center;padding:1rem 2rem;font-family:var(--mono);font-size:.56rem;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;}
+.app-footer a{color:var(--text2);cursor:pointer;text-decoration:underline;}
+.renfo-tab{padding:8px 18px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
+.renfo-tab.active{background:var(--cyan);color:#000;border-color:var(--cyan);}
 .body-zone{transition:all .2s;cursor:pointer;}
-.body-zone:hover{fill:rgba(0,212,255,.3);stroke:var(–cyan);}
-.body-zone.selected{fill:rgba(255,107,53,.3);stroke:var(–orange);}
-.prog-btn{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:16px 12px;cursor:pointer;color:var(–text);text-align:center;transition:all .2s;font-family:var(–body);font-size:.88rem;font-weight:600;line-height:1.5;}
-.prog-btn span{display:block;font-size:.72rem;color:var(–text2);font-weight:400;margin-top:3px;}
-.prog-btn:hover{border-color:var(–cyan);background:rgba(0,212,255,.06);}
-.prog-btn.active{border-color:var(–cyan);background:rgba(0,212,255,.1);color:var(–cyan);}
-.exercise-card{background:var(–bg3);border:1px solid var(–border);border-radius:9px;padding:14px;margin-bottom:10px;}
+.body-zone:hover{fill:rgba(0,212,255,.3);stroke:var(--cyan);}
+.body-zone.selected{fill:rgba(255,107,53,.3);stroke:var(--orange);}
+.prog-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:16px 12px;cursor:pointer;color:var(--text);text-align:center;transition:all .2s;font-family:var(--body);font-size:.88rem;font-weight:600;line-height:1.5;}
+.prog-btn span{display:block;font-size:.72rem;color:var(--text2);font-weight:400;margin-top:3px;}
+.prog-btn:hover{border-color:var(--cyan);background:rgba(0,212,255,.06);}
+.prog-btn.active{border-color:var(--cyan);background:rgba(0,212,255,.1);color:var(--cyan);}
+.exercise-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:10px;}
 .exercise-title{font-weight:700;font-size:.88rem;margin-bottom:4px;}
-.exercise-meta{font-family:var(–mono);font-size:.6rem;color:var(–cyan);margin-bottom:6px;}
-.exercise-desc{font-size:.78rem;color:var(–text2);line-height:1.6;margin-bottom:8px;}
-.exercise-ref{font-family:var(–mono);font-size:.56rem;color:var(–text3);font-style:italic;}
+.exercise-meta{font-family:var(--mono);font-size:.6rem;color:var(--cyan);margin-bottom:6px;}
+.exercise-desc{font-size:.78rem;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.exercise-ref{font-family:var(--mono);font-size:.56rem;color:var(--text3);font-style:italic;}
 .yt-embed{width:100%;aspect-ratio:16/9;border-radius:8px;border:none;margin-top:8px;}
 
 /* ── PROFIL OVERLAY ── */
@@ -275,36 +274,34 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 
 /* ── AVATAR ── */
 .logo-mark img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
-#raceMap{height:320px;border-radius:var(–r);overflow:hidden;border:1px solid var(–border2);margin-bottom:1.25rem;}
+#raceMap{height:320px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border2);margin-bottom:1.25rem;}
 .section-block{cursor:pointer;transition:all .2s;}
 .section-block:hover{transform:translateX(3px);}
-.section-block.active{box-shadow:0 0 0 2px var(–cyan);transform:translateX(4px);}
+.section-block.active{box-shadow:0 0 0 2px var(--cyan);transform:translateX(4px);}
 .crosshair-line{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.5);pointer-events:none;display:none;}
 
 /* ── SPLITS TABLE ── */
 .splits-table{width:100%;border-collapse:collapse;font-size:.74rem;}
-.splits-table th{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;border-bottom:1px solid var(–border);background:var(–bg4);}
-.splits-table td{padding:7px 10px;border-bottom:1px solid var(–border);vertical-align:middle;}
-.splits-table tr:hover td{background:var(–bg3);}
-.splits-table tr.section-up td{border-left:3px solid var(–orange);}
-.splits-table tr.section-down td{border-left:3px solid var(–purple);}
-.splits-table tr.section-flat td{border-left:3px solid var(–cyan);}
+.splits-table th{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg4);}
+.splits-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.splits-table tr:hover td{background:var(--bg3);}
+.splits-table tr.section-up td{border-left:3px solid var(--orange);}
+.splits-table tr.section-down td{border-left:3px solid var(--purple);}
+.splits-table tr.section-flat td{border-left:3px solid var(--cyan);}
 
 /* ── RACE SELECTOR ── */
-.race-sel-btn{padding:7px 14px;border-radius:8px;border:1px solid var(–border2);background:var(–bg3);color:var(–text2);cursor:pointer;font-family:var(–mono);font-size:.6rem;transition:all .2s;white-space:nowrap;}
-.race-sel-btn:hover,.race-sel-btn.active{border-color:var(–cyan);color:var(–cyan);}
-.btn-prepare{background:var(–cyan);color:#000;border:none;border-radius:6px;padding:5px 10px;font-family:var(–mono);font-size:.58rem;cursor:pointer;font-weight:700;white-space:nowrap;}
+.race-sel-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.6rem;transition:all .2s;white-space:nowrap;}
+.race-sel-btn:hover,.race-sel-btn.active{border-color:var(--cyan);color:var(--cyan);}
+.btn-prepare{background:var(--cyan);color:#000;border:none;border-radius:6px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;font-weight:700;white-space:nowrap;}
 .btn-prepare:hover{opacity:.88;}
 
 @media print{header,nav,.no-print{display:none!important;}body{background:#fff;color:#000;}.print-only{display:block!important;}}
 .print-only{display:none;}
 </style>
-
 </head>
 <body>
 
 <!-- ══ AUTH ══ -->
-
 <div id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">
@@ -334,7 +331,6 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 </div>
 
 <!-- ══ APP ══ -->
-
 <div id="appShell">
 <header>
   <div class="logo" style="cursor:pointer" onclick="showPanel('dashboard',document.getElementById('tab-dashboard'))">
@@ -356,11 +352,9 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 <main>
 
 <!-- ══ DASHBOARD ══ -->
-
 <div class="panel active" id="panel-dashboard">
 
   <!-- ONBOARDING (shown when no Strava) -->
-
   <div id="onboarding" style="display:none">
     <div class="onboard">
       <div class="onboard-icon">🏃</div>
@@ -394,110 +388,100 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
   </div>
 
   <!-- DASHBOARD CONTENT (shown when Strava connected) -->
-
   <div id="dashContent" style="display:none">
 
-```
-<!-- STRIP -->
-<div class="strip">
-  <div class="scell"><div class="sval tg" id="s-km-month">—</div><div class="slbl">km / mois</div><div class="sdelta" id="s-km-month-delta"></div></div>
-  <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div></div>
-  <div class="scell"><div class="sval to" id="s-dplus-month">—</div><div class="slbl">D+ / mois</div><div class="sdelta" id="s-dplus-delta"></div></div>
-  <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div></div>
-  <div class="scell"><div class="sval" id="s-runs-month">—</div><div class="slbl">sorties / mois</div><div class="sdelta" id="s-runs-delta"></div></div>
-</div>
-
-<div class="grid-2">
-  <!-- STATS + ANNUAL CHART -->
-  <div class="card">
-    <div class="clabel">Volume annuel comparatif</div>
-    <div class="chart-wrap" style="height:220px"><canvas id="annualChart"></canvas></div>
-    <div class="clabel mt2">Stats du mois</div>
-    <div id="statsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px"></div>
-  </div>
-
-  <!-- PROCHAINE COURSE + CALENDRIER -->
-  <div style="display:flex;flex-direction:column;gap:14px">
-    <div class="card">
-      <div class="clabel">Prochaine course</div>
-      <div id="nextRaceWidget"><div class="mono t3">Aucune course planifiée</div></div>
+    <!-- STRIP -->
+    <div class="strip">
+      <div class="scell"><div class="sval tg" id="s-km-month">—</div><div class="slbl">km / mois</div><div class="sdelta" id="s-km-month-delta"></div></div>
+      <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div></div>
+      <div class="scell"><div class="sval to" id="s-dplus-month">—</div><div class="slbl">D+ / mois</div><div class="sdelta" id="s-dplus-delta"></div></div>
+      <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div></div>
+      <div class="scell"><div class="sval" id="s-runs-month">—</div><div class="slbl">sorties / mois</div><div class="sdelta" id="s-runs-delta"></div></div>
     </div>
-    <div class="card" id="raceCalendarSection">
-      <div class="clabel">Calendrier courses</div>
-      <div class="race-list" id="raceList"><div class="mono t3">Aucune course planifiée</div></div>
-      <div class="add-race-btn mt2" onclick="toggleRaceForm()">+ Ajouter une course</div>
-      <div class="race-form" id="raceForm">
-        <div class="race-form-grid">
-          <div class="fg"><label class="fl">Nom</label><input class="fi" id="rName" placeholder="Trail du Muguet"></div>
-          <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="rDate"></div>
-          <div class="fg"><label class="fl">Distance (km)</label><input class="fi" type="number" id="rDist" placeholder=""></div>
-          <div class="fg"><label class="fl">D+ (m)</label><input class="fi" type="number" id="rElev" placeholder=""></div>
-          <div class="fg"><label class="fl">Type</label><select class="fi" id="rType"><option value="Trail">Trail</option><option value="Route">Route</option><option value="Ultra">Ultra</option></select></div>
-          <div class="fg"><label class="fl">Objectif</label><input class="fi" id="rGoal" placeholder=""></div>
+
+    <div class="grid-2">
+      <!-- STATS + ANNUAL CHART -->
+      <div class="card">
+        <div class="clabel">Volume annuel comparatif</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="annualChart"></canvas></div>
+        <div class="clabel mt2">Stats du mois</div>
+        <div id="statsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px"></div>
+      </div>
+
+      <!-- PROCHAINE COURSE + CALENDRIER -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="clabel">Prochaine course</div>
+          <div id="nextRaceWidget"><div class="mono t3">Aucune course planifiée</div></div>
         </div>
-        <button class="save-btn" onclick="saveRace()">Enregistrer</button>
+        <div class="card" id="raceCalendarSection">
+          <div class="clabel">Calendrier courses</div>
+          <div class="race-list" id="raceList"><div class="mono t3">Aucune course planifiée</div></div>
+          <div class="add-race-btn mt2" onclick="toggleRaceForm()">+ Ajouter une course</div>
+          <div class="race-form" id="raceForm">
+            <div class="race-form-grid">
+              <div class="fg"><label class="fl">Nom</label><input class="fi" id="rName" placeholder="Trail du Muguet"></div>
+              <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="rDate"></div>
+              <div class="fg"><label class="fl">Distance (km)</label><input class="fi" type="number" id="rDist" placeholder=""></div>
+              <div class="fg"><label class="fl">D+ (m)</label><input class="fi" type="number" id="rElev" placeholder=""></div>
+              <div class="fg"><label class="fl">Type</label><select class="fi" id="rType"><option value="Trail">Trail</option><option value="Route">Route</option><option value="Ultra">Ultra</option></select></div>
+              <div class="fg"><label class="fl">Objectif</label><input class="fi" id="rGoal" placeholder=""></div>
+            </div>
+            <button class="save-btn" onclick="saveRace()">Enregistrer</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- ACTIVITÉS -->
-<div class="mt3">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div class="clabel" style="margin:0">Dernières activités running</div>
-    <div class="mono t3" id="actsInfo"></div>
-  </div>
-  <div class="acts-grid" id="actsGrid"></div>
-</div>
-```
+    <!-- ACTIVITÉS -->
+    <div class="mt3">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="clabel" style="margin:0">Dernières activités running</div>
+        <div class="mono t3" id="actsInfo"></div>
+      </div>
+      <div class="acts-grid" id="actsGrid"></div>
+    </div>
 
   </div><!-- end dashContent -->
 </div>
 
 <!-- ══ STRATÉGIE ══ -->
-
 <div class="panel" id="panel-strategie">
   <div id="stratHeader">
     <div class="stitle">Stratégie Course</div>
     <div class="mono t2 mt1" style="margin-bottom:1.25rem">Upload un GPX ou associe une course de ton calendrier</div>
 
-```
-<!-- Race selector from calendar -->
-<div id="raceSelector" style="display:none;margin-bottom:1rem">
-  <div class="clabel">Course du calendrier</div>
-  <div id="raceSelectorList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-</div>
+    <!-- Race selector from calendar -->
+    <div id="raceSelector" style="display:none;margin-bottom:1rem">
+      <div class="clabel">Course du calendrier</div>
+      <div id="raceSelectorList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
 
-<div class="upload-zone" id="gpxDrop"
-  onclick="document.getElementById('gpxFile').click()"
-  ondragover="event.preventDefault();this.classList.add('drag')"
-  ondragleave="this.classList.remove('drag')"
-  ondrop="handleGpxDrop(event)">
-  <div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div>
-  <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div>
-  <div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>
-</div>
-<input type="file" id="gpxFile" accept=".gpx" style="display:none" onchange="handleGpxFile(event)">
-```
-
+    <div class="upload-zone" id="gpxDrop"
+      onclick="document.getElementById('gpxFile').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleGpxDrop(event)">
+      <div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div>
+      <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div>
+      <div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>
+    </div>
+    <input type="file" id="gpxFile" accept=".gpx" style="display:none" onchange="handleGpxFile(event)">
   </div>
   <div id="stratResult" style="display:none"></div>
 </div>
 
 <!-- ══ RENFO & PRÉVENTION ══ -->
-
 <div class="panel" id="panel-renfo">
   <div class="stitle">Renfo & Prévention</div>
 
   <!-- MODE TABS -->
-
   <div style="display:flex;gap:6px;margin-bottom:1.5rem">
     <button class="renfo-tab active" id="tab-prevention" onclick="switchRenfoMode('prevention',this)">🛡️ Prévention blessures</button>
     <button class="renfo-tab" id="tab-progression" onclick="switchRenfoMode('progression',this)">📈 Progression performance</button>
   </div>
 
   <!-- MODE PRÉVENTION -->
-
   <div id="mode-prevention">
     <div class="grid-2">
       <!-- SVG CORPS -->
@@ -514,101 +498,97 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
             </style>
           </defs>
 
-```
-      <!-- SILHOUETTE DE BASE (fond) -->
-      <!-- Tête -->
-      <ellipse cx="100" cy="28" rx="19" ry="22" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cou -->
-      <rect x="92" y="48" width="16" height="12" fill="#131b25" stroke="none"/>
-      <!-- Torse -->
-      <path d="M68,60 Q62,65 58,80 L55,148 Q58,155 100,157 Q142,155 145,148 L142,80 Q138,65 132,60 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras gauche -->
-      <path d="M58,80 Q45,85 38,100 Q32,118 33,145 L42,145 Q43,122 48,106 Q54,92 68,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras droit -->
-      <path d="M142,80 Q155,85 162,100 Q168,118 167,145 L158,145 Q157,122 152,106 Q146,92 132,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bassin -->
-      <path d="M55,148 Q58,165 70,172 L130,172 Q142,165 145,148 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse gauche -->
-      <path d="M70,170 Q62,175 60,195 L58,245 Q60,255 80,257 Q88,255 88,245 L86,195 Q85,178 100,175 Q85,170 70,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse droite -->
-      <path d="M130,170 Q138,175 140,195 L142,245 Q140,255 120,257 Q112,255 112,245 L114,195 Q115,178 100,175 Q115,170 130,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou gauche -->
-      <ellipse cx="74" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou droit -->
-      <ellipse cx="126" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe gauche -->
-      <path d="M62,268 Q58,290 60,320 L88,320 Q90,290 86,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe droite -->
-      <path d="M138,268 Q142,290 140,320 L112,320 Q110,290 114,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville gauche -->
-      <ellipse cx="74" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville droite -->
-      <ellipse cx="126" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied gauche -->
-      <path d="M61,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied droit -->
-      <path d="M139,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- SILHOUETTE DE BASE (fond) -->
+          <!-- Tête -->
+          <ellipse cx="100" cy="28" rx="19" ry="22" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Cou -->
+          <rect x="92" y="48" width="16" height="12" fill="#131b25" stroke="none"/>
+          <!-- Torse -->
+          <path d="M68,60 Q62,65 58,80 L55,148 Q58,155 100,157 Q142,155 145,148 L142,80 Q138,65 132,60 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Bras gauche -->
+          <path d="M58,80 Q45,85 38,100 Q32,118 33,145 L42,145 Q43,122 48,106 Q54,92 68,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Bras droit -->
+          <path d="M142,80 Q155,85 162,100 Q168,118 167,145 L158,145 Q157,122 152,106 Q146,92 132,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Bassin -->
+          <path d="M55,148 Q58,165 70,172 L130,172 Q142,165 145,148 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Cuisse gauche -->
+          <path d="M70,170 Q62,175 60,195 L58,245 Q60,255 80,257 Q88,255 88,245 L86,195 Q85,178 100,175 Q85,170 70,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Cuisse droite -->
+          <path d="M130,170 Q138,175 140,195 L142,245 Q140,255 120,257 Q112,255 112,245 L114,195 Q115,178 100,175 Q115,170 130,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Genou gauche -->
+          <ellipse cx="74" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Genou droit -->
+          <ellipse cx="126" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Jambe gauche -->
+          <path d="M62,268 Q58,290 60,320 L88,320 Q90,290 86,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Jambe droite -->
+          <path d="M138,268 Q142,290 140,320 L112,320 Q110,290 114,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Cheville gauche -->
+          <ellipse cx="74" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Cheville droite -->
+          <ellipse cx="126" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Pied gauche -->
+          <path d="M61,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- Pied droit -->
+          <path d="M139,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
 
-      <!-- ZONES CLIQUABLES (transparentes par-dessus) -->
-      <!-- Tête -->
-      <ellipse class="bz" data-zone="head" cx="100" cy="28" rx="20" ry="23"/>
-      <!-- Dos/Core -->
-      <path class="bz" data-zone="back" d="M70,62 Q64,68 61,82 L60,146 Q80,152 100,153 Q120,152 140,146 L139,82 Q136,68 130,62 Q115,58 100,57 Q85,58 70,62 Z"/>
-      <!-- Hanche/ITB -->
-      <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
-      <!-- Cuisse gauche -->
-      <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
-      <!-- Cuisse droite -->
-      <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
-      <!-- Genou gauche -->
-      <ellipse class="bz" data-zone="knee_l" cx="74" cy="260" rx="16" ry="13"/>
-      <!-- Genou droit -->
-      <ellipse class="bz" data-zone="knee_r" cx="126" cy="260" rx="16" ry="13"/>
-      <!-- Mollet/Tibia gauche -->
-      <path class="bz" data-zone="calf_l" d="M61,270 Q57,292 59,320 L89,320 Q91,292 87,270 Z"/>
-      <!-- Mollet/Tibia droit -->
-      <path class="bz" data-zone="calf_r" d="M139,270 Q143,292 141,320 L111,320 Q109,292 113,270 Z"/>
-      <!-- Cheville gauche -->
-      <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="15" ry="9"/>
-      <!-- Cheville droite -->
-      <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="15" ry="9"/>
-      <!-- Pied gauche -->
-      <path class="bz" data-zone="foot_l" d="M60,330 Q53,337 53,344 Q53,350 62,352 L91,352 Q95,350 95,344 L91,332 Z"/>
-      <!-- Pied droit -->
-      <path class="bz" data-zone="foot_r" d="M140,330 Q147,337 147,344 Q147,350 138,352 L109,352 Q105,350 105,344 L109,332 Z"/>
+          <!-- ZONES CLIQUABLES (transparentes par-dessus) -->
+          <!-- Tête -->
+          <ellipse class="bz" data-zone="head" cx="100" cy="28" rx="20" ry="23"/>
+          <!-- Dos/Core -->
+          <path class="bz" data-zone="back" d="M70,62 Q64,68 61,82 L60,146 Q80,152 100,153 Q120,152 140,146 L139,82 Q136,68 130,62 Q115,58 100,57 Q85,58 70,62 Z"/>
+          <!-- Hanche/ITB -->
+          <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
+          <!-- Cuisse gauche -->
+          <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
+          <!-- Cuisse droite -->
+          <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
+          <!-- Genou gauche -->
+          <ellipse class="bz" data-zone="knee_l" cx="74" cy="260" rx="16" ry="13"/>
+          <!-- Genou droit -->
+          <ellipse class="bz" data-zone="knee_r" cx="126" cy="260" rx="16" ry="13"/>
+          <!-- Mollet/Tibia gauche -->
+          <path class="bz" data-zone="calf_l" d="M61,270 Q57,292 59,320 L89,320 Q91,292 87,270 Z"/>
+          <!-- Mollet/Tibia droit -->
+          <path class="bz" data-zone="calf_r" d="M139,270 Q143,292 141,320 L111,320 Q109,292 113,270 Z"/>
+          <!-- Cheville gauche -->
+          <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="15" ry="9"/>
+          <!-- Cheville droite -->
+          <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="15" ry="9"/>
+          <!-- Pied gauche -->
+          <path class="bz" data-zone="foot_l" d="M60,330 Q53,337 53,344 Q53,350 62,352 L91,352 Q95,350 95,344 L91,332 Z"/>
+          <!-- Pied droit -->
+          <path class="bz" data-zone="foot_r" d="M140,330 Q147,337 147,344 Q147,350 138,352 L109,352 Q105,350 105,344 L109,332 Z"/>
 
-      <!-- LABELS -->
-      <text class="bt" x="100" y="28" text-anchor="middle">Mental</text>
-      <text class="bt" x="100" y="110" text-anchor="middle">Dos / Core</text>
-      <text class="bt" x="100" y="165" text-anchor="middle">Hanche / ITB</text>
-      <text class="bt" x="68" y="215" text-anchor="middle">Cuisse G</text>
-      <text class="bt" x="132" y="215" text-anchor="middle">Cuisse D</text>
-      <text class="bt" x="68" y="262" text-anchor="middle">Genou G</text>
-      <text class="bt" x="132" y="262" text-anchor="middle">Genou D</text>
-      <text class="bt" x="68" y="298" text-anchor="middle">Mollet G</text>
-      <text class="bt" x="132" y="298" text-anchor="middle">Mollet D</text>
-      <text class="bt" x="68" y="326" text-anchor="middle">Cheville G</text>
-      <text class="bt" x="132" y="326" text-anchor="middle">Cheville D</text>
-      <text class="bt" x="68" y="348" text-anchor="middle">Pied G</text>
-      <text class="bt" x="132" y="348" text-anchor="middle">Pied D</text>
-    </svg>
-    <div class="mono t3" style="font-size:.58rem;margin-top:.5rem;text-align:center">Clique sur une zone</div>
-  </div>
+          <!-- LABELS -->
+          <text class="bt" x="100" y="28" text-anchor="middle">Mental</text>
+          <text class="bt" x="100" y="110" text-anchor="middle">Dos / Core</text>
+          <text class="bt" x="100" y="165" text-anchor="middle">Hanche / ITB</text>
+          <text class="bt" x="68" y="215" text-anchor="middle">Cuisse G</text>
+          <text class="bt" x="132" y="215" text-anchor="middle">Cuisse D</text>
+          <text class="bt" x="68" y="262" text-anchor="middle">Genou G</text>
+          <text class="bt" x="132" y="262" text-anchor="middle">Genou D</text>
+          <text class="bt" x="68" y="298" text-anchor="middle">Mollet G</text>
+          <text class="bt" x="132" y="298" text-anchor="middle">Mollet D</text>
+          <text class="bt" x="68" y="326" text-anchor="middle">Cheville G</text>
+          <text class="bt" x="132" y="326" text-anchor="middle">Cheville D</text>
+          <text class="bt" x="68" y="348" text-anchor="middle">Pied G</text>
+          <text class="bt" x="132" y="348" text-anchor="middle">Pied D</text>
+        </svg>
+        <div class="mono t3" style="font-size:.58rem;margin-top:.5rem;text-align:center">Clique sur une zone</div>
+      </div>
 
-  <!-- CONTENU ZONE SÉLECTIONNÉE -->
-  <div id="renfoContent">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:300px;text-align:center;gap:12px">
-      <div style="font-size:3rem;opacity:.3">👆</div>
-      <div class="mono t3">Clique sur une zone du corps<br>pour voir les blessures fréquentes<br>et les exercices de prévention</div>
+      <!-- CONTENU ZONE SÉLECTIONNÉE -->
+      <div id="renfoContent">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:300px;text-align:center;gap:12px">
+          <div style="font-size:3rem;opacity:.3">👆</div>
+          <div class="mono t3">Clique sur une zone du corps<br>pour voir les blessures fréquentes<br>et les exercices de prévention</div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-```
-
   </div>
 
   <!-- MODE PROGRESSION -->
-
   <div id="mode-progression" style="display:none">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.5rem">
       <button class="prog-btn" onclick="showProgram('montee')">⛰️ Montée<br><span>VAM & force</span></button>
@@ -632,13 +612,11 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 </div><!-- appShell -->
 
 <!-- ══ ANALYSE OVERLAY ══ -->
-
 <div class="overlay" id="analyseOverlay" onclick="if(event.target===this)closeAnalyse()">
   <div class="overlay-inner" id="analyseInner"></div>
 </div>
 
 <!-- ══ PROFIL OVERLAY ══ -->
-
 <div class="overlay" id="profilOverlay" onclick="if(event.target===this)closeProfil()" style="align-items:flex-start;padding:0">
   <div style="width:100%;max-width:900px;margin:0 auto;background:var(--bg2);min-height:100vh;padding:2rem;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
@@ -646,140 +624,136 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
       <button onclick="closeProfil()" class="hbtn">✕ Fermer</button>
     </div>
 
-```
-<!-- AVATAR + COMPTE -->
-<div class="card" style="margin-bottom:1rem">
-  <div class="clabel">Compte</div>
-  <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-    <div style="position:relative;cursor:pointer" onclick="document.getElementById('avatarInput').click()">
-      <div id="avatarPreview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:2rem;color:#000;overflow:hidden">AO</div>
-      <div style="position:absolute;bottom:0;right:0;background:var(--cyan);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.7rem">📷</div>
-    </div>
-    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
-    <div style="flex:1">
-      <div class="fg"><label class="fl">Email</label><input class="fi" id="p-email" readonly style="opacity:.6"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="hbtn" onclick="changePassword()">🔑 Changer le mot de passe</button>
-        <div class="mono t3" id="pwMsg" style="align-self:center"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- DONNÉES PHYSIO -->
-<div class="profile-grid" style="margin-bottom:1rem">
-  <div class="card">
-    <div class="clabel">Données physiologiques</div>
-    <div class="fg"><label class="fl">Prénom / Nom</label><input class="fi" id="p-name" placeholder=""></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" id="p-birthdate"></div>
-      <div class="fg"><label class="fl">Sexe</label><select class="fi" id="p-sex"><option value="">—</option><option value="M">Homme</option><option value="F">Femme</option></select></div>
-      <div class="fg"><label class="fl">Poids (kg)</label><input class="fi" type="number" id="p-weight" placeholder="" step="0.1"></div>
-      <div class="fg"><label class="fl">Taille (cm)</label><input class="fi" type="number" id="p-height" placeholder=""></div>
-      <div class="fg"><label class="fl">VO2max</label><input class="fi" type="number" id="p-vo2max" placeholder="" step="0.1"></div>
-      <div class="fg"><label class="fl">FC max (bpm)</label><input class="fi" type="number" id="p-fcmax" placeholder=""></div>
-      <div class="fg"><label class="fl">Seuil lactique (bpm)</label><input class="fi" type="number" id="p-lactate" placeholder=""></div>
-      <div class="fg"><label class="fl">Seuil lactique (/km)</label><input class="fi" id="p-lactate-pace" placeholder=""></div>
-    </div>
-    <div class="fg mt2"><label class="fl">Objectifs</label><textarea class="fi" id="p-goals" rows="3" placeholder="Ultra 50-80km en 2027, sub 1h40 semi en octobre..."></textarea></div>
-    <button class="save-btn" onclick="saveProfile()">💾 Sauvegarder</button>
-    <div class="mono t3" id="profileSaveMsg" style="margin-top:6px"></div>
-  </div>
-
-  <!-- PR -->
-  <div class="card">
-    <div class="clabel">Records personnels</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--cyan);margin-bottom:6px">5 km</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-5k" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-5k-date"></div>
+    <!-- AVATAR + COMPTE -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="clabel">Compte</div>
+      <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+        <div style="position:relative;cursor:pointer" onclick="document.getElementById('avatarInput').click()">
+          <div id="avatarPreview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:2rem;color:#000;overflow:hidden">AO</div>
+          <div style="position:absolute;bottom:0;right:0;background:var(--cyan);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.7rem">📷</div>
         </div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--green);margin-bottom:6px">10 km</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-10k" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-10k-date"></div>
-        </div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--yellow);margin-bottom:6px">15 km</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-15k" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-15k-date"></div>
-        </div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--orange);margin-bottom:6px">Semi-marathon</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-semi" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-semi-date"></div>
-        </div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--purple);margin-bottom:6px">Marathon</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-marathon" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-marathon-date"></div>
-        </div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-        <div class="clabel" style="color:var(--red);margin-bottom:6px">Ultra</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="fg" style="margin:0"><label class="fl">Distance (km)</label><input class="fi" type="number" id="pr-ultra-dist" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">D+ (m)</label><input class="fi" type="number" id="pr-ultra-dplus" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-ultra" placeholder=""></div>
-          <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-ultra-date"></div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
+        <div style="flex:1">
+          <div class="fg"><label class="fl">Email</label><input class="fi" id="p-email" readonly style="opacity:.6"></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="hbtn" onclick="changePassword()">🔑 Changer le mot de passe</button>
+            <div class="mono t3" id="pwMsg" style="align-self:center"></div>
+          </div>
         </div>
       </div>
     </div>
-    <button class="save-btn" style="margin-top:.75rem" onclick="savePRs()">💾 Sauvegarder les PR</button>
-    <div class="mono t3" id="prSaveMsg" style="margin-top:6px"></div>
-  </div>
-</div>
 
-<!-- ZIP IMPORT -->
-<div class="card">
-  <div class="clabel">Historique complet — Archive Strava</div>
-  <div class="mono t2" style="margin-bottom:.75rem">Strava → Paramètres → Mes données → Demander une archive → uploade le ZIP reçu par email.</div>
-  <div class="upload-hist" id="zipDropZone"
-    onclick="document.getElementById('zipFile').click()"
-    ondragover="event.preventDefault();this.classList.add('drag-over')"
-    ondragleave="this.classList.remove('drag-over')"
-    ondrop="handleZipDrop(event)">
-    <div style="font-size:1.8rem;margin-bottom:.5rem">📦</div>
-    <div style="font-weight:600;font-size:.88rem;margin-bottom:.25rem">Glisser le ZIP Strava ici</div>
-    <div class="mono">ou cliquer · export_XXXXXX.zip</div>
-  </div>
-  <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="handleZipFile(event)">
-  <div id="histStats" style="display:none" class="hist-stats mt2"></div>
-</div>
+    <!-- DONNÉES PHYSIO -->
+    <div class="profile-grid" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="clabel">Données physiologiques</div>
+        <div class="fg"><label class="fl">Prénom / Nom</label><input class="fi" id="p-name" placeholder=""></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" id="p-birthdate"></div>
+          <div class="fg"><label class="fl">Sexe</label><select class="fi" id="p-sex"><option value="">—</option><option value="M">Homme</option><option value="F">Femme</option></select></div>
+          <div class="fg"><label class="fl">Poids (kg)</label><input class="fi" type="number" id="p-weight" placeholder="" step="0.1"></div>
+          <div class="fg"><label class="fl">Taille (cm)</label><input class="fi" type="number" id="p-height" placeholder=""></div>
+          <div class="fg"><label class="fl">VO2max</label><input class="fi" type="number" id="p-vo2max" placeholder="" step="0.1"></div>
+          <div class="fg"><label class="fl">FC max (bpm)</label><input class="fi" type="number" id="p-fcmax" placeholder=""></div>
+          <div class="fg"><label class="fl">Seuil lactique (bpm)</label><input class="fi" type="number" id="p-lactate" placeholder=""></div>
+          <div class="fg"><label class="fl">Seuil lactique (/km)</label><input class="fi" id="p-lactate-pace" placeholder=""></div>
+        </div>
+        <div class="fg mt2"><label class="fl">Objectifs</label><textarea class="fi" id="p-goals" rows="3" placeholder="Ultra 50-80km en 2027, sub 1h40 semi en octobre..."></textarea></div>
+        <button class="save-btn" onclick="saveProfile()">💾 Sauvegarder</button>
+        <div class="mono t3" id="profileSaveMsg" style="margin-top:6px"></div>
+      </div>
 
-<!-- NUTRITION PRODUCTS -->
-<div class="card" style="margin-top:1rem">
-  <div class="clabel">Mes produits nutrition</div>
-  <div class="mono t2" style="margin-bottom:1rem">Sélectionne tes marques puis coche tes produits.</div>
+      <!-- PR -->
+      <div class="card">
+        <div class="clabel">Records personnels</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--cyan);margin-bottom:6px">5 km</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-5k" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-5k-date"></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--green);margin-bottom:6px">10 km</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-10k" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-10k-date"></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--yellow);margin-bottom:6px">15 km</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-15k" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-15k-date"></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--orange);margin-bottom:6px">Semi-marathon</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-semi" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-semi-date"></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--purple);margin-bottom:6px">Marathon</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-marathon" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-marathon-date"></div>
+            </div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div class="clabel" style="color:var(--red);margin-bottom:6px">Ultra</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg" style="margin:0"><label class="fl">Distance (km)</label><input class="fi" type="number" id="pr-ultra-dist" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">D+ (m)</label><input class="fi" type="number" id="pr-ultra-dplus" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Temps</label><input class="fi" id="pr-ultra" placeholder=""></div>
+              <div class="fg" style="margin:0"><label class="fl">Date</label><input class="fi" type="date" id="pr-ultra-date"></div>
+            </div>
+          </div>
+        </div>
+        <button class="save-btn" style="margin-top:.75rem" onclick="savePRs()">💾 Sauvegarder les PR</button>
+        <div class="mono t3" id="prSaveMsg" style="margin-top:6px"></div>
+      </div>
+    </div>
 
-  <div class="clabel" style="color:var(--cyan);margin-bottom:.5rem">Gels & Barres</div>
-  <div id="nutrGelBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
-  <div id="nutrGelList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1.25rem"></div>
+    <!-- ZIP IMPORT -->
+    <div class="card">
+      <div class="clabel">Historique complet — Archive Strava</div>
+      <div class="mono t2" style="margin-bottom:.75rem">Strava → Paramètres → Mes données → Demander une archive → uploade le ZIP reçu par email.</div>
+      <div class="upload-hist" id="zipDropZone"
+        onclick="document.getElementById('zipFile').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleZipDrop(event)">
+        <div style="font-size:1.8rem;margin-bottom:.5rem">📦</div>
+        <div style="font-weight:600;font-size:.88rem;margin-bottom:.25rem">Glisser le ZIP Strava ici</div>
+        <div class="mono">ou cliquer · export_XXXXXX.zip</div>
+      </div>
+      <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="handleZipFile(event)">
+      <div id="histStats" style="display:none" class="hist-stats mt2"></div>
+    </div>
 
-  <div class="clabel" style="color:var(--purple);margin-bottom:.5rem">Boissons isotoniques</div>
-  <div id="nutrDrinkBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
-  <div id="nutrDrinkList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1rem"></div>
+    <!-- NUTRITION PRODUCTS -->
+    <div class="card" style="margin-top:1rem">
+      <div class="clabel">Mes produits nutrition</div>
+      <div class="mono t2" style="margin-bottom:1rem">Sélectionne tes marques puis coche tes produits.</div>
 
-  <button class="save-btn" onclick="saveNutritionProducts()">💾 Sauvegarder mes produits</button>
-  <div class="mono t3" id="nutrSaveMsg" style="margin-top:6px"></div>
-</div>
-```
+      <div class="clabel" style="color:var(--cyan);margin-bottom:.5rem">Gels & Barres</div>
+      <div id="nutrGelBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
+      <div id="nutrGelList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1.25rem"></div>
 
+      <div class="clabel" style="color:var(--purple);margin-bottom:.5rem">Boissons isotoniques</div>
+      <div id="nutrDrinkBrands" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem"></div>
+      <div id="nutrDrinkList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1rem"></div>
+
+      <button class="save-btn" onclick="saveNutritionProducts()">💾 Sauvegarder mes produits</button>
+      <div class="mono t3" id="nutrSaveMsg" style="margin-top:6px"></div>
+    </div>
   </div>
 </div>
 
 <!-- ══ SECTION POPUP ══ -->
-
 <div class="overlay" id="sectionPopup" style="background:rgba(0,0,0,.92)" onclick="if(event.target===this)closeSectionPopup()">
   <div style="max-width:700px;margin:0 auto;padding:1rem">
     <!-- Header navigation -->
@@ -793,23 +767,20 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
     </div>
     <button onclick="closeSectionPopup()" class="hbtn" style="position:absolute;top:1.5rem;right:1.5rem">✕</button>
 
-```
-<!-- Mini carte -->
-<div id="sectionMap" style="height:220px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border2);margin-bottom:1rem"></div>
+    <!-- Mini carte -->
+    <div id="sectionMap" style="height:220px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border2);margin-bottom:1rem"></div>
 
-<!-- Mini profil alti -->
-<div class="card" style="margin-bottom:1rem">
-  <div class="clabel">Profil altimétrique — section</div>
-  <div style="height:120px"><canvas id="sectionAltiChart"></canvas></div>
-</div>
+    <!-- Mini profil alti -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="clabel">Profil altimétrique — section</div>
+      <div style="height:120px"><canvas id="sectionAltiChart"></canvas></div>
+    </div>
 
-<!-- Stats section -->
-<div id="sectionPopupStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem"></div>
+    <!-- Stats section -->
+    <div id="sectionPopupStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem"></div>
 
-<!-- Conseils -->
-<div id="sectionPopupAdvice" class="card"></div>
-```
-
+    <!-- Conseils -->
+    <div id="sectionPopupAdvice" class="card"></div>
   </div>
 </div>
 
@@ -1154,7 +1125,7 @@ function showDashContent() {
 // ════════════════════════════════════════════════════
 // DASHBOARD RENDER
 // ════════════════════════════════════════════════════
-function renderDashboard() {
+async function renderDashboard() {
   if (!allActivities.length) { showOnboarding(); return; }
   showDashContent();
 
@@ -1199,12 +1170,23 @@ function renderDashboard() {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const withHR = thisMonth.filter(a=>a.average_heartrate);
   const avgFC = withHR.length ? Math.round(withHR.reduce((s,a)=>s+a.average_heartrate,0)/withHR.length) : null;
-  const z2 = withHR.length ? Math.round(withHR.filter(a=>a.average_heartrate/fcMax>=.6&&a.average_heartrate/fcMax<.7).length/withHR.length*100) : null;
+  // % Z2 réel sur 7 jours glissants depuis les streams stockés
+  const sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+  const {data: zoneRows} = await sb.from('activities_history')
+    .select('zone_data, activity_date')
+    .eq('user_id', currentUser.id)
+    .not('zone_data', 'is', null)
+    .gte('activity_date', sevenDaysAgo.toISOString().split('T')[0]);
+  let z2 = null;
+  if(zoneRows?.length) {
+    const avg = zoneRows.reduce((sum,r)=>sum+(r.zone_data?.Z2||0),0)/zoneRows.length;
+    z2 = Math.round(avg);
+  }
 
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    ${z2!==null?`<div class="s-stat"><div class="s-sv tc">${z2}%</div><div class="s-sl">% Z2</div><div style="font-size:.58rem;color:var(--text3)">60-70% FCmax</div></div>`:''}
+    ${z2!==null?`<div class="s-stat"><div class="s-sv tc">${z2}%</div><div class="s-sl">% Z2 · 7j</div><div style="font-size:.58rem;color:var(--text3)">streams réels</div></div>`:''}
   `;
 
   // Annual chart
@@ -1398,10 +1380,22 @@ async function openAnalyse(actOrId) {
   const d = new Date(act.start_date_local);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-  // Zones FC
+  // Zones FC — depuis les vrais streams
   let zd={Z1:0,Z2:0,Z3:0,Z4:0,Z5:0};
   const hrS=streams.heartrate?.data||[];
   if(hrS.length){hrS.forEach(h=>{const p=h/fcMax;if(p<.6)zd.Z1++;else if(p<.7)zd.Z2++;else if(p<.8)zd.Z3++;else if(p<.9)zd.Z4++;else zd.Z5++;});const tot=hrS.length;Object.keys(zd).forEach(k=>zd[k]=Math.round(zd[k]/tot*100));}
+
+  // Stocker les zones en Supabase pour le calcul Z2 dashboard 7j glissants
+  if(hrS.length && currentUser) {
+    sb.from('activities_history').upsert({
+      id: String(act.id),
+      user_id: currentUser.id,
+      activity_date: act.start_date?.split('T')[0],
+      zone_data: zd
+    }, {onConflict: 'id'}).then(({error}) => {
+      if(!error) renderDashboard(); // refresh dashboard stats with new zone data
+    });
+  }
 
   // Chart data
   const altD=streams.altitude?.data||[],hrD=streams.heartrate?.data||[],distD=streams.distance?.data||[];
@@ -3147,7 +3141,7 @@ function updateAvatar(url) {
   const mark=document.getElementById('avatarMark');
   const preview=document.getElementById('avatarPreview');
   if(url){
-    mark.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+    mark.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.innerHTML='VL'">`;
     if(preview)preview.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
   }
 }
@@ -3323,9 +3317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 </script>
-
 <!-- ══ TOAST CONTAINER ══ -->
-
   <button class="tab-btn nbtn active" onclick="showPanel('dashboard',this)">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     Dashboard
@@ -3340,8 +3332,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   </button>
 </nav>
 
-<!-- ══ BOTTOM TAB BAR ══ -->
 
+<!-- ══ BOTTOM TAB BAR ══ -->
 <nav class="tab-bar">
   <button class="tab-btn nbtn active" id="tab-dashboard" onclick="showPanel('dashboard',this)">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -3361,59 +3353,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 <div id="toastContainer"></div>
 
 <!-- ══ ONBOARDING ══ -->
-
 <div id="onboardingOverlay">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:2.5rem;max-width:480px;width:100%;text-align:center">
     <div class="onb-dots" id="onbDots"></div>
 
-```
-<div class="onb-step active" id="onb-0">
-  <div class="onb-icon">👋</div>
-  <div class="onb-title">Bienvenue sur Runner OS</div>
-  <div class="onb-desc">Ton dashboard personnel pour analyser tes sorties, préparer tes courses et progresser de façon structurée. Quelques étapes pour démarrer.</div>
-</div>
+    <div class="onb-step active" id="onb-0">
+      <div class="onb-icon">👋</div>
+      <div class="onb-title">Bienvenue sur Runner OS</div>
+      <div class="onb-desc">Ton dashboard personnel pour analyser tes sorties, préparer tes courses et progresser de façon structurée. Quelques étapes pour démarrer.</div>
+    </div>
 
-<div class="onb-step" id="onb-1">
-  <div class="onb-icon">👤</div>
-  <div class="onb-title">Ton profil</div>
-  <div class="onb-desc">Renseigne ta FC max, ton seuil lactique et tes PR — le dashboard et les stratégies de course s'adaptent à tes vraies données physiologiques.</div>
-  <button class="btn-primary" style="margin-top:.5rem" onclick="closeProfil();openProfil();closeOnboarding();">Remplir mon profil →</button>
-</div>
+    <div class="onb-step" id="onb-1">
+      <div class="onb-icon">👤</div>
+      <div class="onb-title">Ton profil</div>
+      <div class="onb-desc">Renseigne ta FC max, ton seuil lactique et tes PR — le dashboard et les stratégies de course s'adaptent à tes vraies données physiologiques.</div>
+      <button class="btn-primary" style="margin-top:.5rem" onclick="closeProfil();openProfil();closeOnboarding();">Remplir mon profil →</button>
+    </div>
 
-<div class="onb-step" id="onb-2">
-  <div class="onb-icon">🟠</div>
-  <div class="onb-title">Connecter Strava</div>
-  <div class="onb-desc">Tes activités se synchronisent automatiquement. Clique sur "Connecter Strava" en haut à droite pour autoriser l'accès.</div>
-</div>
+    <div class="onb-step" id="onb-2">
+      <div class="onb-icon">🟠</div>
+      <div class="onb-title">Connecter Strava</div>
+      <div class="onb-desc">Tes activités se synchronisent automatiquement. Clique sur "Connecter Strava" en haut à droite pour autoriser l'accès.</div>
+    </div>
 
-<div class="onb-step" id="onb-3">
-  <div class="onb-icon">🗺️</div>
-  <div class="onb-title">Préparer une course</div>
-  <div class="onb-desc">Ajoute une course dans le calendrier, uploade un GPX et laisse l'app générer ta stratégie section par section avec tes vraies zones et ton plan nutrition.</div>
-</div>
+    <div class="onb-step" id="onb-3">
+      <div class="onb-icon">🗺️</div>
+      <div class="onb-title">Préparer une course</div>
+      <div class="onb-desc">Ajoute une course dans le calendrier, uploade un GPX et laisse l'app générer ta stratégie section par section avec tes vraies zones et ton plan nutrition.</div>
+    </div>
 
-<div class="onb-step" id="onb-4">
-  <div class="onb-icon">✅</div>
-  <div class="onb-title">C'est parti !</div>
-  <div class="onb-desc">Runner OS apprend de tes sorties au fil du temps — plus tu l'utilises, plus les projections sont précises.</div>
-  <div class="mono t3" style="font-size:.6rem;margin-top:.5rem">En utilisant cette app tu acceptes les <a onclick="openCGU()" style="color:var(--cyan);cursor:pointer">CGU et la politique de confidentialité</a>.</div>
-</div>
+    <div class="onb-step" id="onb-4">
+      <div class="onb-icon">✅</div>
+      <div class="onb-title">C'est parti !</div>
+      <div class="onb-desc">Runner OS apprend de tes sorties au fil du temps — plus tu l'utilises, plus les projections sont précises.</div>
+      <div class="mono t3" style="font-size:.6rem;margin-top:.5rem">En utilisant cette app tu acceptes les <a onclick="openCGU()" style="color:var(--cyan);cursor:pointer">CGU et la politique de confidentialité</a>.</div>
+    </div>
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
-  <button class="hbtn" id="onbPrev" onclick="onbNav(-1)">← Précédent</button>
-  <div class="onb-dots" id="onbDots2" style="margin:0"></div>
-  <button class="hbtn" id="onbNext" onclick="onbNav(1)" style="background:var(--cyan);color:#000;border-color:var(--cyan)">Suivant →</button>
-</div>
-<div style="margin-top:.75rem">
-  <button onclick="closeOnboarding()" style="background:none;border:none;color:var(--text3);font-family:var(--mono);font-size:.6rem;cursor:pointer">Passer →</button>
-</div>
-```
-
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
+      <button class="hbtn" id="onbPrev" onclick="onbNav(-1)">← Précédent</button>
+      <div class="onb-dots" id="onbDots2" style="margin:0"></div>
+      <button class="hbtn" id="onbNext" onclick="onbNav(1)" style="background:var(--cyan);color:#000;border-color:var(--cyan)">Suivant →</button>
+    </div>
+    <div style="margin-top:.75rem">
+      <button onclick="closeOnboarding()" style="background:none;border:none;color:var(--text3);font-family:var(--mono);font-size:.6rem;cursor:pointer">Passer →</button>
+    </div>
   </div>
 </div>
 
 <!-- ══ CGU ══ -->
-
 <div id="cguOverlay" onclick="if(event.target===this)closeCGU()">
   <div class="cgu-inner">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
@@ -3421,43 +3408,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       <button onclick="closeCGU()" class="hbtn">✕</button>
     </div>
 
-```
-<div style="font-size:.82rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:70vh">
-  <div class="clabel" style="margin-bottom:.5rem">1. Objet</div>
-  <p style="margin-bottom:1rem">Runner OS est une application personnelle d'analyse de performances en course à pied et trail. Elle est fournie à titre gratuit, sans garantie de disponibilité continue.</p>
+    <div style="font-size:.82rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:70vh">
+      <div class="clabel" style="margin-bottom:.5rem">1. Objet</div>
+      <p style="margin-bottom:1rem">Runner OS est une application personnelle d'analyse de performances en course à pied et trail. Elle est fournie à titre gratuit, sans garantie de disponibilité continue.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">2. Données personnelles</div>
-  <p style="margin-bottom:.5rem">Runner OS collecte et traite les données suivantes :</p>
-  <ul style="margin-left:1.5rem;margin-bottom:1rem">
-    <li>Données de compte : email (via Supabase Auth)</li>
-    <li>Données physiologiques : FC max, poids, taille, seuil lactique (saisies volontairement)</li>
-    <li>Données d'activité : activités Strava via l'API officielle Strava</li>
-    <li>Données de course : GPX, temps, stratégies (stockées en Supabase)</li>
-  </ul>
-  <p style="margin-bottom:1rem">Ces données sont stockées dans Supabase (infrastructure européenne). Chaque utilisateur n'a accès qu'à ses propres données.</p>
+      <div class="clabel" style="margin-bottom:.5rem">2. Données personnelles</div>
+      <p style="margin-bottom:.5rem">Runner OS collecte et traite les données suivantes :</p>
+      <ul style="margin-left:1.5rem;margin-bottom:1rem">
+        <li>Données de compte : email (via Supabase Auth)</li>
+        <li>Données physiologiques : FC max, poids, taille, seuil lactique (saisies volontairement)</li>
+        <li>Données d'activité : activités Strava via l'API officielle Strava</li>
+        <li>Données de course : GPX, temps, stratégies (stockées en Supabase)</li>
+      </ul>
+      <p style="margin-bottom:1rem">Ces données sont stockées dans Supabase (infrastructure européenne). Chaque utilisateur n'a accès qu'à ses propres données.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">3. Données Strava</div>
-  <p style="margin-bottom:1rem">L'accès aux données Strava est effectué via l'API officielle Strava conformément aux <a href="https://www.strava.com/legal/api" target="_blank" style="color:var(--cyan)">conditions d'utilisation de l'API Strava</a>. Les tokens d'accès sont stockés localement. Aucune donnée Strava n'est partagée avec des tiers.</p>
+      <div class="clabel" style="margin-bottom:.5rem">3. Données Strava</div>
+      <p style="margin-bottom:1rem">L'accès aux données Strava est effectué via l'API officielle Strava conformément aux <a href="https://www.strava.com/legal/api" target="_blank" style="color:var(--cyan)">conditions d'utilisation de l'API Strava</a>. Les tokens d'accès sont stockés localement. Aucune donnée Strava n'est partagée avec des tiers.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">4. Analyse IA</div>
-  <p style="margin-bottom:1rem">Les analyses de sortie utilisent l'API Groq (modèle llama). Les données d'activité sont transmises à Groq pour générer l'analyse. Aucune donnée d'identification personnelle (nom, email) n'est transmise.</p>
+      <div class="clabel" style="margin-bottom:.5rem">4. Analyse IA</div>
+      <p style="margin-bottom:1rem">Les analyses de sortie utilisent l'API Groq (modèle llama). Les données d'activité sont transmises à Groq pour générer l'analyse. Aucune donnée d'identification personnelle (nom, email) n'est transmise.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">5. Suppression des données</div>
-  <p style="margin-bottom:1rem">Tu peux supprimer ton compte et toutes tes données à tout moment en contactant l'administrateur de l'application. La déconnexion de Strava révoque l'accès immédiatement.</p>
+      <div class="clabel" style="margin-bottom:.5rem">5. Suppression des données</div>
+      <p style="margin-bottom:1rem">Tu peux supprimer ton compte et toutes tes données à tout moment en contactant l'administrateur de l'application. La déconnexion de Strava révoque l'accès immédiatement.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">6. Responsabilité</div>
-  <p style="margin-bottom:1rem">Les conseils de stratégie, nutrition et FC fournis par Runner OS sont indicatifs. Ils ne remplacent pas l'avis d'un médecin ou d'un entraîneur professionnel. L'utilisateur reste seul responsable de ses choix d'entraînement.</p>
+      <div class="clabel" style="margin-bottom:.5rem">6. Responsabilité</div>
+      <p style="margin-bottom:1rem">Les conseils de stratégie, nutrition et FC fournis par Runner OS sont indicatifs. Ils ne remplacent pas l'avis d'un médecin ou d'un entraîneur professionnel. L'utilisateur reste seul responsable de ses choix d'entraînement.</p>
 
-  <div class="clabel" style="margin-bottom:.5rem">7. Contact</div>
-  <p>Pour toute question : <a href="mailto:tony.bollecker@hotmail.fr" style="color:var(--cyan)">tony.bollecker@hotmail.fr</a></p>
-</div>
-```
-
+      <div class="clabel" style="margin-bottom:.5rem">7. Contact</div>
+      <p>Pour toute question : <a href="mailto:tony.bollecker@hotmail.fr" style="color:var(--cyan)">tony.bollecker@hotmail.fr</a></p>
+    </div>
   </div>
 </div>
 
 <!-- ══ CROP AVATAR ══ -->
-
 <div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:800;align-items:center;justify-content:center;padding:1.5rem;flex-direction:column;gap:1rem">
   <div style="font-family:var(--display);font-size:1.2rem;color:#fff">Cadrer la photo</div>
   <div style="position:relative;width:280px;height:280px;overflow:hidden;border-radius:50%;border:2px solid var(--cyan);cursor:move" id="cropContainer">
