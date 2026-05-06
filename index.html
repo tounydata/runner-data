@@ -65,7 +65,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.9r
 .nbtn{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(–text2);transition:all .2s;white-space:nowrap;}
 .nbtn.active{background:var(–bg4);color:var(–text);border:1px solid var(–border2);}
 .nbtn:hover:not(.active){color:var(–text);}
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(–bg2,#0d1117);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(–bg,#060810);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(–text3);cursor:pointer;font-family:var(–mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
 .tab-btn.active{color:var(–cyan);}
 .tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -1659,7 +1659,7 @@ function renderRaceComparison(act, streams, race) {
   const actual=sections.map(s=>{
     if(!distD.length) return null;
     let si=distD.findIndex(d=>d>=s.startKm*1000);
-    let ei=distD.findIndex(d=>d>=s.km*1000);
+    let ei=distD.findIndex(d=>d>=s.endKm*1000);
     if(si<0) si=0;
     if(ei<0) ei=distD.length-1;
     return ei>si ? ei-si : null;
@@ -1668,7 +1668,7 @@ function renderRaceComparison(act, streams, race) {
   const sectionHR=sections.map(s=>{
     if(!hrD.length||!distD.length) return null;
     let si=distD.findIndex(d=>d>=s.startKm*1000);
-    let ei=distD.findIndex(d=>d>=s.km*1000);
+    let ei=distD.findIndex(d=>d>=s.endKm*1000);
     if(si<0) si=0; if(ei<0) ei=hrD.length-1;
     const slice=hrD.slice(si,ei);
     return slice.length?Math.round(slice.reduce((a,b)=>a+b,0)/slice.length):null;
@@ -1683,7 +1683,7 @@ function renderRaceComparison(act, streams, race) {
     const diffColor=diff===null?'var(--text3)':Math.abs(diff)<=10?'var(--green)':Math.abs(diff)<=25?'var(--yellow)':'var(--red)';
     const diffIcon=diff===null?'—':Math.abs(diff)<=10?'✓':Math.abs(diff)<=25?'~':'⚠️';
     return `<tr>
-      <td style="color:${cols[s.type]}">${icons[s.type]} ${s.startKm.toFixed(1)}→${s.km.toFixed(1)}km</td>
+      <td style="color:${cols[s.type]}">${icons[s.type]} ${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)}km</td>
       <td class="mono">${s.type==='up'?`+${s.dplus}m`:s.type==='down'?`-${s.dminus||0}m`:'—'}</td>
       <td class="mono">${fmtT(pred)}</td>
       <td class="mono">${real?fmtT(real):'—'}</td>
@@ -1827,7 +1827,15 @@ function renderRaces() {
       <button class="btn-prepare" style="margin-top:10px" onclick='prepareRace(${JSON.stringify(next)})'>${hasGpx?'🗺️ Voir stratégie':'🗺️ Préparer la course'}</button>
     </div>`;
   } else {nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>';}
-  list.innerHTML=races.map(r=>{
+
+  // Split past/future, limit past to 2 by default
+  const pastRaces = races.filter(r=>new Date(r.date)<now).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const futureRaces = races.filter(r=>new Date(r.date)>=now);
+  const showAllPast = list.dataset.showAllPast === '1';
+  const visiblePast = showAllPast ? pastRaces : pastRaces.slice(0,2);
+  const allRaces = [...futureRaces, ...visiblePast];
+
+  list.innerHTML=[...allRaces.map(r=>{
     const d=new Date(r.date),diff=Math.ceil((d-now)/86400000),past=diff<0;
     const color=past?'var(--text3)':diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
     const hasGpx=!!r.gpx_data;
@@ -1876,7 +1884,15 @@ function renderRaces() {
         <button onclick="deleteRace('${r.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.75rem">✕</button>
       </div>
     </div>`;
-  }).join('');
+  }),
+  // "Voir tout" toggle if more than 2 past races
+  pastRaces.length > 2 ? [`<div style="text-align:center;margin-top:.5rem">
+    <button onclick="document.getElementById('raceList').dataset.showAllPast=document.getElementById('raceList').dataset.showAllPast==='1'?'0':'1';renderRaces()" 
+      style="background:none;border:1px solid var(--border2);border-radius:20px;padding:5px 16px;font-family:var(--mono);font-size:.58rem;color:var(--text2);cursor:pointer">
+      ${showAllPast ? '▲ Masquer les anciennes' : `▼ Voir toutes les courses passées (${pastRaces.length})`}
+    </button>
+  </div>`] : []
+  ].flat().join('');
 }
 
 // ════════════════════════════════════════════════════
