@@ -791,7 +791,7 @@ main{padding:5.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 const SUPA_URL = 'https://wanzrkdgqmcctwvnbmuv.supabase.co';
 const SUPA_KEY = 'sb_publishable_6DuMJb6hw_CTxMpd3-MXpw_xQKhS0Oy';
 const CLIENT_ID = '161609';
-// CLIENT_SECRET removed — handled by Edge Function strava-auth
+// CLIENT_SECRET removed — handled by Edge Functions strava-oauth/strava-refresh
 const REDIRECT_URI = 'https://tounydata.github.io/runner-data/';
 const FC_MAX_DEFAULT = 205;
 const RUNNING_TYPES = ['Run', 'TrailRun', 'Trail Run', 'Running'];
@@ -1035,7 +1035,7 @@ function connectStrava() {
 }
 
 async function exchangeCode(code) {
-  const r = await fetch(`${SUPA_URL}/functions/v1/strava-auth`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'authorization_code',code})});
+  const r = await fetch(`${SUPA_URL}/functions/v1/strava-oauth`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'authorization_code',code})});
   const d = await r.json();
   if (d.access_token) { localStorage.setItem('s_token',d.access_token); localStorage.setItem('s_refresh',d.refresh_token); localStorage.setItem('s_expires',d.expires_at); localStorage.setItem('s_athlete',JSON.stringify(d.athlete||{})); return d.access_token; }
   return null;
@@ -1046,7 +1046,7 @@ async function getToken() {
   if (t && Date.now()/1000 < exp-300) return t;
   const ref=localStorage.getItem('s_refresh'); if(!ref) return null;
   try {
-    const r=await fetch(`${SUPA_URL}/functions/v1/strava-auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'refresh_token',refresh_token:ref})});
+    const r=await fetch(`${SUPA_URL}/functions/v1/strava-refresh`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'refresh_token',refresh_token:ref})});
     const d=await r.json();
     if(d.access_token){localStorage.setItem('s_token',d.access_token);localStorage.setItem('s_refresh',d.refresh_token||ref);localStorage.setItem('s_expires',d.expires_at);return d.access_token;}
   } catch(e){}
@@ -1495,7 +1495,9 @@ async function openAnalyse(actOrId) {
   const aiText = await generateAIAnalysis(act, streams, gap);
   const aiBox = document.getElementById('aiBox');
   if (aiBox) {
-    aiBox.innerHTML = `<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Coach Runner</div></div><div class="ai-text">${aiText}</div>`;
+    aiBox.innerHTML = '<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Coach Runner</div></div><div class="ai-text" id="aiTextContent"></div>';
+    const aiTextNode = document.getElementById('aiTextContent');
+    if (aiTextNode) aiTextNode.textContent = aiText;
   }
 }
 
