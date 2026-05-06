@@ -9,6 +9,10 @@ const CACHE_TTL_MS = 60_000
 let lastLoadedAt = 0
 let inFlightLoad: Promise<void> | null = null
 
+const CACHE_TTL_MS = 60_000
+let lastLoadedAt = 0
+let inFlightLoad: Promise<void> | null = null
+
 interface StravaState {
   connected: boolean
   athleteName: string | null
