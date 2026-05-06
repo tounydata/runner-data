@@ -6,12 +6,6 @@ import { logger } from '@/lib/logger'
 import { env } from '@/config/env'
 
 const CACHE_TTL_MS = 60_000
-let lastLoadedAt = 0
-let inFlightLoad: Promise<void> | null = null
-
-const CACHE_TTL_MS = 60_000
-let lastLoadedAt = 0
-let inFlightLoad: Promise<void> | null = null
 
 interface StravaState {
   connected: boolean
@@ -19,6 +13,8 @@ interface StravaState {
   activities: StravaActivity[]
   loading: boolean
   error: string | null
+  _lastLoadedAt: number
+  _inFlightLoad: Promise<void> | null
   loadActivities: () => Promise<void>
   connectStrava: () => void
   refreshActivities: () => Promise<void>
@@ -30,18 +26,20 @@ export const useStravaStore = create<StravaState>((set, get) => ({
   activities: [],
   loading: false,
   error: null,
+  _lastLoadedAt: 0,
+  _inFlightLoad: null,
 
   loadActivities: async () => {
-    if (inFlightLoad) return inFlightLoad
+    const { activities, _inFlightLoad, _lastLoadedAt } = get()
+    if (_inFlightLoad) return _inFlightLoad
 
-    const { activities } = get()
-    if (activities.length > 0 && Date.now() - lastLoadedAt < CACHE_TTL_MS) {
+    if (activities.length > 0 && Date.now() - _lastLoadedAt < CACHE_TTL_MS) {
       return
     }
 
     set({ loading: true, error: null })
 
-    inFlightLoad = (async () => {
+    const request = (async () => {
       try {
         const {
           data: { user },
@@ -60,19 +58,23 @@ export const useStravaStore = create<StravaState>((set, get) => ({
         if (error && error.code !== 'PGRST116') throw error
 
         const activities = (data?.data as StravaActivity[] | null) ?? []
-        lastLoadedAt = Date.now()
-
-        set({ activities, connected: activities.length > 0, loading: false })
+        set({
+          activities,
+          connected: activities.length > 0,
+          loading: false,
+          _lastLoadedAt: Date.now(),
+        })
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erreur de chargement'
         logger.error('Failed to load activities', { message })
         set({ error: message, loading: false })
       } finally {
-        inFlightLoad = null
+        set({ _inFlightLoad: null })
       }
     })()
 
-    return inFlightLoad
+    set({ _inFlightLoad: request })
+    return request
   },
 
   connectStrava: () => {
@@ -96,7 +98,7 @@ export const useStravaStore = create<StravaState>((set, get) => ({
         body: { userId: (await supabase.auth.getUser()).data.user?.id ?? '' },
       })
 
-      lastLoadedAt = 0
+      set({ _lastLoadedAt: 0 })
       await get().loadActivities()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de rafraîchissement'
