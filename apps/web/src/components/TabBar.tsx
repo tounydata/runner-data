@@ -15,9 +15,15 @@ export function TabBar() {
   return (
     <nav
       style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200,
-        background: 'rgba(6,8,16,.85)', backdropFilter: 'blur(20px)',
-        borderTop: '1px solid var(--border2)', display: 'flex',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 200,
+        background: 'rgba(6,8,16,.85)',
+        backdropFilter: 'blur(20px)',
+        borderTop: '1px solid var(--border2)',
+        display: 'flex',
         paddingBottom: 'env(safe-area-inset-bottom, 0)',
       }}
     >
@@ -26,14 +32,25 @@ export function TabBar() {
         return (
           <button
             key={tab.path}
-            onClick={() => navigate(tab.path)}
+            onClick={() => {
+              void navigate(tab.path)
+            }}
             style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', padding: '10px 0',
-              border: 'none', background: 'transparent',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '10px 0',
+              border: 'none',
+              background: 'transparent',
               color: active ? 'var(--cyan)' : 'var(--text3)',
-              cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: '.5rem',
-              textTransform: 'uppercase', letterSpacing: '.06em', gap: 4,
+              cursor: 'pointer',
+              fontFamily: 'var(--mono)',
+              fontSize: '.5rem',
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+              gap: 4,
             }}
           >
             <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span>

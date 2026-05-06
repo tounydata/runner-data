@@ -1,8 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAnalysisStore } from './useAnalysisStore'
 import { renderSafeMarkdown } from '@/lib/sanitize'
-import { useState } from 'react'
 
 export function AnalysisPage() {
   const [searchParams] = useSearchParams()
@@ -14,18 +13,28 @@ export function AnalysisPage() {
     if (activityId) {
       void analyse(Number(activityId))
     }
-    return () => clear()
+    return () => {
+      clear()
+    }
   }, [activityId, analyse, clear])
 
   useEffect(() => {
     if (result?.summary) {
-      void renderSafeMarkdown(result.summary).then(setSafeHtml)
+      setSafeHtml(renderSafeMarkdown(result.summary))
     }
   }, [result])
 
   if (!activityId) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text2)', fontFamily: 'var(--mono)', fontSize: '.75rem' }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '4rem',
+          color: 'var(--text2)',
+          fontFamily: 'var(--mono)',
+          fontSize: '.75rem',
+        }}
+      >
         Sélectionne une activité pour lancer l'analyse.
       </div>
     )
@@ -33,7 +42,15 @@ export function AnalysisPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem', gap: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '4rem',
+          gap: 12,
+        }}
+      >
         <div className="spinner" />
         <div style={{ fontFamily: 'var(--mono)', fontSize: '.65rem', color: 'var(--text2)' }}>
           Analyse en cours…
@@ -44,7 +61,15 @@ export function AnalysisPage() {
 
   if (error) {
     return (
-      <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--red)', fontFamily: 'var(--mono)', fontSize: '.75rem' }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '3rem',
+          color: 'var(--red)',
+          fontFamily: 'var(--mono)',
+          fontSize: '.75rem',
+        }}
+      >
         {error}
       </div>
     )
@@ -58,12 +83,22 @@ export function AnalysisPage() {
         style={{
           background: 'linear-gradient(135deg,rgba(0,212,255,.06),rgba(167,139,250,.06))',
           border: '1px solid rgba(0,212,255,.2)',
-          borderRadius: 'var(--r)', padding: '1.25rem', marginBottom: '1.25rem',
+          borderRadius: 'var(--r)',
+          padding: '1.25rem',
+          marginBottom: '1.25rem',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '.75rem' }}>
           <span style={{ fontSize: '1.2rem' }}>✦</span>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: '.6rem', textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--cyan)' }}>
+          <span
+            style={{
+              fontFamily: 'var(--mono)',
+              fontSize: '.6rem',
+              textTransform: 'uppercase',
+              letterSpacing: '.1em',
+              color: 'var(--cyan)',
+            }}
+          >
             Analyse IA
           </span>
         </div>
@@ -76,7 +111,16 @@ export function AnalysisPage() {
 
       {result.insights.length > 0 && (
         <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '.56rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: '.75rem' }}>
+          <div
+            style={{
+              fontFamily: 'var(--mono)',
+              fontSize: '.56rem',
+              color: 'var(--text3)',
+              textTransform: 'uppercase',
+              letterSpacing: '.1em',
+              marginBottom: '.75rem',
+            }}
+          >
             Insights
           </div>
           {result.insights.map((insight, i) => (
@@ -84,14 +128,28 @@ export function AnalysisPage() {
               key={i}
               style={{
                 borderLeft: `3px solid ${insight.type === 'positive' ? 'var(--green)' : insight.type === 'warning' ? 'var(--orange)' : 'var(--text3)'}`,
-                borderRadius: '0 8px 8px 0', background: 'var(--bg3)',
-                padding: '9px 12px', marginBottom: 7,
+                borderRadius: '0 8px 8px 0',
+                background: 'var(--bg3)',
+                padding: '9px 12px',
+                marginBottom: 7,
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: '.8rem', marginBottom: 3 }}>{insight.title}</div>
-              <div style={{ fontSize: '.74rem', color: 'var(--text2)', lineHeight: 1.5 }}>{insight.body}</div>
+              <div style={{ fontWeight: 700, fontSize: '.8rem', marginBottom: 3 }}>
+                {insight.title}
+              </div>
+              <div style={{ fontSize: '.74rem', color: 'var(--text2)', lineHeight: 1.5 }}>
+                {insight.body}
+              </div>
               {insight.reference && (
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '.56rem', color: 'var(--text3)', marginTop: 3, fontStyle: 'italic' }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: '.56rem',
+                    color: 'var(--text3)',
+                    marginTop: 3,
+                    fontStyle: 'italic',
+                  }}
+                >
                   {insight.reference}
                 </div>
               )}
@@ -103,16 +161,35 @@ export function AnalysisPage() {
       {result.recommendations.length > 0 && (
         <div
           style={{
-            background: 'var(--bg2)', border: '1px solid var(--border)',
-            borderRadius: 'var(--r)', padding: '1.25rem',
+            background: 'var(--bg2)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--r)',
+            padding: '1.25rem',
           }}
         >
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '.56rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: '.75rem' }}>
+          <div
+            style={{
+              fontFamily: 'var(--mono)',
+              fontSize: '.56rem',
+              color: 'var(--text3)',
+              textTransform: 'uppercase',
+              letterSpacing: '.1em',
+              marginBottom: '.75rem',
+            }}
+          >
             Recommandations
           </div>
           <ul style={{ paddingLeft: '1.2rem' }}>
             {result.recommendations.map((rec, i) => (
-              <li key={i} style={{ fontSize: '.82rem', color: 'var(--text2)', marginBottom: 6, lineHeight: 1.5 }}>
+              <li
+                key={i}
+                style={{
+                  fontSize: '.82rem',
+                  color: 'var(--text2)',
+                  marginBottom: 6,
+                  lineHeight: 1.5,
+                }}
+              >
                 {rec}
               </li>
             ))}

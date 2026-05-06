@@ -11,7 +11,7 @@ interface ProfileState {
   updateProfile: (updates: ProfileUpdate) => Promise<void>
 }
 
-export const useProfileStore = create<ProfileState>((set, get) => ({
+export const useProfileStore = create<ProfileState>((set) => ({
   profile: null,
   loading: false,
   error: null,
@@ -19,14 +19,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   loadProfile: async () => {
     set({ loading: true, error: null })
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
       if (error && error.code !== 'PGRST116') throw error
       set({ profile: data as Profile | null, loading: false })
@@ -40,7 +38,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   updateProfile: async (updates) => {
     set({ loading: true, error: null })
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
@@ -50,7 +50,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         .single()
 
       if (error) throw error
-      set({ profile: data as Profile, loading: false })
+      set({ profile: data, loading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de sauvegarde'
       logger.error('Failed to update profile', { message })

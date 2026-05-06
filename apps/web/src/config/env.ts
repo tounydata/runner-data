@@ -1,11 +1,15 @@
+// Vite replaces import.meta.env at build time; cast once here so the rest of
+// the app gets typed values without triggering no-unsafe-member-access everywhere.
+const raw = import.meta.env as Record<string, string | undefined>
+
 function required(key: string): string {
-  const value = import.meta.env[key]
+  const value = raw[key]
   if (!value) throw new Error(`Missing required env var: ${key}`)
-  return value as string
+  return value
 }
 
 function optional(key: string, fallback = ''): string {
-  return (import.meta.env[key] as string | undefined) ?? fallback
+  return raw[key] ?? fallback
 }
 
 export const env = {

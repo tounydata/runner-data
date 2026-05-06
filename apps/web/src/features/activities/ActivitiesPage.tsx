@@ -21,7 +21,7 @@ export function ActivitiesPage() {
   if (activities.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-        <div style={{ fontSize: '3rem', opacity: .3, marginBottom: '1rem' }}>🏃</div>
+        <div style={{ fontSize: '3rem', opacity: 0.3, marginBottom: '1rem' }}>🏃</div>
         <div style={{ fontFamily: 'var(--display)', fontSize: '1.5rem', marginBottom: '.5rem' }}>
           Aucune activité
         </div>
@@ -31,9 +31,15 @@ export function ActivitiesPage() {
         <button
           onClick={connectStrava}
           style={{
-            background: '#fc4c02', color: '#fff', border: 'none', borderRadius: 8,
-            padding: '10px 24px', fontFamily: 'var(--body)', fontWeight: 700,
-            fontSize: '.88rem', cursor: 'pointer',
+            background: '#fc4c02',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            padding: '10px 24px',
+            fontFamily: 'var(--body)',
+            fontWeight: 700,
+            fontSize: '.88rem',
+            cursor: 'pointer',
           }}
         >
           Connecter Strava
@@ -42,18 +48,33 @@ export function ActivitiesPage() {
     )
   }
 
-  const runActivities = activities.filter((a) =>
-    ['Run', 'TrailRun', 'VirtualRun'].includes(a.type)
-  )
+  const runActivities = activities.filter((a) => ['Run', 'TrailRun', 'VirtualRun'].includes(a.type))
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '.56rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.25rem',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'var(--mono)',
+            fontSize: '.56rem',
+            color: 'var(--text3)',
+            textTransform: 'uppercase',
+            letterSpacing: '.1em',
+          }}
+        >
           Activités running ({runActivities.length})
         </div>
         {error && (
-          <div style={{ fontFamily: 'var(--mono)', fontSize: '.6rem', color: 'var(--red)' }}>{error}</div>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: '.6rem', color: 'var(--red)' }}>
+            {error}
+          </div>
         )}
       </div>
 

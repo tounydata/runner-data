@@ -19,17 +19,19 @@ export async function invokeFunction<TBody, TResponse>(
 
   return withRetry(
     async () => {
-      const { data, error } = await supabase.functions.invoke<TResponse>(name, {
+      const response = await supabase.functions.invoke<TResponse>(name, {
         body: body ?? undefined,
       })
-      if (error) {
-        logger.error(`Edge Function error: ${name}`, { message: error.message })
-        throw new Error(error.message)
+      if (response.error) {
+        const msg: string =
+          (response.error as { message?: string }).message ?? 'Unknown function error'
+        logger.error(`Edge Function error: ${name}`, { message: msg })
+        throw new Error(msg)
       }
-      if (data === null) {
+      if (response.data === null) {
         throw new Error(`Edge Function ${name} returned null`)
       }
-      return data
+      return response.data
     },
     {
       maxAttempts: retries + 1,

@@ -20,7 +20,9 @@ export const useRaceStore = create<RaceState>((set, get) => ({
   loadRaces: async () => {
     set({ loading: true, error: null })
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
@@ -30,7 +32,7 @@ export const useRaceStore = create<RaceState>((set, get) => ({
         .order('date', { ascending: true })
 
       if (error) throw error
-      set({ races: (data ?? []) as Race[], loading: false })
+      set({ races: data ?? [], loading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement'
       logger.error('Failed to load races', { message })
@@ -41,7 +43,9 @@ export const useRaceStore = create<RaceState>((set, get) => ({
   addRace: async (raceData) => {
     set({ loading: true, error: null })
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
@@ -51,7 +55,7 @@ export const useRaceStore = create<RaceState>((set, get) => ({
         .single()
 
       if (error) throw error
-      set({ races: [...get().races, data as Race], loading: false })
+      set({ races: [...get().races, data], loading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de sauvegarde'
       logger.error('Failed to add race', { message })

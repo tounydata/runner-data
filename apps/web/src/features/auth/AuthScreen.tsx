@@ -15,7 +15,7 @@ export function AuthScreen() {
     clearError()
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault()
     if (tab === 'login') {
       await signIn(email, password)
@@ -27,32 +27,55 @@ export function AuthScreen() {
   return (
     <div
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: '100vh', padding: '2rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        padding: '2rem',
       }}
     >
       <div
         style={{
-          background: 'var(--bg2)', border: '1px solid var(--border2)',
-          borderRadius: 16, padding: '2.5rem', width: '100%', maxWidth: 400,
+          background: 'var(--bg2)',
+          border: '1px solid var(--border2)',
+          borderRadius: 16,
+          padding: '2.5rem',
+          width: '100%',
+          maxWidth: 400,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '2rem' }}>
           <div
             style={{
-              width: 48, height: 48, borderRadius: 12,
+              width: 48,
+              height: 48,
+              borderRadius: 12,
               background: 'linear-gradient(135deg,var(--cyan),var(--purple))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--display)', fontSize: 24, color: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--display)',
+              fontSize: 24,
+              color: '#000',
             }}
           >
             AO
           </div>
           <div>
-            <div style={{ fontFamily: 'var(--display)', fontSize: '1.6rem', letterSpacing: '.04em' }}>
+            <div
+              style={{ fontFamily: 'var(--display)', fontSize: '1.6rem', letterSpacing: '.04em' }}
+            >
               Runner OS
             </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '.58rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+            <div
+              style={{
+                fontFamily: 'var(--mono)',
+                fontSize: '.58rem',
+                color: 'var(--text3)',
+                textTransform: 'uppercase',
+                letterSpacing: '.1em',
+              }}
+            >
               {tab === 'login' ? 'Connexion' : 'Inscription'}
             </div>
           </div>
@@ -60,20 +83,32 @@ export function AuthScreen() {
 
         <div
           style={{
-            display: 'flex', gap: 2, background: 'var(--bg4)',
-            borderRadius: 8, padding: 3, marginBottom: '1.5rem',
+            display: 'flex',
+            gap: 2,
+            background: 'var(--bg4)',
+            borderRadius: 8,
+            padding: 3,
+            marginBottom: '1.5rem',
           }}
         >
           {(['login', 'signup'] as Tab[]).map((t) => (
             <button
               key={t}
-              onClick={() => handleTabChange(t)}
+              onClick={() => {
+                handleTabChange(t)
+              }}
               style={{
-                flex: 1, padding: 7, borderRadius: 6, border: 'none',
+                flex: 1,
+                padding: 7,
+                borderRadius: 6,
+                border: 'none',
                 background: tab === t ? 'var(--bg2)' : 'transparent',
                 color: tab === t ? 'var(--text)' : 'var(--text2)',
-                cursor: 'pointer', fontFamily: 'var(--mono)',
-                fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.06em',
+                cursor: 'pointer',
+                fontFamily: 'var(--mono)',
+                fontSize: '.65rem',
+                textTransform: 'uppercase',
+                letterSpacing: '.06em',
               }}
             >
               {t === 'login' ? 'Connexion' : 'Créer un compte'}
@@ -81,14 +116,20 @@ export function AuthScreen() {
           ))}
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)}>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+        >
           {tab === 'signup' && (
             <input
               style={inputStyle}
               type="text"
               placeholder="Prénom"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+              }}
               required
             />
           )}
@@ -97,7 +138,9 @@ export function AuthScreen() {
             type="email"
             placeholder="ton@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+            }}
             required
           />
           <input
@@ -105,7 +148,9 @@ export function AuthScreen() {
             type="password"
             placeholder="••••••••"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+            }}
             required
             minLength={8}
           />
@@ -113,8 +158,11 @@ export function AuthScreen() {
           {error && (
             <div
               style={{
-                fontFamily: 'var(--mono)', fontSize: '.65rem',
-                color: 'var(--red)', textAlign: 'center', marginBottom: '.75rem',
+                fontFamily: 'var(--mono)',
+                fontSize: '.65rem',
+                color: 'var(--red)',
+                textAlign: 'center',
+                marginBottom: '.75rem',
               }}
             >
               {error}
@@ -125,10 +173,17 @@ export function AuthScreen() {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%', background: 'var(--cyan)', color: '#000',
-              border: 'none', borderRadius: 8, padding: 11,
-              fontFamily: 'var(--body)', fontWeight: 700, fontSize: '.88rem',
-              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? .6 : 1,
+              width: '100%',
+              background: 'var(--cyan)',
+              color: '#000',
+              border: 'none',
+              borderRadius: 8,
+              padding: 11,
+              fontFamily: 'var(--body)',
+              fontWeight: 700,
+              fontSize: '.88rem',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
             }}
           >
             {loading ? '…' : tab === 'login' ? 'Se connecter' : 'Créer mon compte'}
@@ -140,8 +195,15 @@ export function AuthScreen() {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'var(--bg3)', border: '1px solid var(--border2)',
-  borderRadius: 8, padding: '10px 14px', color: 'var(--text)',
-  fontFamily: 'var(--body)', fontSize: '.88rem', outline: 'none',
-  marginBottom: 10, display: 'block',
+  width: '100%',
+  background: 'var(--bg3)',
+  border: '1px solid var(--border2)',
+  borderRadius: 8,
+  padding: '10px 14px',
+  color: 'var(--text)',
+  fontFamily: 'var(--body)',
+  fontSize: '.88rem',
+  outline: 'none',
+  marginBottom: 10,
+  display: 'block',
 }

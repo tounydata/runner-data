@@ -25,25 +25,55 @@ export function NavBar() {
       }}
     >
       <button
-        onClick={() => navigate('/')}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+        onClick={() => {
+          void navigate('/')
+        }}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}
       >
         <div
           style={{
-            width: 34, height: 34, borderRadius: 8,
+            width: 34,
+            height: 34,
+            borderRadius: 8,
             background: 'linear-gradient(135deg,var(--cyan),var(--purple))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--display)', fontSize: 17, color: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'var(--display)',
+            fontSize: 17,
+            color: '#000',
           }}
         >
           AO
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--display)', fontSize: '1.1rem', letterSpacing: '.06em', color: 'var(--text)' }}>
+          <div
+            style={{
+              fontFamily: 'var(--display)',
+              fontSize: '1.1rem',
+              letterSpacing: '.06em',
+              color: 'var(--text)',
+            }}
+          >
             RUNNER OS
           </div>
           {athleteName && (
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '.6rem', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+            <div
+              style={{
+                fontFamily: 'var(--mono)',
+                fontSize: '.6rem',
+                color: 'var(--text3)',
+                textTransform: 'uppercase',
+                letterSpacing: '.08em',
+              }}
+            >
               {athleteName}
             </div>
           )}
@@ -53,15 +83,23 @@ export function NavBar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div
           style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'var(--bg3)', border: '1px solid var(--border2)',
-            borderRadius: 20, padding: '5px 11px',
-            fontFamily: 'var(--mono)', fontSize: '.6rem', color: 'var(--text2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'var(--bg3)',
+            border: '1px solid var(--border2)',
+            borderRadius: 20,
+            padding: '5px 11px',
+            fontFamily: 'var(--mono)',
+            fontSize: '.6rem',
+            color: 'var(--text2)',
           }}
         >
           <div
             style={{
-              width: 6, height: 6, borderRadius: '50%',
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
               background: connected ? 'var(--green)' : 'var(--text3)',
               boxShadow: connected ? '0 0 6px var(--green)' : 'none',
             }}
@@ -69,11 +107,18 @@ export function NavBar() {
           Strava
         </div>
         <button
-          onClick={() => void signOut()}
+          onClick={() => {
+            void signOut()
+          }}
           style={{
-            padding: '6px 12px', borderRadius: 7, border: '1px solid var(--border2)',
-            background: 'var(--bg3)', color: 'var(--text2)', cursor: 'pointer',
-            fontFamily: 'var(--mono)', fontSize: '.6rem',
+            padding: '6px 12px',
+            borderRadius: 7,
+            border: '1px solid var(--border2)',
+            background: 'var(--bg3)',
+            color: 'var(--text2)',
+            cursor: 'pointer',
+            fontFamily: 'var(--mono)',
+            fontSize: '.6rem',
           }}
         >
           Déconnexion

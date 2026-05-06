@@ -25,11 +25,13 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
       })
       set({ result, loading: false })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur d\'analyse'
+      const message = err instanceof Error ? err.message : "Erreur d'analyse"
       logger.error('Analysis failed', { activityId, message })
       set({ error: message, loading: false })
     }
   },
 
-  clear: () => set({ result: null, error: null }),
+  clear: () => {
+    set({ result: null, error: null })
+  },
 }))

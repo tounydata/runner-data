@@ -5,10 +5,7 @@ interface RetryOptions {
   shouldRetry?: (error: unknown) => boolean
 }
 
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { maxAttempts = 3, initialDelayMs = 500, maxDelayMs = 8000, shouldRetry } = options
 
   let lastError: unknown

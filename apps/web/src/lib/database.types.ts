@@ -36,10 +36,13 @@ export interface Database {
           id: string
           user_id: string
           data: unknown
-          zone_data: unknown | null
+          zone_data: unknown
           imported_at: string
         }
-        Insert: Omit<Database['public']['Tables']['activities_history']['Row'], 'id' | 'imported_at'>
+        Insert: Omit<
+          Database['public']['Tables']['activities_history']['Row'],
+          'id' | 'imported_at'
+        >
         Update: Partial<Database['public']['Tables']['activities_history']['Insert']>
       }
       race_calendar: {
@@ -54,7 +57,7 @@ export interface Database {
           goal_time: string | null
           gpx_data: string | null
           strava_activity_id: number | null
-          athlete_profile: unknown | null
+          athlete_profile: unknown
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['race_calendar']['Row'], 'id' | 'created_at'>

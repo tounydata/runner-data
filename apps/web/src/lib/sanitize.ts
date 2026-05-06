@@ -6,12 +6,24 @@ import { marked } from 'marked'
  * Returns sanitised HTML string; use with dangerouslySetInnerHTML ONLY
  * after this function has been applied.
  */
-export async function renderSafeMarkdown(markdown: string): Promise<string> {
-  const rawHtml = await marked.parse(markdown, { async: false })
+export function renderSafeMarkdown(markdown: string): string {
+  const rawHtml = marked.parse(markdown) as string
   return DOMPurify.sanitize(rawHtml, {
     ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'em', 'ul', 'ol', 'li',
-      'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre',
+      'p',
+      'br',
+      'strong',
+      'em',
+      'ul',
+      'ol',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'blockquote',
+      'code',
+      'pre',
     ],
     ALLOWED_ATTR: [],
     FORBID_CONTENTS: ['script', 'style'],

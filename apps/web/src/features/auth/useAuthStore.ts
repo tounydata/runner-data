@@ -53,8 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ error: error.message, loading: false })
       return
     }
-    if (data.user && !error) {
-      // Create initial profile row
+    if (data.user) {
       await supabase.from('profiles').upsert({ id: data.user.id, name })
     }
     set({ loading: false })
@@ -65,5 +64,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ session: null })
   },
 
-  clearError: () => set({ error: null }),
+  clearError: () => {
+    set({ error: null })
+  },
 }))
