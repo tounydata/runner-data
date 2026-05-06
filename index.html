@@ -65,7 +65,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.9r
 .nbtn{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(–text2);transition:all .2s;white-space:nowrap;}
 .nbtn.active{background:var(–bg4);color:var(–text);border:1px solid var(–border2);}
 .nbtn:hover:not(.active){color:var(–text);}
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(–bg,#060810);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.97);backdrop-filter:blur(12px);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(–text3);cursor:pointer;font-family:var(–mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
 .tab-btn.active{color:var(–cyan);}
 .tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -2661,7 +2661,7 @@ function buildSplitsTable(kmSecs, basePaceS){
     const type=s.grade>4?'up':s.grade<-4?'down':'flat';
     const fc={up:`< ${Math.abs(s.grade)>10?pct84:pct88} bpm`,down:'Libre',flat:`< ${pct79} bpm`}[type];
     const conseil={up:Math.abs(s.grade)>10?'Marche active':'Courir régulier',down:'Foulées courtes',flat:'Récup'}[type];
-    rows+=`<tr class="section-${type}"><td class="mono">${s.startKm}→${s.km.toFixed(1)}</td><td>${{up:'⛰️',down:'🎿',flat:'➡️'}[type]}</td><td class="mono" style="color:${{up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'}[type]}">${s.grade>0?'+':''}${s.grade.toFixed(1)}%</td><td class="mono ${s.dplus>0?'to':''}">${s.dplus>0?`+${s.dplus}m`:'—'}</td><td class="mono ${s.dminus>0?'tp':''}">${s.dminus>0?`-${s.dminus}m`:'—'}</td><td class="mono t2">${s.altEnd||'—'}m</td><td class="mono">${fmtT(secTime)}</td><td class="mono tc">${fmtT(cumTime)}</td><td style="font-size:.68rem;color:var(--text2)">${conseil} · FC ${fc}</td></tr>`;
+    rows+=`<tr class="section-${type}"><td class="mono">${s.startKm}→${s.endKm.toFixed(1)}</td><td>${{up:'⛰️',down:'🎿',flat:'➡️'}[type]}</td><td class="mono" style="color:${{up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'}[type]}">${s.grade>0?'+':''}${s.grade.toFixed(1)}%</td><td class="mono ${s.dplus>0?'to':''}">${s.dplus>0?`+${s.dplus}m`:'—'}</td><td class="mono ${s.dminus>0?'tp':''}">${s.dminus>0?`-${s.dminus}m`:'—'}</td><td class="mono t2">${s.altEnd||'—'}m</td><td class="mono">${fmtT(secTime)}</td><td class="mono tc">${fmtT(cumTime)}</td><td style="font-size:.68rem;color:var(--text2)">${conseil} · FC ${fc}</td></tr>`;
   });
   return rows;
 }
