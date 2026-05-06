@@ -11,6 +11,7 @@
 Runner OS started as a single-file monolith (`index.html`, ~3 400 lines of mixed HTML/CSS/JS). The app uses Supabase (Auth, Postgres, Edge Functions), Strava OAuth, and Claude AI. It is being opened to its first external users and needs to be maintainable, secure, and scalable.
 
 Pain points identified in the monolith:
+
 - Tokens stored in `localStorage` (XSS exposure)
 - `innerHTML` with unsanitised AI responses (XSS vector)
 - `</body>` closed mid-file, DOM nodes appended after
@@ -25,6 +26,7 @@ Pain points identified in the monolith:
 ### Chosen: React 19 + Vite 6
 
 **Why not Next.js:**
+
 - The app is entirely behind authentication — SSR provides zero SEO value for user-specific dashboards
 - No public pages require server rendering or static generation
 - The deployment target is a static CDN (Cloudflare Pages / Vercel static) — no Node server needed
@@ -32,6 +34,7 @@ Pain points identified in the monolith:
 - Strava OAuth flow is handled by Supabase Edge Functions, not the Next.js server
 
 **Why React + Vite:**
+
 - Fast HMR, minimal config
 - Full TypeScript support out of the box
 - `@vitejs/plugin-react` with SWC for production builds
@@ -46,6 +49,7 @@ Pain points identified in the monolith:
 ## Decision: Zustand (not Redux Toolkit)
 
 **Why Zustand:**
+
 - Minimal boilerplate — store definition is one function call
 - First-class TypeScript inference without extra setup
 - Atomic slices map directly to features (auth, activities, race-calendar, profile)
@@ -53,6 +57,7 @@ Pain points identified in the monolith:
 - Devtools available via `zustand/middleware`
 
 **Why not Redux Toolkit:**
+
 - RTK Query solves server-cache problems that `@tanstack/react-query` solves more elegantly
 - Overkill for the current feature surface
 - Heavier bundle (~15 KB gzip vs ~1 KB for Zustand)
@@ -80,6 +85,7 @@ runner-os/
 ```
 
 **Why a monorepo:**
+
 - `packages/shared` types are consumed by both the frontend and Edge Functions
 - A single `pnpm` workspace keeps dependency versions in sync
 - Turbo enables parallel builds and caching across packages
@@ -103,6 +109,7 @@ Browser (React)
 ```
 
 **No direct API calls from the browser to:**
+
 - Strava API (tokens stay server-side in Edge Functions)
 - Anthropic API (key never exposed to client)
 
@@ -110,14 +117,14 @@ Browser (React)
 
 ## Security Model
 
-| Concern | Decision |
-|---|---|
-| Strava tokens | Stored in `strava_tokens` table (server-side only, never sent to client); access via Edge Functions only |
-| Supabase session | httpOnly cookies via `supabase.auth.setSession` + `storage: cookieStorage` in production |
-| AI output rendering | `textContent` or `marked` with strict sanitisation — never raw `innerHTML` |
-| RLS | Explicit policies on every table; `TO authenticated` minimum |
-| Secrets | All in `.env` / Supabase Vault; zero secrets in source |
-| CORS | Edge Functions enforce `Access-Control-Allow-Origin` allowlist |
+| Concern             | Decision                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| Strava tokens       | Stored in `strava_tokens` table (server-side only, never sent to client); access via Edge Functions only |
+| Supabase session    | httpOnly cookies via `supabase.auth.setSession` + `storage: cookieStorage` in production                 |
+| AI output rendering | `textContent` or `marked` with strict sanitisation — never raw `innerHTML`                               |
+| RLS                 | Explicit policies on every table; `TO authenticated` minimum                                             |
+| Secrets             | All in `.env` / Supabase Vault; zero secrets in source                                                   |
+| CORS                | Edge Functions enforce `Access-Control-Allow-Origin` allowlist                                           |
 
 ---
 

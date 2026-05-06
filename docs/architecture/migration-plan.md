@@ -44,14 +44,14 @@ The migration follows three phases. Each phase keeps the app live and the existi
 
 ### Order (lowest risk first)
 
-| # | Feature | Risk | Notes |
-|---|---|---|---|
-| 1 | Profile | Low | Pure CRUD, no external APIs |
-| 2 | Race Calendar | Low | Pure CRUD |
-| 3 | Auth | Medium | Session handling change |
-| 4 | Activities | Medium | Strava integration |
-| 5 | Analysis (AI) | High | AI rendering, complex state |
-| 6 | Strategy / Dashboard | High | Most complex UI |
+| #   | Feature              | Risk   | Notes                       |
+| --- | -------------------- | ------ | --------------------------- |
+| 1   | Profile              | Low    | Pure CRUD, no external APIs |
+| 2   | Race Calendar        | Low    | Pure CRUD                   |
+| 3   | Auth                 | Medium | Session handling change     |
+| 4   | Activities           | Medium | Strava integration          |
+| 5   | Analysis (AI)        | High   | AI rendering, complex state |
+| 6   | Strategy / Dashboard | High   | Most complex UI             |
 
 ### Per-feature process
 
@@ -85,11 +85,11 @@ The migration follows three phases. Each phase keeps the app live and the existi
 
 ## Rollback Summary Per Phase
 
-| Phase | Rollback mechanism | Time to restore |
-|---|---|---|
-| A | Revert Edge Function deploy | < 2 min |
-| B | Flip feature flag to false | < 1 min |
-| C | `git checkout legacy-monolith` + redeploy | < 5 min |
+| Phase | Rollback mechanism                        | Time to restore |
+| ----- | ----------------------------------------- | --------------- |
+| A     | Revert Edge Function deploy               | < 2 min         |
+| B     | Flip feature flag to false                | < 1 min         |
+| C     | `git checkout legacy-monolith` + redeploy | < 5 min         |
 
 ---
 

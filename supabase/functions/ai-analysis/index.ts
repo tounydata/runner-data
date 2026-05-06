@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const userId = await requireAuth(req)
-    const body = await req.json() as unknown
+    const body = (await req.json()) as unknown
     const parsed = analysisRequestSchema.safeParse(body)
     if (!parsed.success) {
       throw new ValidationError(parsed.error.issues.map((i) => i.message).join(', '))
@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Claude API error: ${err}`)
     }
 
-    const claudeData = await claudeRes.json() as {
+    const claudeData = (await claudeRes.json()) as {
       content: { type: string; text: string }[]
     }
 
@@ -92,7 +92,10 @@ Profil athlète: FC max ${profile?.fc_max ?? 'inconnu'} bpm, seuil lactique ${pr
 Langue: français uniquement.`
 }
 
-function buildUserPrompt(activity: Record<string, unknown>, _profile: Record<string, unknown> | null): string {
+function buildUserPrompt(
+  activity: Record<string, unknown>,
+  _profile: Record<string, unknown> | null
+): string {
   return `Analyse cette activité running: ${JSON.stringify(activity, null, 2)}`
 }
 

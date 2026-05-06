@@ -41,11 +41,12 @@ export function metresToKm(metres: number): string {
 export function gapFactor(grade: number): number {
   const g = Math.max(-0.45, Math.min(0.45, grade))
   return (
-    155.4 * Math.pow(g, 5) -
-    30.4 * Math.pow(g, 4) -
-    43.3 * Math.pow(g, 3) +
-    46.3 * Math.pow(g, 2) +
-    19.5 * g +
+    (155.4 * Math.pow(g, 5) -
+      30.4 * Math.pow(g, 4) -
+      43.3 * Math.pow(g, 3) +
+      46.3 * Math.pow(g, 2) +
+      19.5 * g +
+      3.6) /
     3.6
-  ) / 3.6
+  )
 }

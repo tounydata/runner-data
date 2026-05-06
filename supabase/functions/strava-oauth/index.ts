@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const userId = await requireAuth(req)
-    const body = await req.json() as unknown
+    const body = (await req.json()) as unknown
     const parsed = stravaOAuthPayloadSchema.safeParse(body)
     if (!parsed.success) {
       throw new ValidationError(parsed.error.issues.map((i) => i.message).join(', '))
@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Strava token exchange failed: ${err}`)
     }
 
-    const tokenData = await tokenRes.json() as {
+    const tokenData = (await tokenRes.json()) as {
       access_token: string
       refresh_token: string
       expires_at: number
@@ -92,7 +92,7 @@ async function fetchAndStoreActivities(
   )
   if (!activitiesRes.ok) return
 
-  const activities = await activitiesRes.json() as unknown[]
+  const activities = (await activitiesRes.json()) as unknown[]
   await supabase.from('activities_history').upsert({
     user_id: userId,
     data: activities,

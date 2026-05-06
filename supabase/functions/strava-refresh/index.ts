@@ -53,18 +53,21 @@ Deno.serve(async (req: Request) => {
       return json({ connected: false }, 200, cors)
     }
 
-    const refreshed = await refreshRes.json() as {
+    const refreshed = (await refreshRes.json()) as {
       access_token: string
       refresh_token: string
       expires_at: number
     }
 
-    await supabase.from('strava_tokens').update({
-      access_token: refreshed.access_token,
-      refresh_token: refreshed.refresh_token,
-      expires_at: refreshed.expires_at,
-      updated_at: new Date().toISOString(),
-    }).eq('user_id', userId)
+    await supabase
+      .from('strava_tokens')
+      .update({
+        access_token: refreshed.access_token,
+        refresh_token: refreshed.refresh_token,
+        expires_at: refreshed.expires_at,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId)
 
     await fetchAndStoreActivities(userId, refreshed.access_token, supabase)
 
@@ -79,13 +82,12 @@ async function fetchAndStoreActivities(
   accessToken: string,
   supabase: ReturnType<typeof getServiceClient>
 ): Promise<void> {
-  const res = await fetch(
-    'https://www.strava.com/api/v3/athlete/activities?per_page=100',
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  )
+  const res = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
   if (!res.ok) return
 
-  const activities = await res.json() as unknown[]
+  const activities = (await res.json()) as unknown[]
   await supabase.from('activities_history').upsert({
     user_id: userId,
     data: activities,

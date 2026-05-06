@@ -16,7 +16,10 @@ export async function requireAuth(req: Request): Promise<string> {
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
   const client = createClient(url, anonKey)
 
-  const { data: { user }, error } = await client.auth.getUser(token)
+  const {
+    data: { user },
+    error,
+  } = await client.auth.getUser(token)
   if (error || !user) throw new AuthError('Invalid or expired token')
 
   return user.id

@@ -24,21 +24,22 @@
 
 ## 3. Token Storage Strategy
 
-| Token | Storage | Rationale |
-|---|---|---|
-| Supabase session JWT | `supabase-js` default (localStorage) | Acceptable for SPA; upgrade to httpOnly cookie for higher sensitivity |
-| Strava access token | **Never in client** — stored in `strava_tokens` DB table, accessed only by Edge Functions | Prevents token theft via XSS |
-| Strava refresh token | Same as access token | |
-| Anthropic API key | Supabase Vault / environment secret | Never in source or client |
+| Token                | Storage                                                                                   | Rationale                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Supabase session JWT | `supabase-js` default (localStorage)                                                      | Acceptable for SPA; upgrade to httpOnly cookie for higher sensitivity |
+| Strava access token  | **Never in client** — stored in `strava_tokens` DB table, accessed only by Edge Functions | Prevents token theft via XSS                                          |
+| Strava refresh token | Same as access token                                                                      |                                                                       |
+| Anthropic API key    | Supabase Vault / environment secret                                                       | Never in source or client                                             |
 
 **Upgrade path to httpOnly cookies:**
+
 ```ts
 // apps/web/src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js'
 import { CookieStorage } from '@supabase/auth-helpers-shared'
 
 export const supabase = createClient(url, anonKey, {
-  auth: { storage: new CookieStorage() }  // httpOnly via server proxy
+  auth: { storage: new CookieStorage() }, // httpOnly via server proxy
 })
 ```
 
@@ -78,21 +79,25 @@ export const supabase = createClient(url, anonKey, {
 ## 8. Incident Response Basics
 
 ### Detection
+
 - Supabase logs → Auth logs for anomalous login patterns
 - Edge Function logs → Sentry or structured logging for 5xx rates
 - Vercel/Cloudflare analytics → Traffic spikes
 
 ### Containment
+
 1. Immediately revoke the compromised credential in the relevant dashboard
 2. If DB compromise suspected: enable IP allowlist on Supabase project
 3. Force-sign-out all sessions: `supabase auth admin sign-out --all` (via service role)
 
 ### Recovery
+
 1. Restore from latest backup if data was corrupted
 2. Audit auth logs to identify affected users
 3. Notify affected users if personal data may have been accessed (GDPR obligation)
 
 ### Post-incident
+
 - Write incident report within 48 hours
 - Update this checklist with new controls
 
