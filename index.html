@@ -47,7 +47,7 @@ select.fi{cursor:pointer;}
 #appShell.show{display:block;}
 
 /* ── HEADER ── */
-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(–border);position:fixed;top:0;left:0;right:0;z-index:200;background:var(–bg,#060810);backdrop-filter:blur(12px);}
+header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(–border);position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
 [data-light] header{background:var(–bg,#f0f4f8);backdrop-filter:blur(12px);}
 
 .logo{display:flex;align-items:center;gap:10px;}
@@ -60,12 +60,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.9r
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .dot-on{background:var(–green);box-shadow:0 0 6px var(–green);animation:blink 2s infinite;}
 .dot-off{background:var(–text3);}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .strava-pill{display:flex;align-items:center;gap:6px;background:var(–bg3);border:1px solid var(–border2);border-radius:20px;padding:5px 11px;font-family:var(–mono);font-size:.6rem;color:var(–text2);}
 .nbtn{font-family:var(–mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(–text2);transition:all .2s;white-space:nowrap;}
 .nbtn.active{background:var(–bg4);color:var(–text);border:1px solid var(–border2);}
 .nbtn:hover:not(.active){color:var(–text);}
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.97);backdrop-filter:blur(12px);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(6,8,16,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(–border2);display:flex;padding:0 0 env(safe-area-inset-bottom,0);}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;border:none;background:transparent;color:var(–text3);cursor:pointer;font-family:var(–mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.06em;gap:4px;transition:color .2s;}
 .tab-btn.active{color:var(–cyan);}
 .tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -141,11 +141,11 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
 .a-sl{font-family:var(–mono);font-size:.54rem;color:var(–text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
 .a-ss{font-size:.65rem;color:var(–text2);margin-top:2px;}
 
-/* ── PAF ── */
-.paf-widget{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1rem 1.25rem;margin-bottom:1.25rem;}
-.paf-factors{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
-.paf-factor{display:flex;align-items:center;gap:6px;background:var(–bg4);border-radius:7px;padding:6px 10px;border:1px solid var(–border);}
-.paf-result{display:flex;align-items:center;gap:12px;padding:9px 13px;background:var(–bg4);border-radius:8px;}
+/* ── GAP ── */
+.gap-widget{background:var(–bg3);border:1px solid var(–border2);border-radius:var(–r);padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.gap-factors{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.gap-factor{display:flex;align-items:center;gap:6px;background:var(–bg4);border-radius:7px;padding:6px 10px;border:1px solid var(–border);}
+.gap-result{display:flex;align-items:center;gap:12px;padding:9px 13px;background:var(–bg4);border-radius:8px;}
 
 /* ── CHARTS ── */
 .chart-wrap{position:relative;width:100%;}
@@ -347,6 +347,7 @@ main{padding:4.5rem 2rem 6rem;max-width:1440px;margin:0 auto;}
   <div style="display:flex;align-items:center;gap:8px">
     <div class="strava-pill"><div class="dot dot-off" id="statusDot"></div><span id="statusText">Strava</span></div>
     <button class="hbtn strava" id="btnStrava" onclick="connectStrava()">Connecter Strava</button>
+    <button class="hbtn" id="btnRefresh" onclick="refreshActivities()" style="display:none" title="Actualiser les activités">↻</button>
     <button class="hbtn" onclick="toggleTheme()">◐</button>
     <button class="hbtn" onclick="logout()">Déconnexion</button>
   </div>
@@ -1086,6 +1087,17 @@ function setStravaConnected() {
   const a = JSON.parse(localStorage.getItem('s_athlete')||'{}');
   document.getElementById('statusText').textContent = a.firstname ? `${a.firstname} ${a.lastname}` : 'Connecté';
   document.getElementById('btnStrava').style.display = 'none';
+  const refreshBtn = document.getElementById('btnRefresh');
+  if(refreshBtn) refreshBtn.style.display = 'inline-flex';
+}
+
+async function refreshActivities() {
+  const btn = document.getElementById('btnRefresh');
+  if(btn) { btn.textContent = '↻'; btn.style.animation = 'spin 1s linear infinite'; }
+  await loadHistoryFromDB();
+  renderDashboard();
+  if(btn) { btn.textContent = '↻'; btn.style.animation = ''; }
+  showToast('Activités actualisées ✓', 'success');
 }
 
 async function checkStravaToken() {
@@ -1286,9 +1298,9 @@ function renderActivities() {
 }
 
 // ════════════════════════════════════════════════════
-// PAF
+// GAP
 // ════════════════════════════════════════════════════
-function computePAF(act, weather) {
+function computeGAP(act, weather) {
   const fcMax=userProfile.fc_max||FC_MAX_DEFAULT;
   let factors=[],totalAdj=0;
   if(weather?.temp!=null){const a=Math.max(0,(weather.temp-10)*0.008);totalAdj+=a;factors.push({icon:weather.temp>25?'🌡️':weather.temp<5?'❄️':'🌤️',label:'Température',value:`${weather.temp.toFixed(1)}°C`,adj:a>0.005?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.02?'var(--red)':a>0.01?'var(--orange)':'var(--green)'});}
@@ -1304,7 +1316,7 @@ function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 // AI ANALYSIS
 // ════════════════════════════════════════════════════
-async function generateAIAnalysis(act, streams, paf) {
+async function generateAIAnalysis(act, streams, gap) {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const seuil = userProfile.lactate_threshold || 181;
   const zones = [0,0,0,0,0];
@@ -1320,10 +1332,10 @@ DONNÉES ATHLÈTE:
 
 DONNÉES SORTIE:
 - Type: ${act.type} | Distance: ${(act.distance/1000).toFixed(2)}km | Durée: ${fmtD(act.moving_time)}
-- Allure moyenne: ${fmtP(act.average_speed)}/km | Allure normalisée PAF: ${paf.paceNorm}/km
+- Allure moyenne: ${fmtP(act.average_speed)}/km | Allure ajustée (GAP): ${gap.paceNorm}/km
 - D+: ${act.total_elevation_gain||0}m | FC moy: ${act.average_heartrate||'N/A'} bpm | FC max: ${act.max_heartrate||'N/A'} bpm
 - Répartition zones FC: Z1=${zones[0]}% Z2=${zones[1]}% Z3=${zones[2]}% Z4=${zones[3]}% Z5=${zones[4]}%
-- Pénalité conditions: +${(paf.totalAdj*100).toFixed(0)}% (${paf.factors.map(f=>f.label+' '+f.value).join(', ')})
+- Pénalité conditions: +${(gap.totalAdj*100).toFixed(0)}% (${gap.factors.map(f=>f.label+' '+f.value).join(', ')})
 
 Donne une analyse courte incluant: qualité de l'effort, gestion FC, point fort et 1 conseil concret.`;
 
@@ -1381,7 +1393,7 @@ async function openAnalyse(actOrId) {
     act.start_latlng?.length>=2 ? fetchWeather(act.start_latlng[0],act.start_latlng[1],act.start_date_local) : Promise.resolve(null)
   ]);
 
-  const paf = computePAF(act, weather);
+  const gap = computeGAP(act, weather);
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const d = new Date(act.start_date_local);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
@@ -1418,7 +1430,7 @@ async function openAnalyse(actOrId) {
     <div class="a-stats">
       <div class="a-stat"><div class="a-sv tc">${(act.distance/1000).toFixed(2)} km</div><div class="a-sl">Distance</div></div>
       <div class="a-stat"><div class="a-sv">${fmtD(act.moving_time)}</div><div class="a-sl">Temps mvt</div></div>
-      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">normalisée PAF : ${paf.paceNorm}/km</div></div>
+      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">ajustée (GAP) : ${gap.paceNorm}/km</div></div>
       ${act.total_elevation_gain?`<div class="a-stat"><div class="a-sv to">+${act.total_elevation_gain}m</div><div class="a-sl">D+</div></div>`:''}
       ${act.average_heartrate?`<div class="a-stat"><div class="a-sv">${Math.round(act.average_heartrate)}</div><div class="a-sl">FC moy</div><div class="a-ss">max ${act.max_heartrate||'—'} bpm</div></div>`:''}
       ${act.kilojoules?`<div class="a-stat"><div class="a-sv">${Math.round(act.kilojoules*.239)}</div><div class="a-sl">kcal</div></div>`:''}
@@ -1430,13 +1442,13 @@ async function openAnalyse(actOrId) {
       <div class="ai-loading"><div class="spinner"></div><div>Analyse en cours...</div></div>
     </div>
 
-    <!-- PAF -->
-    <div class="paf-widget">
-      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">Performance Adjustment Factor</div>
-      <div class="paf-factors">${paf.factors.map(f=>`<div class="paf-factor"><span style="font-size:.95rem">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
-      <div class="paf-result">
-        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure normalisée (indicatif)</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${paf.paceNorm}/km</div></div>
-        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Pénalité conditions : <strong>+${(paf.totalAdj*100).toFixed(0)}%</strong></div>
+    <!-- GAP -->
+    <div class="gap-widget">
+      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">GAP — Grade Adjusted Pace</div>
+      <div class="gap-factors">${gap.factors.map(f=>`<div class="gap-factor"><span style="font-size:.95rem">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
+      <div class="gap-result">
+        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure normalisée (indicatif)</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${gap.paceNorm}/km</div></div>
+        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Facteurs de correction : <strong>+${(gap.totalAdj*100).toFixed(0)}%</strong></div>
       </div>
       <div class="mono t3" style="margin-top:8px;font-size:.56rem;font-style:italic">📖 Minetti et al., 2002 · Ely et al., 2007 · Lejeune et al., 1998</div>
     </div>
@@ -1486,7 +1498,7 @@ async function openAnalyse(actOrId) {
   renderActivityMap(streams, act);
 
   // AI analysis async
-  const aiText = await generateAIAnalysis(act, streams, paf);
+  const aiText = await generateAIAnalysis(act, streams, gap);
   const aiBox = document.getElementById('aiBox');
   if (aiBox) {
     aiBox.innerHTML = `<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Coach Runner</div></div><div class="ai-text">${aiText}</div>`;
