@@ -1,10 +1,21 @@
 import { useEffect } from 'react'
 import { useStravaStore } from '@/features/activities/useStravaStore'
 import { useRaceStore } from '@/features/race-calendar/useRaceStore'
+import type { HeartRateZone } from '@runner-os/shared'
 import { metresToKm } from '@runner-os/shared'
 
+function isHeartRateZone(value: unknown): value is HeartRateZone {
+  if (typeof value !== 'object' || value === null) return false
+  const zone = value as Record<string, unknown>
+  return (
+    typeof zone.min === 'number' &&
+    typeof zone.max === 'number' &&
+    typeof zone.time === 'number'
+  )
+}
+
 export function DashboardPage() {
-  const { activities, connected, connectStrava, loadActivities } = useStravaStore()
+  const { activities, zoneData, connected, connectStrava, loadActivities } = useStravaStore()
   const { races, loadRaces } = useRaceStore()
 
   useEffect(() => {
@@ -69,12 +80,31 @@ export function DashboardPage() {
     ? Math.ceil((new Date(nextRace.date).getTime() - now.getTime()) / 86400000)
     : null
 
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000)
+  const last7DaysRuns = runs.filter((a) => new Date(a.start_date) >= sevenDaysAgo)
+  const totalMovingTime7Days = last7DaysRuns.reduce((sum, a) => sum + a.moving_time, 0)
+  const z2Time7Days = last7DaysRuns.reduce((sum, a) => {
+    const rawHeartRate = zoneData?.[String(a.id)]?.heart_rate
+    const hrZones = Array.isArray(rawHeartRate) ? rawHeartRate.filter(isHeartRateZone) : []
+    if (hrZones.length === 0) return sum
+
+    const activityZ2Time = hrZones
+      .filter((zone) => zone.min >= 60 && zone.max <= 72)
+      .reduce((zoneSum, zone) => zoneSum + zone.time, 0)
+
+    return sum + activityZ2Time
+  }, 0)
+
+  const z2Percent7Days =
+    totalMovingTime7Days > 0 ? Math.round((z2Time7Days / totalMovingTime7Days) * 100) : null
+  const longestRunKm = runs.length > 0 ? metresToKm(Math.max(...runs.map((a) => a.distance))) : '—'
+
   return (
     <div>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5,1fr)',
+          gridTemplateColumns: 'repeat(6,1fr)',
           gap: 1,
           background: 'var(--border)',
           borderRadius: 'var(--r)',
@@ -86,10 +116,17 @@ export function DashboardPage() {
           { value: metresToKm(kmMonth), label: 'km / mois' },
           { value: String(thisMonth.length), label: 'sorties' },
           { value: `+${String(Math.round(elevMonth))}`, label: 'D+ mois' },
-          { value: String(runs.length), label: 'total runs' },
+          {
+            value: z2Percent7Days != null ? `${String(z2Percent7Days)}%` : '—',
+            label: 'Z2 / 7j (stream)',
+          },
           {
             value: nextRace && daysToNext != null ? `J-${String(daysToNext)}` : '—',
             label: 'prochain',
+          },
+          {
+            value: longestRunKm,
+            label: 'plus longue',
           },
         ].map((cell) => (
           <div
