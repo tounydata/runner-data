@@ -26,7 +26,60 @@ jobs:
         run: |
           mkdir -p .pages
           cp index.html .pages/index.html
-          cp index.html .pages/404.html
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.pages/index.html')
+          html = path.read_text()
+          patch = r'''
+<script>
+(function(){
+  window.prepareRace = async function(race) {
+    try {
+      let freshRace = race;
+
+      if (window.sb && race && race.id) {
+        const { data, error } = await window.sb
+          .from('race_calendar')
+          .select('*')
+          .eq('id', race.id)
+          .maybeSingle();
+        if (!error && data) freshRace = data;
+      }
+
+      window.currentRaceContext = freshRace;
+
+      showPanel('strategie', document.querySelector('.nbtn[onclick*=\"strategie\"]'));
+
+      const stratResult = document.getElementById('stratResult');
+      const gpxDrop = document.getElementById('gpxDrop');
+      if (stratResult) {
+        stratResult.style.display = 'none';
+        stratResult.innerHTML = '';
+      }
+      if (gpxDrop) gpxDrop.style.display = 'block';
+
+      if (freshRace && freshRace.gpx_data) {
+        let points = freshRace.gpx_data;
+        if (typeof points === 'string') points = JSON.parse(points);
+        if (Array.isArray(points) && points.length) {
+          await analyzeGPX(points, freshRace.name || 'Course');
+          return;
+        }
+      }
+
+      showGpxUploadPrompt(freshRace);
+    } catch (err) {
+      console.error('prepareRace secure patch failed', err);
+      showGpxUploadPrompt(race);
+    }
+  };
+})();
+</script>
+'''
+          html = html.replace('</body>', patch + '\n</body>')
+          path.write_text(html)
+          Path('.pages/404.html').write_text(html)
+          PY
           touch .pages/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
