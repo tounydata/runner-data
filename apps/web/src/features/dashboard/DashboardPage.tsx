@@ -8,9 +8,7 @@ function isHeartRateZone(value: unknown): value is HeartRateZone {
   if (typeof value !== 'object' || value === null) return false
   const zone = value as Record<string, unknown>
   return (
-    typeof zone.min === 'number' &&
-    typeof zone.max === 'number' &&
-    typeof zone.time === 'number'
+    typeof zone.min === 'number' && typeof zone.max === 'number' && typeof zone.time === 'number'
   )
 }
 
