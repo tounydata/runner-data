@@ -31,6 +31,7 @@ export const useStravaStore = create<StravaState>((set, get) => ({
       const {
         data: { user },
       } = await supabase.auth.getUser()
+
       if (!user) return
 
       const { data } = await supabase
@@ -53,11 +54,15 @@ export const useStravaStore = create<StravaState>((set, get) => ({
 
   loadActivities: async () => {
     set({ loading: true, error: null })
+
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+
+      if (!user) {
+        throw new Error('Not authenticated')
+      }
 
       const { data: activitiesData, error } = await supabase
         .from('strava_activities')
@@ -145,7 +150,20 @@ export const useStravaStore = create<StravaState>((set, get) => ({
     set({ loading: true, error: null })
 
     try {
-      await invokeFunction<Record<string, never>, StravaRefreshResponse>('strava-refresh', {})
+      const { data } = await supabase.auth.getSession()
+      const accessToken = data.session?.access_token
+
+      if (!accessToken) {
+        throw new Error('Not authenticated')
+      }
+
+      await invokeFunction<Record<string, never>, StravaRefreshResponse>('strava-refresh', {
+        body: {},
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
       await get().loadActivities()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur de rafraîchissement'
