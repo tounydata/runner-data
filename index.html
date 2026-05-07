@@ -1036,7 +1036,7 @@ function connectStrava() {
 }
 
 async function exchangeCode(code) {
-  const r = await fetch(`${SUPA_URL}/functions/v1/strava-oauth`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'authorization_code',code})});
+  const r = await fetch(`${SUPA_URL}/functions/v1/strava-auth`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'authorization_code',code})});
   const d = await r.json();
   if (d.access_token) { localStorage.setItem('s_token',d.access_token); localStorage.setItem('s_refresh',d.refresh_token); localStorage.setItem('s_expires',d.expires_at); localStorage.setItem('s_athlete',JSON.stringify(d.athlete||{})); return d.access_token; }
   return null;
