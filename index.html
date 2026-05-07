@@ -1380,26 +1380,63 @@ function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 async function generateAIAnalysis(act, streams, paf) {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
-  const seuil = userProfile.lactate_threshold || 181;
   const zones = [0,0,0,0,0];
   const hrS = streams.heartrate?.data||[];
   if(hrS.length){hrS.forEach(h=>{const p=h/fcMax;if(p<.6)zones[0]++;else if(p<.7)zones[1]++;else if(p<.8)zones[2]++;else if(p<.9)zones[3]++;else zones[4]++;});const tot=hrS.length;zones.forEach((_,i)=>zones[i]=Math.round(zones[i]/tot*100));}
+
+  // Detect interval/fractionné session
+  const nameLC = (act.name||'').toLowerCase();
+  const intervalKeywords = ['fractionné','fractionnés','interval','intervals','vma','répétition','répétitions','séries','vitesse','split','splits','fartlek','tempo','lactate','r400','r200','r1000'];
+  const nameIsInterval = intervalKeywords.some(k => nameLC.includes(k));
+  const hrVarianceHigh = zones[3]+zones[4] >= 25; // 25%+ in Z4-Z5
+  const isInterval = nameIsInterval || hrVarianceHigh;
+
+  let sessionTypeBlock = '';
+  if(isInterval){
+    // Try to detect interval structure from velocity stream
+    const velD = streams.velocity_smooth?.data||[];
+    const distD = streams.distance?.data||[];
+    let intervalCount = 0;
+    if(velD.length > 10){
+      // Count transitions from slow (<3.5m/s) to fast (>4m/s)
+      let inFast = false;
+      for(let i=1;i<velD.length;i++){
+        if(!inFast && velD[i]>4.0) { inFast=true; intervalCount++; }
+        else if(inFast && velD[i]<3.5) inFast=false;
+      }
+    }
+    const avgPaceZ45 = act.average_speed ? fmtP(act.average_speed) : 'N/A';
+    sessionTypeBlock = `TYPE DE SÉANCE: FRACTIONNÉ / INTERVALLES
+- Répétitions détectées: ~${intervalCount||'plusieurs'}
+- Zones intensives (Z4+Z5): ${zones[3]+zones[4]}% du temps
+- Allure moyenne sur la séance: ${avgPaceZ45}/km
+→ Analyse spécifiquement la qualité des répétitions, la gestion de la récupération, et si l'intensité cible a été maintenue.`;
+  } else {
+    sessionTypeBlock = `TYPE DE SÉANCE: SORTIE CONTINUE (endurance / tempo)`;
+  }
 
   const prompt = `Tu es un coach running expert. Analyse cette sortie course à pied de manière concise et personnalisée en 4-5 phrases maximum. Sois direct, factuel, et actionnable. Ne commence pas par "Cette sortie" ou "Voici".
 
 DONNÉES ATHLÈTE:
 - Age: ${userProfile.age||34} ans | Poids: ${userProfile.weight||79}kg | VO2max: ${userProfile.vo2max||50.4}
-- FC max: ${fcMax} bpm | Seuil lactique: ${seuil} bpm (${userProfile.lactate_pace||'4:50'}/km)
+- FC max: ${fcMax} bpm
 - Zones douloureuses: ${(userProfile.pain_zones||[]).join(', ')||'aucune'}
 
+${sessionTypeBlock}
+
 DONNÉES SORTIE:
-- Type: ${act.type} | Distance: ${(act.distance/1000).toFixed(2)}km | Durée: ${fmtD(act.moving_time)}
+- Nom: ${act.name}
+- Distance: ${(act.distance/1000).toFixed(2)}km | Durée: ${fmtD(act.moving_time)}
 - Allure moyenne: ${fmtP(act.average_speed)}/km | Allure normalisée PAF: ${paf.paceNorm}/km
 - D+: ${act.total_elevation_gain||0}m | FC moy: ${act.average_heartrate||'N/A'} bpm | FC max: ${act.max_heartrate||'N/A'} bpm
 - Répartition zones FC: Z1=${zones[0]}% Z2=${zones[1]}% Z3=${zones[2]}% Z4=${zones[3]}% Z5=${zones[4]}%
 - Pénalité conditions: +${(paf.totalAdj*100).toFixed(0)}% (${paf.factors.map(f=>f.label+' '+f.value).join(', ')})
 
-Donne une analyse courte incluant: qualité de l'effort, gestion FC, point fort et 1 conseil concret.`;
+${isInterval
+  ? 'Analyse la qualité des répétitions, la régularité de l\'effort, la récupération entre les séries, et donne 1 conseil concret pour la prochaine séance de fractionné.'
+  : 'Analyse la qualité de l\'effort, la gestion FC, le point fort de la séance, et donne 1 conseil concret.'
+}
+Ne mentionne pas le seuil lactique sauf si la séance est explicitement un travail au seuil.`;
 
   try {
     const { data: { session } } = await sb.auth.getSession();
