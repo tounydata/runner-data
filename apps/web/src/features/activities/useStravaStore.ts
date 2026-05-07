@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { StravaActivity, StravaSyncResponse } from '@runner-os/shared'
+import type { StravaActivity, StravaRefreshResponse, ZoneData } from '@runner-os/shared'
 import { supabase } from '@/lib/supabase'
 import { invokeFunction } from '@/lib/api-client'
 import { logger } from '@/lib/logger'
@@ -9,6 +9,7 @@ interface StravaState {
   connected: boolean
   athleteName: string | null
   activities: StravaActivity[]
+  zoneData: ZoneData | null
   loading: boolean
   error: string | null
   loadActivities: () => Promise<void>
@@ -21,6 +22,7 @@ export const useStravaStore = create<StravaState>((set, get) => ({
   connected: false,
   athleteName: null,
   activities: [],
+  zoneData: null,
   loading: false,
   error: null,
 
@@ -96,13 +98,43 @@ export const useStravaStore = create<StravaState>((set, get) => ({
         }
       })
 
-      set({ activities, connected: activities.length > 0, loading: false })
-      void get().loadConnectionStatus()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur de chargement'
-      logger.error('Failed to load activities', { message })
-      set({ error: message, loading: false })
-    }
+    const request = (async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) throw new Error('Not authenticated')
+
+        const { data, error } = await supabase
+          .from('activities_history')
+          .select('data, zone_data')
+          .eq('user_id', user.id)
+          .order('imported_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (error && error.code !== 'PGRST116') throw error
+
+        const activities = (data?.data as StravaActivity[] | null) ?? []
+        set({
+          activities,
+          zoneData: (data?.zone_data as ZoneData | null) ?? null,
+          connected: activities.length > 0,
+          loading: false,
+          _lastLoadedAt: Date.now(),
+        })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erreur de chargement'
+        logger.error('Failed to load activities', { message })
+        set({ error: message, loading: false })
+      } finally {
+        set({ _inFlightLoad: null })
+      }
+    })()
+
+    set({ _inFlightLoad: request })
+    return request
   },
 
   connectStrava: () => {

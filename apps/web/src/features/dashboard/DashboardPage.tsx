@@ -1,7 +1,18 @@
 import { useEffect } from 'react'
 import { useStravaStore } from '@/features/activities/useStravaStore'
 import { useRaceStore } from '@/features/race-calendar/useRaceStore'
+import type { HeartRateZone } from '@runner-os/shared'
 import { metresToKm } from '@runner-os/shared'
+
+function isHeartRateZone(value: unknown): value is HeartRateZone {
+  if (typeof value !== 'object' || value === null) return false
+  const zone = value as Record<string, unknown>
+  return (
+    typeof zone.min === 'number' &&
+    typeof zone.max === 'number' &&
+    typeof zone.time === 'number'
+  )
+}
 
 export function DashboardPage() {
   const { activities, zoneData, connected, connectStrava, loadActivities } = useStravaStore()
@@ -73,8 +84,9 @@ export function DashboardPage() {
   const last7DaysRuns = runs.filter((a) => new Date(a.start_date) >= sevenDaysAgo)
   const totalMovingTime7Days = last7DaysRuns.reduce((sum, a) => sum + a.moving_time, 0)
   const z2Time7Days = last7DaysRuns.reduce((sum, a) => {
-    const hrZones = zoneData?.[String(a.id)]?.heart_rate
-    if (!hrZones || hrZones.length === 0) return sum
+    const rawHeartRate = zoneData?.[String(a.id)]?.heart_rate
+    const hrZones = Array.isArray(rawHeartRate) ? rawHeartRate.filter(isHeartRateZone) : []
+    if (hrZones.length === 0) return sum
 
     const activityZ2Time = hrZones
       .filter((zone) => zone.min >= 60 && zone.max <= 72)
