@@ -88,7 +88,9 @@ export const useStravaStore = create<StravaState>((set, get) => ({
         // exactOptionalPropertyTypes: only spread optional props when the value exists
         return {
           ...base,
-          ...(row.average_heartrate != null && { average_heartrate: Number(row.average_heartrate) }),
+          ...(row.average_heartrate != null && {
+            average_heartrate: Number(row.average_heartrate),
+          }),
           ...(row.max_heartrate != null && { max_heartrate: Number(row.max_heartrate) }),
           ...(row.average_cadence != null && { average_cadence: Number(row.average_cadence) }),
           ...(row.suffer_score != null && { suffer_score: Number(row.suffer_score) }),
