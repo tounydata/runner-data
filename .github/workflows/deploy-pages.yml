@@ -28,199 +28,185 @@ jobs:
           cp index.html .pages/index.html
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('.pages/index.html')
           html = path.read_text()
 
-          html = re.sub(
-            r"function prepareRace\(race\) \{.*?\n\}\n\nfunction showGpxUploadPrompt",
-            r"""
-function prepareRace(race) {
-  (async () => {
-    let freshRace = race;
-    try {
-      if (window.sb && race && race.id) {
-        const { data, error } = await window.sb
-          .from('race_calendar')
-          .select('*')
-          .eq('id', race.id)
-          .maybeSingle();
-        if (!error && data) freshRace = data;
-      }
-    } catch (e) {
-      console.warn('Race reload failed', e);
-    }
-
-    showPanel('strategie', document.querySelector('.nbtn[onclick*=\"strategie\"]'));
-
-    const res = document.getElementById('stratResult');
-    const drop = document.getElementById('gpxDrop');
-    if (res) {
-      res.style.display = 'none';
-      res.innerHTML = '';
-    }
-    if (drop) {
-      drop.style.display = 'block';
-      drop.onclick = () => document.getElementById('gpxFile').click();
-    }
-
-    currentRaceContext = freshRace;
-    window.currentRaceContext = freshRace;
-
-    if (freshRace && freshRace.gpx_data) {
-      try {
-        const points = typeof freshRace.gpx_data === 'string'
-          ? JSON.parse(freshRace.gpx_data)
-          : freshRace.gpx_data;
-        if (Array.isArray(points) && points.length) {
-          await analyzeGPX(points, freshRace.name || 'Course');
-          currentRaceContext = freshRace;
-          window.currentRaceContext = freshRace;
-          return;
-        }
-      } catch(e) {
-        console.warn('Saved GPX malformed', e);
-      }
-    }
-
-    showGpxUploadPrompt(freshRace);
-  })();
-}
-
-function showGpxUploadPrompt""",
-            html,
-            flags=re.S
-          )
-
-          html = re.sub(
-            r"function handleGpxDrop\(e\)\{.*?\}\nfunction handleGpxFile\(e\)\{.*?\}\n\nfunction parseGPX\(file, raceCtx=null\)\{.*?\n\}\n\nfunction hav",
-            r"""
-function handleGpxDrop(e){
-  e.preventDefault();
-  document.getElementById('gpxDrop').classList.remove('drag');
-  const f=e.dataTransfer.files[0];
-  if(f&&f.name.toLowerCase().endsWith('.gpx'))parseGPX(f,currentRaceContext||window.currentRaceContext||null);
-}
-function handleGpxFile(e){
-  const f=e.target.files[0];
-  if(f)parseGPX(f,currentRaceContext||window.currentRaceContext||null);
-}
-
-function parseGPX(file, raceCtx=null){
-  if(raceCtx){
-    currentRaceContext=raceCtx;
-    window.currentRaceContext=raceCtx;
-  }
-  const reader=new FileReader();
-  reader.onload=async e=>{
-    const xml=new DOMParser().parseFromString(e.target.result,'text/xml');
-    const pts=xml.querySelectorAll('trkpt');
-    if(!pts.length){alert('GPX invalide ou vide');return;}
-    const points=[];
-    pts.forEach(pt=>{
-      const lat=parseFloat(pt.getAttribute('lat'));
-      const lon=parseFloat(pt.getAttribute('lon'));
-      const ele=pt.querySelector('ele');
-      points.push({lat,lon,ele:ele?parseFloat(ele.textContent):null});
-    });
-    window._pendingGpxSave=points;
-    await analyzeGPX(points, file.name||'');
-  };
-  reader.readAsText(file);
-}
-
-function hav""",
-            html,
-            flags=re.S
-          )
-
-          html = re.sub(
-            r"function resetStrategy\(\)\{.*?\n\}\n\nfunction populateRaceSelector",
-            r"""
-function resetStrategy(){
-  document.getElementById('stratResult').style.display='none';
-  document.getElementById('stratResult').innerHTML='';
-  const drop=document.getElementById('gpxDrop');
-  drop.style.display='block';
-  drop.onclick=()=>document.getElementById('gpxFile').click();
-  drop.innerHTML=`<div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div><div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div><div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>`;
-  document.getElementById('gpxFile').value='';
-  window._activeSection=-1;
-  window._sectionPolylines=[];
-  window._pendingGpxSave=null;
-  if(leafletMap){leafletMap.remove();leafletMap=null;}
-  if(window._gpxChart){window._gpxChart.destroy();window._gpxChart=null;}
-}
-
-function populateRaceSelector""",
-            html,
-            flags=re.S
-          )
-
-          html = re.sub(
-            r"function selectRaceForStrategy\(race\)\{.*?\n\}\n\n\n// ════════════════════════════════════════════════════\n// PROFIL OVERLAY",
-            r"""
-function selectRaceForStrategy(race){
-  document.querySelectorAll('.race-sel-btn').forEach(b=>b.classList.remove('active'));
-  if(window.event&&window.event.target)window.event.target.classList.add('active');
-  prepareRace(race);
-}
-
-
-// ════════════════════════════════════════════════════
-// PROFIL OVERLAY""",
-            html,
-            flags=re.S
-          )
-
           patch = r'''
+<style>
+/* Patch: remove useless calendar tab on bottom bar */
+.tab-bar .tab-btn:nth-child(2){display:none!important;}
+</style>
 <script>
 (function(){
-  function safeNumber(v, fallback=0){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : fallback;
+  'use strict';
+
+  function ready(fn){
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
   }
-  function safeFixed(v, digits=1, fallback='—'){
-    const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(digits) : fallback;
+
+  function n(v, fallback){
+    var x = Number(v);
+    return Number.isFinite(x) ? x : (fallback || 0);
   }
-  const originalBuildSplitsTable = window.buildSplitsTable;
-  window.buildSplitsTable = function(sections){
-    try{
+  function fx(v, d, fallback){
+    var x = Number(v);
+    return Number.isFinite(x) ? x.toFixed(d == null ? 1 : d) : (fallback || '—');
+  }
+  function parseStoredGpx(raw){
+    if(!raw) return null;
+    if(Array.isArray(raw)) return raw;
+    if(typeof raw === 'string'){
+      try{
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : null;
+      }catch(e){ return null; }
+    }
+    return null;
+  }
+  function closeStrategyUpload(){
+    var dashBtn = document.querySelector('.tab-btn[onclick*=dashboard], .nbtn[onclick*=dashboard]');
+    if(typeof showPanel === 'function') showPanel('dashboard', dashBtn || null);
+  }
+  window.closeStrategyUpload = closeStrategyUpload;
+
+  function addCloseButtonToGpxDrop(){
+    var drop = document.getElementById('gpxDrop');
+    if(!drop || document.getElementById('closeGpxUploadBtn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'closeGpxUploadBtn';
+    btn.type = 'button';
+    btn.textContent = '← Fermer';
+    btn.className = 'hbtn';
+    btn.style.position = 'absolute';
+    btn.style.left = '16px';
+    btn.style.top = '16px';
+    btn.style.zIndex = '5';
+    btn.onclick = function(ev){ ev.stopPropagation(); closeStrategyUpload(); };
+    if(getComputedStyle(drop).position === 'static') drop.style.position = 'relative';
+    drop.prepend(btn);
+  }
+
+  function hardenBuildSplitsTable(){
+    window.buildSplitsTable = function(sections){
       if(!Array.isArray(sections) || !sections.length){
         return '<div class="mono t3">Aucun segment exploitable.</div>';
       }
-      const rows = sections.map((s,i)=>{
-        const dist = safeNumber(s.dist ?? s.distance ?? s.km ?? 0,0);
-        const gain = safeNumber(s.gain ?? s.elevGain ?? s.dPlus ?? 0,0);
-        const loss = safeNumber(s.loss ?? s.elevLoss ?? s.dMinus ?? 0,0);
-        const grade = safeNumber(s.grade ?? s.slope ?? 0,0);
-        const type = s.type || (grade > 3 ? 'Montée' : grade < -3 ? 'Descente' : 'Plat');
-        const cls = grade > 3 ? 'section-up' : grade < -3 ? 'section-down' : 'section-flat';
-        return `<tr class="${cls}">
-          <td>${i+1}</td>
-          <td>${type}</td>
-          <td>${safeFixed(dist,2)} km</td>
-          <td>+${safeFixed(gain,0)} / -${safeFixed(loss,0)} m</td>
-          <td>${safeFixed(grade,1)}%</td>
-        </tr>`;
+      var rows = sections.map(function(s,i){
+        s = s || {};
+        var dist = n(s.dist != null ? s.dist : (s.distance != null ? s.distance : (s.km != null ? s.km : 0)),0);
+        var gain = n(s.gain != null ? s.gain : (s.elevGain != null ? s.elevGain : (s.dPlus != null ? s.dPlus : 0)),0);
+        var loss = n(s.loss != null ? s.loss : (s.elevLoss != null ? s.elevLoss : (s.dMinus != null ? s.dMinus : 0)),0);
+        var grade = n(s.grade != null ? s.grade : (s.slope != null ? s.slope : 0),0);
+        var type = s.type || (grade > 3 ? 'Montée' : (grade < -3 ? 'Descente' : 'Plat'));
+        var cls = grade > 3 ? 'section-up' : (grade < -3 ? 'section-down' : 'section-flat');
+        return '<tr class="'+cls+'"><td>'+(i+1)+'</td><td>'+type+'</td><td>'+fx(dist,2)+' km</td><td>+'+fx(gain,0)+' / -'+fx(loss,0)+' m</td><td>'+fx(grade,1)+'%</td></tr>';
       }).join('');
-      return `<table class="splits-table">
-        <thead><tr><th>#</th><th>Type</th><th>Distance</th><th>D+ / D-</th><th>Pente</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
-    }catch(e){
-      console.warn('safe buildSplitsTable fallback', e);
-      if(typeof originalBuildSplitsTable === 'function'){
-        try{return originalBuildSplitsTable(sections || []);}catch(_){/* ignore */}
-      }
-      return '<div class="mono tr">Erreur de tableau segments. GPX lu, mais segments incomplets.</div>';
+      return '<table class="splits-table"><thead><tr><th>#</th><th>Type</th><th>Distance</th><th>D+ / D-</th><th>Pente</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    };
+  }
+
+  function patchStrategyFunctions(){
+    hardenBuildSplitsTable();
+
+    var originalShowPanel = window.showPanel;
+    if(typeof originalShowPanel === 'function'){
+      window.showPanel = function(name, btn){
+        var ret = originalShowPanel.apply(this, arguments);
+        if(name === 'strategie') setTimeout(addCloseButtonToGpxDrop, 50);
+        return ret;
+      };
     }
-  };
+
+    var originalAnalyzeGPX = window.analyzeGPX;
+    if(typeof originalAnalyzeGPX === 'function'){
+      window.analyzeGPX = async function(points, name){
+        hardenBuildSplitsTable();
+        try{
+          var result = await originalAnalyzeGPX.apply(this, arguments);
+          setTimeout(addCloseButtonToGpxDrop, 50);
+          return result;
+        }catch(e){
+          console.error('analyzeGPX intercepted error', e);
+          var res = document.getElementById('stratResult');
+          var drop = document.getElementById('gpxDrop');
+          if(drop) drop.style.display = 'none';
+          if(res){
+            res.style.display = 'block';
+            res.innerHTML = '<div class="card"><div class="clabel tr">Erreur stratégie GPX</div><div class="t2">Le GPX a été lu, mais le module stratégie a rencontré une donnée incomplète.</div><div class="mono mt2">'+String(e && e.message ? e.message : e)+'</div></div>';
+          }
+        }
+      };
+    }
+
+    window.prepareRace = async function(race){
+      var freshRace = race;
+      try{
+        if(window.sb && race && race.id){
+          var out = await window.sb.from('race_calendar').select('*').eq('id', race.id).maybeSingle();
+          if(!out.error && out.data) freshRace = out.data;
+        }
+      }catch(e){ console.warn('Race reload failed', e); }
+
+      if(typeof showPanel === 'function') showPanel('strategie', document.querySelector('.nbtn[onclick*=strategie], .tab-btn[onclick*=strategie]'));
+      window.currentRaceContext = freshRace;
+      try{ currentRaceContext = freshRace; }catch(_e){}
+      addCloseButtonToGpxDrop();
+
+      var res = document.getElementById('stratResult');
+      var drop = document.getElementById('gpxDrop');
+      if(res){ res.style.display = 'none'; res.innerHTML = ''; }
+      if(drop){ drop.style.display = 'block'; drop.onclick = function(){ var f=document.getElementById('gpxFile'); if(f) f.click(); }; }
+
+      var points = parseStoredGpx(freshRace && freshRace.gpx_data);
+      if(points && points.length && typeof analyzeGPX === 'function'){
+        await analyzeGPX(points, freshRace.name || 'Course');
+        window.currentRaceContext = freshRace;
+        try{ currentRaceContext = freshRace; }catch(_e){}
+        return;
+      }
+
+      if(typeof showGpxUploadPrompt === 'function') showGpxUploadPrompt(freshRace);
+      addCloseButtonToGpxDrop();
+    };
+
+    window.handleGpxFile = function(e){
+      var f = e && e.target && e.target.files && e.target.files[0];
+      if(f && typeof parseGPX === 'function') parseGPX(f, window.currentRaceContext || (typeof currentRaceContext !== 'undefined' ? currentRaceContext : null));
+    };
+    window.handleGpxDrop = function(e){
+      e.preventDefault();
+      var drop=document.getElementById('gpxDrop');
+      if(drop) drop.classList.remove('drag');
+      var f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f && f.name.toLowerCase().endsWith('.gpx') && typeof parseGPX === 'function') parseGPX(f, window.currentRaceContext || (typeof currentRaceContext !== 'undefined' ? currentRaceContext : null));
+    };
+
+    if(typeof parseGPX === 'function'){
+      var oldParse = parseGPX;
+      window.parseGPX = function(file, raceCtx){
+        if(raceCtx){
+          window.currentRaceContext = raceCtx;
+          try{ currentRaceContext = raceCtx; }catch(_e){}
+        }
+        return oldParse.call(this, file, raceCtx || window.currentRaceContext || null);
+      };
+      try{ parseGPX = window.parseGPX; }catch(_e){}
+    }
+
+    setTimeout(addCloseButtonToGpxDrop, 250);
+  }
+
+  ready(function(){
+    patchStrategyFunctions();
+    setTimeout(patchStrategyFunctions, 500);
+    setTimeout(patchStrategyFunctions, 1500);
+  });
 })();
 </script>
 '''
+
           html = html.replace('</body>', patch + '\n</body>')
           path.write_text(html)
           Path('.pages/404.html').write_text(html)
