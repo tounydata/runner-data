@@ -33,6 +33,20 @@ jobs:
           patch = r'''
 <script>
 (function(){
+  function parseStoredGpx(raw) {
+    if (!raw) return null;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   window.prepareRace = async function(race) {
     try {
       let freshRace = race;
@@ -46,8 +60,6 @@ jobs:
         if (!error && data) freshRace = data;
       }
 
-      window.currentRaceContext = freshRace;
-
       showPanel('strategie', document.querySelector('.nbtn[onclick*=\"strategie\"]'));
 
       const stratResult = document.getElementById('stratResult');
@@ -58,19 +70,67 @@ jobs:
       }
       if (gpxDrop) gpxDrop.style.display = 'block';
 
-      if (freshRace && freshRace.gpx_data) {
-        let points = freshRace.gpx_data;
-        if (typeof points === 'string') points = JSON.parse(points);
-        if (Array.isArray(points) && points.length) {
-          await analyzeGPX(points, freshRace.name || 'Course');
-          return;
-        }
+      currentRaceContext = freshRace;
+      window.currentRaceContext = freshRace;
+
+      const points = parseStoredGpx(freshRace && freshRace.gpx_data);
+      if (points && points.length) {
+        await analyzeGPX(points, freshRace.name || 'Course');
+        currentRaceContext = freshRace;
+        window.currentRaceContext = freshRace;
+        return;
       }
 
       showGpxUploadPrompt(freshRace);
     } catch (err) {
-      console.error('prepareRace secure patch failed', err);
+      console.error('prepareRace patch failed', err);
+      currentRaceContext = race;
+      window.currentRaceContext = race;
       showGpxUploadPrompt(race);
+    }
+  };
+
+  window.parseGPX = function(file, raceCtx) {
+    if (raceCtx) {
+      currentRaceContext = raceCtx;
+      window.currentRaceContext = raceCtx;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const xml = new DOMParser().parseFromString(e.target.result, 'text/xml');
+      const pts = xml.querySelectorAll('trkpt');
+      if (!pts.length) {
+        alert('GPX invalide ou vide');
+        return;
+      }
+
+      const points = [];
+      pts.forEach(pt => {
+        const lat = parseFloat(pt.getAttribute('lat'));
+        const lon = parseFloat(pt.getAttribute('lon'));
+        const ele = pt.querySelector('ele');
+        points.push({ lat, lon, ele: ele ? parseFloat(ele.textContent) : null });
+      });
+
+      window._pendingGpxSave = points;
+      await analyzeGPX(points, file.name || '');
+    };
+    reader.readAsText(file);
+  };
+
+  window.handleGpxFile = function(e) {
+    const f = e.target.files && e.target.files[0];
+    if (f) window.parseGPX(f, currentRaceContext || window.currentRaceContext || null);
+  };
+
+  window.handleGpxDrop = function(e) {
+    e.preventDefault();
+    const drop = document.getElementById('gpxDrop');
+    if (drop) drop.classList.remove('drag');
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f && f.name.toLowerCase().endsWith('.gpx')) {
+      window.parseGPX(f, currentRaceContext || window.currentRaceContext || null);
     }
   };
 })();
