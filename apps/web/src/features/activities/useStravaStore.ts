@@ -5,14 +5,6 @@ import { invokeFunction } from '@/lib/api-client'
 import { logger } from '@/lib/logger'
 import { env } from '@/config/env'
 
-interface StravaConnectionInfo {
-  athlete_firstname: string | null
-  athlete_lastname: string | null
-  athlete_avatar: string | null
-  last_sync_at: string | null
-  scope: string | null
-}
-
 interface StravaState {
   connected: boolean
   athleteName: string | null
@@ -46,8 +38,7 @@ export const useStravaStore = create<StravaState>((set, get) => ({
         .maybeSingle()
 
       if (data) {
-        const info = data as StravaConnectionInfo
-        const name = [info.athlete_firstname, info.athlete_lastname].filter(Boolean).join(' ')
+        const name = [data.athlete_firstname, data.athlete_lastname].filter(Boolean).join(' ')
         set({ connected: true, athleteName: name || null })
       } else {
         set({ connected: false, athleteName: null })
