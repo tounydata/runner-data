@@ -38,9 +38,10 @@ export function StravaCallbackPage() {
 
     sessionStorage.removeItem('strava_oauth_state')
 
-    // Verify user is logged in before exchanging the code
-    void supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    void supabase.auth.getSession().then(async ({ data }) => {
+      const accessToken = data.session?.access_token
+
+      if (!accessToken) {
         setStatus('no-auth')
         return
       }
@@ -50,11 +51,16 @@ export function StravaCallbackPage() {
           env.strava.oauthFunctionName,
           {
             body: { code, scope },
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
         )
+
         setStatus('success')
-        // Clean URL, redirect after short delay so user sees success
-        window.history.replaceState({}, '', '/activities')
+
+        const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+        window.history.replaceState({}, '', `${basePath}/activities`)
         setTimeout(() => void navigate('/activities'), 1500)
       } catch (err) {
         setStatus('error')
