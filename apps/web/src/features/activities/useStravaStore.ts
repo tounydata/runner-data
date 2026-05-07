@@ -126,7 +126,9 @@ export const useStravaStore = create<StravaState>((set, get) => ({
     const state = crypto.randomUUID()
     sessionStorage.setItem('strava_oauth_state', state)
 
-    const redirectUri = `${window.location.origin}/auth/strava/callback`
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+    const redirectUri = `${window.location.origin}${basePath}/auth/strava/callback`
+
     const params = new URLSearchParams({
       client_id: env.strava.clientId,
       redirect_uri: redirectUri,
