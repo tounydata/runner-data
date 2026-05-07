@@ -2708,62 +2708,86 @@ async function analyzeGPX(points, fname) {
 }
 
 function buildDetailedSections(kmSecs){
-  // Smooth grades over 5-segment window
-  const smoothed = kmSecs.map((s,i)=>{
-    const win = kmSecs.slice(Math.max(0,i-2), Math.min(kmSecs.length,i+3));
-    const avgGrade = win.reduce((a,k)=>a+k.grade,0)/win.length;
-    return {...s, gradeSmooth: avgGrade};
+  if(!kmSecs.length) return [];
+
+  // Helper: get endKm from either field name (analyzeGPX uses 'km', comparison uses 'endKm')
+  const endOf = s => s.km ?? s.endKm ?? s.startKm;
+
+  // Build cumulative net altitude profile: cumAlt[i] = net gain from start to end of segment i
+  const cumAlt = [0];
+  for(const s of kmSecs) cumAlt.push(cumAlt[cumAlt.length-1] + s.dplus - (s.dminus||0));
+
+  // Smooth altitude with 5-point window to remove micro-oscillations
+  const sm = cumAlt.map((_,i)=>{
+    const win = cumAlt.slice(Math.max(0,i-2), Math.min(cumAlt.length,i+3));
+    return win.reduce((a,b)=>a+b,0)/win.length;
   });
 
-  const out=[];let i=0;
-  while(i<smoothed.length){
-    const s=smoothed[i];
-    // Uphill: net grade > 3% over 500m segment
-    if(s.gradeSmooth>3){
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth>1)j++;
-      const seg=smoothed.slice(i,j);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const dm=seg.reduce((a,k)=>a+(k.dminus||0),0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      const avgG=distM>0?dp/distM*100:0;
-      // Only create uphill section if significant D+
-      if(dp>30){
-        out.push({type:'up',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dplus:Math.round(dp),dminus:Math.round(dm),dist:distM,grade:+avgG.toFixed(1)});
-        i=j;
-      } else {
-        // Not significant enough — merge as flat
-        out.push({type:'flat',startKm:s.startKm,endKm:s.km,dplus:s.dplus,dminus:s.dminus,dist:s.dist,grade:s.grade});
-        i++;
+  // Detect significant peaks and valleys
+  const MIN_CHANGE = 20; // metres — minimum climb/descent to create a section
+  const extrema = [{idx:0, alt:sm[0]}];
+  for(let i=1;i<sm.length-1;i++){
+    const prev=sm[i-1], cur=sm[i], next=sm[i+1];
+    if((cur>=prev && cur>=next) || (cur<=prev && cur<=next)){
+      const last=extrema[extrema.length-1];
+      if(Math.abs(cur-last.alt)>=MIN_CHANGE) extrema.push({idx:i, alt:cur});
+      else if((cur>last.alt&&cur>extrema[extrema.length-1]?.alt)||(cur<last.alt)) {
+        // Replace last if this extremum is more extreme in same direction
+        extrema[extrema.length-1]={idx:i,alt:cur};
       }
-    } else if(s.gradeSmooth<-3){
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth<-1)j++;
-      const seg=smoothed.slice(i,j);
-      const dm=seg.reduce((a,k)=>a+(k.dminus||0),0);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      const avgG=distM>0?-dm/distM*100:0;
-      if(dm>30){
-        out.push({type:'down',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dminus:Math.round(dm),dplus:Math.round(dp),dist:distM,grade:+avgG.toFixed(1)});
-        i=j;
-      } else {
-        out.push({type:'flat',startKm:s.startKm,endKm:s.km,dplus:s.dplus,dminus:s.dminus,dist:s.dist,grade:s.grade});
-        i++;
-      }
-    } else {
-      // Flat — merge consecutive flat sections
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth>=-3&&smoothed[j].gradeSmooth<=3)j++;
-      const seg=smoothed.slice(i,j);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const dm=seg.reduce((a,k)=>a+k.dminus,0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      out.push({type:'flat',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dplus:Math.round(dp),dminus:Math.round(dm),dist:distM,grade:0});
-      i=j;
     }
   }
-  return out;
+  extrema.push({idx:sm.length-1, alt:sm[sm.length-1]});
+
+  // Merge consecutive extrema that don't meet threshold
+  const filtered=[extrema[0]];
+  for(let i=1;i<extrema.length;i++){
+    const last=filtered[filtered.length-1];
+    if(Math.abs(extrema[i].alt-last.alt)>=MIN_CHANGE) filtered.push(extrema[i]);
+    else {
+      // Replace with the more extreme one in the same direction
+      const prev2=filtered.length>=2?filtered[filtered.length-2]:null;
+      if(!prev2) filtered[filtered.length-1]=extrema[i];
+      else if(extrema[i].alt>last.alt) filtered[filtered.length-1]={...last,idx:extrema[i].idx,alt:Math.max(last.alt,extrema[i].alt)};
+      else filtered[filtered.length-1]={...last,idx:extrema[i].idx,alt:Math.min(last.alt,extrema[i].alt)};
+    }
+  }
+
+  const out=[];
+  for(let i=0;i<filtered.length-1;i++){
+    const from=filtered[i], to=filtered[i+1];
+    const fromIdx=Math.max(0,Math.min(from.idx,kmSecs.length-1));
+    const toIdx=Math.max(0,Math.min(to.idx,kmSecs.length));
+    const segs=kmSecs.slice(fromIdx,toIdx);
+    if(!segs.length) continue;
+    const dp=segs.reduce((a,s)=>a+s.dplus,0);
+    const dm=segs.reduce((a,s)=>a+(s.dminus||0),0);
+    const dist=segs.reduce((a,s)=>a+s.dist,0);
+    const netAlt=to.alt-from.alt;
+    const avgGrade=dist>0?netAlt/dist*100:0;
+    const type=netAlt>=MIN_CHANGE?'up':netAlt<=-MIN_CHANGE?'down':'flat';
+    const startKm=segs[0].startKm;
+    const endKm=endOf(segs[segs.length-1]);
+    out.push({type,startKm,endKm,dplus:Math.round(dp),dminus:Math.round(dm),dist,grade:+avgGrade.toFixed(1)});
+  }
+
+  // Merge consecutive flat sections
+  const merged=[];
+  for(const s of out){
+    const last=merged[merged.length-1];
+    if(last&&last.type==='flat'&&s.type==='flat'){
+      last.endKm=s.endKm; last.dplus+=s.dplus; last.dminus+=s.dminus;
+      last.dist+=s.dist; last.grade=last.dist>0?(last.dplus-last.dminus)/last.dist*100:0;
+    } else merged.push({...s});
+  }
+
+  if(!merged.length){
+    const dp=kmSecs.reduce((a,s)=>a+s.dplus,0);
+    const dm=kmSecs.reduce((a,s)=>a+(s.dminus||0),0);
+    const dist=kmSecs.reduce((a,s)=>a+s.dist,0);
+    return [{type:'flat',startKm:kmSecs[0].startKm,endKm:endOf(kmSecs[kmSecs.length-1]),dplus:Math.round(dp),dminus:Math.round(dm),dist,grade:0}];
+  }
+  return merged;
 }
 
 function isTrailRace() {
