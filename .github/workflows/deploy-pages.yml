@@ -28,29 +28,18 @@ jobs:
           cp index.html .pages/index.html
           python3 - <<'PY'
           from pathlib import Path
+          import re
+
           path = Path('.pages/index.html')
           html = path.read_text()
-          patch = r'''
-<script>
-(function(){
-  function parseStoredGpx(raw) {
-    if (!raw) return null;
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : null;
-      } catch (_) {
-        return null;
-      }
-    }
-    return null;
-  }
 
-  window.prepareRace = async function(race) {
+          html = re.sub(
+            r"function prepareRace\(race\) \{.*?\n\}\n\nfunction showGpxUploadPrompt",
+            r"""
+function prepareRace(race) {
+  (async () => {
+    let freshRace = race;
     try {
-      let freshRace = race;
-
       if (window.sb && race && race.id) {
         const { data, error } = await window.sb
           .from('race_calendar')
@@ -59,84 +48,132 @@ jobs:
           .maybeSingle();
         if (!error && data) freshRace = data;
       }
-
-      showPanel('strategie', document.querySelector('.nbtn[onclick*=\"strategie\"]'));
-
-      const stratResult = document.getElementById('stratResult');
-      const gpxDrop = document.getElementById('gpxDrop');
-      if (stratResult) {
-        stratResult.style.display = 'none';
-        stratResult.innerHTML = '';
-      }
-      if (gpxDrop) gpxDrop.style.display = 'block';
-
-      currentRaceContext = freshRace;
-      window.currentRaceContext = freshRace;
-
-      const points = parseStoredGpx(freshRace && freshRace.gpx_data);
-      if (points && points.length) {
-        await analyzeGPX(points, freshRace.name || 'Course');
-        currentRaceContext = freshRace;
-        window.currentRaceContext = freshRace;
-        return;
-      }
-
-      showGpxUploadPrompt(freshRace);
-    } catch (err) {
-      console.error('prepareRace patch failed', err);
-      currentRaceContext = race;
-      window.currentRaceContext = race;
-      showGpxUploadPrompt(race);
-    }
-  };
-
-  window.parseGPX = function(file, raceCtx) {
-    if (raceCtx) {
-      currentRaceContext = raceCtx;
-      window.currentRaceContext = raceCtx;
+    } catch (e) {
+      console.warn('Race reload failed', e);
     }
 
-    const reader = new FileReader();
-    reader.onload = async e => {
-      const xml = new DOMParser().parseFromString(e.target.result, 'text/xml');
-      const pts = xml.querySelectorAll('trkpt');
-      if (!pts.length) {
-        alert('GPX invalide ou vide');
-        return;
-      }
+    showPanel('strategie', document.querySelector('.nbtn[onclick*=\"strategie\"]'));
 
-      const points = [];
-      pts.forEach(pt => {
-        const lat = parseFloat(pt.getAttribute('lat'));
-        const lon = parseFloat(pt.getAttribute('lon'));
-        const ele = pt.querySelector('ele');
-        points.push({ lat, lon, ele: ele ? parseFloat(ele.textContent) : null });
-      });
-
-      window._pendingGpxSave = points;
-      await analyzeGPX(points, file.name || '');
-    };
-    reader.readAsText(file);
-  };
-
-  window.handleGpxFile = function(e) {
-    const f = e.target.files && e.target.files[0];
-    if (f) window.parseGPX(f, currentRaceContext || window.currentRaceContext || null);
-  };
-
-  window.handleGpxDrop = function(e) {
-    e.preventDefault();
+    const res = document.getElementById('stratResult');
     const drop = document.getElementById('gpxDrop');
-    if (drop) drop.classList.remove('drag');
-    const f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f && f.name.toLowerCase().endsWith('.gpx')) {
-      window.parseGPX(f, currentRaceContext || window.currentRaceContext || null);
+    if (res) {
+      res.style.display = 'none';
+      res.innerHTML = '';
     }
+    if (drop) {
+      drop.style.display = 'block';
+      drop.onclick = () => document.getElementById('gpxFile').click();
+    }
+
+    currentRaceContext = freshRace;
+    window.currentRaceContext = freshRace;
+
+    if (freshRace && freshRace.gpx_data) {
+      try {
+        const points = typeof freshRace.gpx_data === 'string'
+          ? JSON.parse(freshRace.gpx_data)
+          : freshRace.gpx_data;
+        if (Array.isArray(points) && points.length) {
+          await analyzeGPX(points, freshRace.name || 'Course');
+          currentRaceContext = freshRace;
+          window.currentRaceContext = freshRace;
+          return;
+        }
+      } catch(e) {
+        console.warn('Saved GPX malformed', e);
+      }
+    }
+
+    showGpxUploadPrompt(freshRace);
+  })();
+}
+
+function showGpxUploadPrompt""",
+            html,
+            flags=re.S
+          )
+
+          html = re.sub(
+            r"function handleGpxDrop\(e\)\{.*?\}\nfunction handleGpxFile\(e\)\{.*?\}\n\nfunction parseGPX\(file, raceCtx=null\)\{.*?\n\}\n\nfunction hav",
+            r"""
+function handleGpxDrop(e){
+  e.preventDefault();
+  document.getElementById('gpxDrop').classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.name.toLowerCase().endsWith('.gpx'))parseGPX(f,currentRaceContext||window.currentRaceContext||null);
+}
+function handleGpxFile(e){
+  const f=e.target.files[0];
+  if(f)parseGPX(f,currentRaceContext||window.currentRaceContext||null);
+}
+
+function parseGPX(file, raceCtx=null){
+  if(raceCtx){
+    currentRaceContext=raceCtx;
+    window.currentRaceContext=raceCtx;
+  }
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const xml=new DOMParser().parseFromString(e.target.result,'text/xml');
+    const pts=xml.querySelectorAll('trkpt');
+    if(!pts.length){alert('GPX invalide ou vide');return;}
+    const points=[];
+    pts.forEach(pt=>{
+      const lat=parseFloat(pt.getAttribute('lat'));
+      const lon=parseFloat(pt.getAttribute('lon'));
+      const ele=pt.querySelector('ele');
+      points.push({lat,lon,ele:ele?parseFloat(ele.textContent):null});
+    });
+    window._pendingGpxSave=points;
+    await analyzeGPX(points, file.name||'');
   };
-})();
-</script>
-'''
-          html = html.replace('</body>', patch + '\n</body>')
+  reader.readAsText(file);
+}
+
+function hav""",
+            html,
+            flags=re.S
+          )
+
+          html = re.sub(
+            r"function resetStrategy\(\)\{.*?\n\}\n\nfunction populateRaceSelector",
+            r"""
+function resetStrategy(){
+  document.getElementById('stratResult').style.display='none';
+  document.getElementById('stratResult').innerHTML='';
+  const drop=document.getElementById('gpxDrop');
+  drop.style.display='block';
+  drop.onclick=()=>document.getElementById('gpxFile').click();
+  drop.innerHTML=`<div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div><div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div><div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>`;
+  document.getElementById('gpxFile').value='';
+  window._activeSection=-1;
+  window._sectionPolylines=[];
+  window._pendingGpxSave=null;
+  if(leafletMap){leafletMap.remove();leafletMap=null;}
+  if(window._gpxChart){window._gpxChart.destroy();window._gpxChart=null;}
+}
+
+function populateRaceSelector""",
+            html,
+            flags=re.S
+          )
+
+          html = re.sub(
+            r"function selectRaceForStrategy\(race\)\{.*?\n\}\n\n\n// ════════════════════════════════════════════════════\n// PROFIL OVERLAY",
+            r"""
+function selectRaceForStrategy(race){
+  document.querySelectorAll('.race-sel-btn').forEach(b=>b.classList.remove('active'));
+  if(window.event&&window.event.target)window.event.target.classList.add('active');
+  prepareRace(race);
+}
+
+
+// ════════════════════════════════════════════════════
+// PROFIL OVERLAY""",
+            html,
+            flags=re.S
+          )
+
           path.write_text(html)
           Path('.pages/404.html').write_text(html)
           PY
