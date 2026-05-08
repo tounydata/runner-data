@@ -34,7 +34,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 .auth-tabs{display:flex;gap:2px;background:var(--bg4);border-radius:8px;padding:3px;margin-bottom:1.5rem;}
 .auth-tab{flex:1;padding:7px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
 .auth-tab.active{background:var(--bg2);color:var(--text);}
-.fi{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
+.fi{width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
 .fi:focus{border-color:var(--cyan);}
 .fi::placeholder{color:var(--text3);}
 select.fi{cursor:pointer;}
@@ -79,7 +79,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 .clabel{font-family:var(--mono);font-size:.56rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
 
 /* ── STRIP ── */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
 @media(max-width:800px){.strip{grid-template-columns:repeat(3,1fr)}}
 .scell{background:var(--bg2);padding:12px 16px;text-align:center;}
 .sval{font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;line-height:1;}
@@ -223,9 +223,12 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 @media(max-width:600px){.race-form-grid{grid-template-columns:1fr}}
 
 /* ── NEXT RACE ── */
-.next-race-big{text-align:center;padding:.5rem;}
-.next-race-num{font-family:var(--display);font-size:4rem;line-height:1;}
-.next-race-unit{font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.next-race-big{display:flex;align-items:center;gap:16px;padding:.25rem 0;}
+.next-race-cd{text-align:center;flex-shrink:0;min-width:64px;}
+.next-race-num{font-family:var(--display);font-size:3.6rem;line-height:1;}
+.next-race-unit{font-family:var(--mono);font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.next-race-info{flex:1;min-width:0;}
+.next-race-title{font-family:var(--display);font-size:1.35rem;letter-spacing:.03em;line-height:1.2;margin-bottom:.35rem;}
 
 /* ── MISC ── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -420,10 +423,11 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <!-- STRIP -->
 <div class="strip">
   <div class="scell"><div class="sval tg" id="s-km-month">—</div><div class="slbl">km / mois</div><div class="sdelta" id="s-km-month-delta"></div></div>
-  <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div></div>
+  <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div><div class="sdelta" id="s-km-week-delta"></div></div>
   <div class="scell"><div class="sval to" id="s-dplus-month">—</div><div class="slbl">D+ / mois</div><div class="sdelta" id="s-dplus-delta"></div></div>
-  <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div></div>
+  <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div><div class="sdelta" id="s-dplus-week-delta"></div></div>
   <div class="scell"><div class="sval" id="s-runs-month">—</div><div class="slbl">sorties / mois</div><div class="sdelta" id="s-runs-delta"></div></div>
+  <div class="scell"><div class="sval" id="s-runs-week">—</div><div class="slbl">sorties / sem.</div><div class="sdelta" id="s-runs-week-delta"></div></div>
 </div>
 
 <div class="grid-2">
@@ -571,102 +575,134 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
           <!-- FRONT -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg id="bodySvg" viewBox="0 0 200 370" style="width:115px;cursor:pointer">
+            <svg id="bodySvg" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
               <defs>
                 <style>
-                  .bz{fill:rgba(30,51,85,.85);stroke:#2d4a78;stroke-width:1.5;transition:all .2s;cursor:pointer;}
-                  .bz:hover{fill:rgba(0,212,255,.28);stroke:#00d4ff;stroke-width:2;}
-                  .bz.selected{fill:rgba(255,107,53,.32);stroke:#ff6b35;stroke-width:2.5;}
-                  .bzb{fill:rgba(30,51,85,.85);stroke:#2d4a78;stroke-width:1.5;transition:all .2s;cursor:pointer;}
-                  .bzb:hover{fill:rgba(0,212,255,.28);stroke:#00d4ff;stroke-width:2;}
-                  .bzb.selected{fill:rgba(255,107,53,.32);stroke:#ff6b35;stroke-width:2.5;}
-                  .sg{fill:#1e3355;stroke:#2d4a78;stroke-width:1;}
-                  .gl{stroke:rgba(255,255,255,.14);stroke-width:.8;stroke-dasharray:4 3;fill:none;}
+                  .bz{fill:rgba(30,58,105,.7);stroke:#3a6abf;stroke-width:1.2;transition:all .2s;cursor:pointer;}
+                  .bz:hover{fill:rgba(0,212,255,.3);stroke:#00d4ff;stroke-width:1.8;}
+                  .bz.selected{fill:rgba(255,107,53,.35);stroke:#ff6b35;stroke-width:2;}
+                  .bzb{fill:rgba(30,58,105,.7);stroke:#3a6abf;stroke-width:1.2;transition:all .2s;cursor:pointer;}
+                  .bzb:hover{fill:rgba(0,212,255,.3);stroke:#00d4ff;stroke-width:1.8;}
+                  .bzb.selected{fill:rgba(255,107,53,.35);stroke:#ff6b35;stroke-width:2;}
+                  .sg{fill:#1e3a69;stroke:#2d5a9a;stroke-width:1.2;}
+                  .sg2{fill:none;stroke:#1a3058;stroke-width:1;}
+                  .gl{stroke:rgba(255,255,255,.13);stroke-width:.7;stroke-dasharray:4 3;fill:none;}
+                  .dl{stroke:rgba(255,255,255,.18);stroke-width:.9;fill:none;pointer-events:none;}
                 </style>
               </defs>
-              <!-- silhouette -->
-              <ellipse class="sg" cx="100" cy="26" rx="19" ry="22"/>
-              <rect class="sg" x="92" y="46" width="16" height="14" stroke="none"/>
-              <path class="sg" d="M68,58 Q60,64 57,80 L55,148 Q58,155 100,157 Q142,155 145,148 L143,80 Q140,64 132,58 Z"/>
-              <path class="sg" d="M58,78 Q44,84 37,100 Q31,118 32,145 L41,145 Q42,122 47,106 Q53,91 68,87 Z"/>
-              <path class="sg" d="M142,78 Q156,84 163,100 Q169,118 168,145 L159,145 Q158,122 153,106 Q147,91 132,87 Z"/>
-              <path class="sg" d="M55,148 Q58,166 70,173 L130,173 Q142,166 145,148 Z"/>
-              <path class="sg" d="M70,171 Q61,176 59,196 L57,246 Q60,256 80,258 Q89,256 88,246 L86,196 Q85,178 100,175 Q85,170 70,171 Z"/>
-              <path class="sg" d="M130,171 Q139,176 141,196 L143,246 Q140,256 120,258 Q111,256 112,246 L114,196 Q115,178 100,175 Q115,170 130,171 Z"/>
-              <ellipse class="sg" cx="74" cy="259" rx="14" ry="12"/>
-              <ellipse class="sg" cx="126" cy="259" rx="14" ry="12"/>
-              <path class="sg" d="M62,267 Q57,290 59,320 L88,320 Q90,290 87,267 Z"/>
-              <path class="sg" d="M138,267 Q143,290 141,320 L112,320 Q110,290 113,267 Z"/>
-              <ellipse class="sg" cx="74" cy="323" rx="13" ry="8"/>
-              <ellipse class="sg" cx="126" cy="323" rx="13" ry="8"/>
-              <path class="sg" d="M62,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z"/>
-              <path class="sg" d="M138,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z"/>
+              <!-- HEAD -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <!-- NECK -->
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z" stroke="none"/>
+              <!-- TORSO: broad shoulders → chest → waist taper → hips -->
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <!-- LEFT ARM: bicep wide, forearm tapers -->
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <!-- RIGHT ARM -->
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <!-- PELVIS -->
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <!-- LEFT THIGH: wider at hip, narrows to knee -->
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <!-- RIGHT THIGH -->
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <!-- LEFT KNEE -->
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <!-- RIGHT KNEE -->
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <!-- LEFT CALF: diamond shape - wide middle narrow top/bottom -->
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <!-- RIGHT CALF -->
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <!-- LEFT ANKLE -->
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <!-- RIGHT ANKLE -->
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <!-- LEFT FOOT -->
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <!-- RIGHT FOOT -->
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- FRONT definition lines -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="95"/>
+              <path class="dl" d="M91,62 C86,66 80,70 74,78"/>
+              <path class="dl" d="M109,62 C114,66 120,70 126,78"/>
+              <line class="dl" x1="67" y1="196" x2="67" y2="268"/>
+              <line class="dl" x1="133" y1="196" x2="133" y2="268"/>
               <!-- grid lines -->
-              <line class="gl" x1="57" y1="80" x2="143" y2="80"/>
-              <line class="gl" x1="55" y1="148" x2="145" y2="148"/>
-              <line class="gl" x1="57" y1="210" x2="143" y2="210"/>
-              <line class="gl" x1="58" y1="260" x2="142" y2="260"/>
-              <line class="gl" x1="60" y1="318" x2="140" y2="318"/>
-              <line class="gl" x1="100" y1="6" x2="100" y2="350"/>
-              <!-- clickable zones -->
-              <ellipse class="bz" data-zone="head" cx="100" cy="26" rx="20" ry="23"/>
-              <path class="bz" data-zone="back" d="M70,60 Q63,67 61,81 L60,147 Q80,153 100,154 Q120,153 140,147 L139,81 Q137,67 130,60 Q115,56 100,55 Q85,56 70,60 Z"/>
-              <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
-              <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
-              <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
-              <ellipse class="bz" data-zone="knee_l" cx="74" cy="259" rx="15" ry="13"/>
-              <ellipse class="bz" data-zone="knee_r" cx="126" cy="259" rx="15" ry="13"/>
-              <path class="bz" data-zone="calf_l" d="M61,269 Q57,291 59,320 L88,320 Q90,291 87,269 Z"/>
-              <path class="bz" data-zone="calf_r" d="M139,269 Q143,291 141,320 L112,320 Q110,291 113,269 Z"/>
-              <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="14" ry="9"/>
-              <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="14" ry="9"/>
-              <path class="bz" data-zone="foot_l" d="M61,329 Q54,336 54,343 Q54,350 62,352 L90,352 Q94,350 94,343 L90,331 Z"/>
-              <path class="bz" data-zone="foot_r" d="M139,329 Q146,336 146,343 Q146,350 138,352 L110,352 Q106,350 106,343 L110,331 Z"/>
+              <line class="gl" x1="43" y1="88" x2="157" y2="88"/>
+              <line class="gl" x1="41" y1="155" x2="159" y2="155"/>
+              <line class="gl" x1="46" y1="218" x2="154" y2="218"/>
+              <line class="gl" x1="46" y1="278" x2="154" y2="278"/>
+              <line class="gl" x1="50" y1="340" x2="150" y2="340"/>
+              <line class="gl" x1="100" y1="4" x2="100" y2="372"/>
+              <!-- CLICKABLE ZONES (transparent overlays) -->
+              <ellipse class="bz" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
+              <path class="bz" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="bz" data-zone="hip" d="M57,154 C54,166 56,178 64,183 L136,183 C144,178 146,166 143,154 L118,151 Q100,153 82,151 Z"/>
+              <path class="bz" data-zone="quad_l" d="M64,181 C55,188 48,207 46,233 L46,261 C48,273 60,280 76,278 C85,276 89,268 89,259 L89,231 C89,207 92,188 100,184 C86,180 64,179 64,181 Z"/>
+              <path class="bz" data-zone="quad_r" d="M136,181 C145,188 152,207 154,233 L154,261 C152,273 140,280 124,278 C115,276 111,268 111,259 L111,231 C111,207 108,188 100,184 C114,180 136,179 136,181 Z"/>
+              <ellipse class="bz" data-zone="knee_l" cx="67" cy="280" rx="18" ry="14"/>
+              <ellipse class="bz" data-zone="knee_r" cx="133" cy="280" rx="18" ry="14"/>
+              <path class="bz" data-zone="calf_l" d="M55,291 C48,305 48,319 52,331 C55,338 61,342 67,342 L77,342 C83,342 88,338 91,331 C95,319 94,305 88,291 Z"/>
+              <path class="bz" data-zone="calf_r" d="M145,291 C152,305 152,319 148,331 C145,338 139,342 133,342 L123,342 C117,342 112,338 109,331 C105,319 106,305 112,291 Z"/>
+              <ellipse class="bz" data-zone="ankle_l" cx="67" cy="344" rx="13" ry="9"/>
+              <ellipse class="bz" data-zone="ankle_r" cx="133" cy="344" rx="13" ry="9"/>
+              <path class="bz" data-zone="foot_l" d="M56,351 C50,356 48,362 50,367 C52,371 58,373 68,373 L84,373 C88,371 88,367 86,361 L82,352 Z"/>
+              <path class="bz" data-zone="foot_r" d="M144,351 C150,356 152,362 150,367 C148,371 142,373 132,373 L116,373 C112,371 112,367 114,361 L118,352 Z"/>
             </svg>
             <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">FRONT</div>
           </div>
 
           <!-- BACK -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg id="bodySvgBack" viewBox="0 0 200 370" style="width:115px;cursor:pointer">
-              <!-- silhouette (mirrored = same shapes, back-facing) -->
-              <ellipse class="sg" cx="100" cy="26" rx="19" ry="22"/>
-              <rect class="sg" x="92" y="46" width="16" height="14" stroke="none"/>
-              <path class="sg" d="M68,58 Q60,64 57,80 L55,148 Q58,155 100,157 Q142,155 145,148 L143,80 Q140,64 132,58 Z"/>
-              <path class="sg" d="M58,78 Q44,84 37,100 Q31,118 32,145 L41,145 Q42,122 47,106 Q53,91 68,87 Z"/>
-              <path class="sg" d="M142,78 Q156,84 163,100 Q169,118 168,145 L159,145 Q158,122 153,106 Q147,91 132,87 Z"/>
-              <path class="sg" d="M55,148 Q58,166 70,173 L130,173 Q142,166 145,148 Z"/>
-              <path class="sg" d="M70,171 Q61,176 59,196 L57,246 Q60,256 80,258 Q89,256 88,246 L86,196 Q85,178 100,175 Q85,170 70,171 Z"/>
-              <path class="sg" d="M130,171 Q139,176 141,196 L143,246 Q140,256 120,258 Q111,256 112,246 L114,196 Q115,178 100,175 Q115,170 130,171 Z"/>
-              <ellipse class="sg" cx="74" cy="259" rx="14" ry="12"/>
-              <ellipse class="sg" cx="126" cy="259" rx="14" ry="12"/>
-              <path class="sg" d="M62,267 Q57,290 59,320 L88,320 Q90,290 87,267 Z"/>
-              <path class="sg" d="M138,267 Q143,290 141,320 L112,320 Q110,290 113,267 Z"/>
-              <ellipse class="sg" cx="74" cy="323" rx="13" ry="8"/>
-              <ellipse class="sg" cx="126" cy="323" rx="13" ry="8"/>
-              <path class="sg" d="M62,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z"/>
-              <path class="sg" d="M138,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z"/>
+            <svg id="bodySvgBack" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
+              <!-- BACK silhouette (same proportions, back-specific details) -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z" stroke="none"/>
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- BACK definition lines: spine, shoulder blades, glute -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="182"/>
+              <path class="dl" d="M84,72 C80,84 80,100 84,114"/>
+              <path class="dl" d="M116,72 C120,84 120,100 116,114"/>
+              <line class="dl" x1="100" y1="182" x2="100" y2="206"/>
               <!-- grid lines -->
-              <line class="gl" x1="57" y1="80" x2="143" y2="80"/>
-              <line class="gl" x1="55" y1="148" x2="145" y2="148"/>
-              <line class="gl" x1="57" y1="210" x2="143" y2="210"/>
-              <line class="gl" x1="58" y1="260" x2="142" y2="260"/>
-              <line class="gl" x1="60" y1="318" x2="140" y2="318"/>
-              <line class="gl" x1="100" y1="6" x2="100" y2="350"/>
-              <!-- back clickable zones -->
-              <ellipse class="bzb" data-zone="head" cx="100" cy="26" rx="20" ry="23"/>
-              <path class="bzb" data-zone="back" d="M70,60 Q63,67 61,81 L60,147 Q80,153 100,154 Q120,153 140,147 L139,81 Q137,67 130,60 Q115,56 100,55 Q85,56 70,60 Z"/>
-              <path class="bzb" data-zone="glute" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
-              <path class="bzb" data-zone="hamstring_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
-              <path class="bzb" data-zone="hamstring_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
-              <ellipse class="bzb" data-zone="knee_l" cx="74" cy="259" rx="15" ry="13"/>
-              <ellipse class="bzb" data-zone="knee_r" cx="126" cy="259" rx="15" ry="13"/>
-              <path class="bzb" data-zone="calf_l" d="M61,269 Q57,291 59,320 L88,320 Q90,291 87,269 Z"/>
-              <path class="bzb" data-zone="calf_r" d="M139,269 Q143,291 141,320 L112,320 Q110,291 113,269 Z"/>
-              <ellipse class="bzb" data-zone="achilles_l" cx="74" cy="324" rx="14" ry="9"/>
-              <ellipse class="bzb" data-zone="achilles_r" cx="126" cy="324" rx="14" ry="9"/>
-              <path class="bzb" data-zone="plantar_l" d="M61,329 Q54,336 54,343 Q54,350 62,352 L90,352 Q94,350 94,343 L90,331 Z"/>
-              <path class="bzb" data-zone="plantar_r" d="M139,329 Q146,336 146,343 Q146,350 138,352 L110,352 Q106,350 106,343 L110,331 Z"/>
+              <line class="gl" x1="43" y1="88" x2="157" y2="88"/>
+              <line class="gl" x1="41" y1="155" x2="159" y2="155"/>
+              <line class="gl" x1="46" y1="218" x2="154" y2="218"/>
+              <line class="gl" x1="46" y1="278" x2="154" y2="278"/>
+              <line class="gl" x1="50" y1="340" x2="150" y2="340"/>
+              <line class="gl" x1="100" y1="4" x2="100" y2="372"/>
+              <!-- BACK CLICKABLE ZONES -->
+              <ellipse class="bzb" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
+              <path class="bzb" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="bzb" data-zone="glute" d="M57,154 C54,166 56,178 64,183 L136,183 C144,178 146,166 143,154 L118,151 Q100,153 82,151 Z"/>
+              <path class="bzb" data-zone="hamstring_l" d="M64,181 C55,188 48,207 46,233 L46,261 C48,273 60,280 76,278 C85,276 89,268 89,259 L89,231 C89,207 92,188 100,184 C86,180 64,179 64,181 Z"/>
+              <path class="bzb" data-zone="hamstring_r" d="M136,181 C145,188 152,207 154,233 L154,261 C152,273 140,280 124,278 C115,276 111,268 111,259 L111,231 C111,207 108,188 100,184 C114,180 136,179 136,181 Z"/>
+              <ellipse class="bzb" data-zone="knee_l" cx="67" cy="280" rx="18" ry="14"/>
+              <ellipse class="bzb" data-zone="knee_r" cx="133" cy="280" rx="18" ry="14"/>
+              <path class="bzb" data-zone="calf_l" d="M55,291 C48,305 48,319 52,331 C55,338 61,342 67,342 L77,342 C83,342 88,338 91,331 C95,319 94,305 88,291 Z"/>
+              <path class="bzb" data-zone="calf_r" d="M145,291 C152,305 152,319 148,331 C145,338 139,342 133,342 L123,342 C117,342 112,338 109,331 C105,319 106,305 112,291 Z"/>
+              <ellipse class="bzb" data-zone="achilles_l" cx="67" cy="344" rx="13" ry="9"/>
+              <ellipse class="bzb" data-zone="achilles_r" cx="133" cy="344" rx="13" ry="9"/>
+              <path class="bzb" data-zone="plantar_l" d="M56,351 C50,356 48,362 50,367 C52,371 58,373 68,373 L84,373 C88,371 88,367 86,361 L82,352 Z"/>
+              <path class="bzb" data-zone="plantar_r" d="M144,351 C150,356 152,362 150,367 C148,371 142,373 132,373 L116,373 C112,371 112,367 114,361 L118,352 Z"/>
             </svg>
             <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">BACK</div>
           </div>
@@ -1500,7 +1536,9 @@ function renderDashboard() {
     return d.getMonth()===lm.getMonth() && d.getFullYear()===lm.getFullYear();
   });
   const weekAgo = Date.now()-7*24*3600*1000;
+  const prevWeekAgo = Date.now()-14*24*3600*1000;
   const thisWeek = allActivities.filter(a => new Date(a.start_date).getTime()>weekAgo);
+  const prevWeek = allActivities.filter(a => { const t=new Date(a.start_date).getTime(); return t>prevWeekAgo && t<=weekAgo; });
 
   const km = r => r.reduce((s,a)=>s+a.distance/1000,0);
   const dp = r => r.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
@@ -1508,7 +1546,8 @@ function renderDashboard() {
 
   const kmM=km(thisMonth), kmW=km(thisWeek), dpM=dp(thisMonth), dpW=dp(thisWeek);
   const kmML=km(lastMonth), dpML=dp(lastMonth);
-  const runsM=thisMonth.length, runsML=lastMonth.length;
+  const kmPW=km(prevWeek), dpPW=dp(prevWeek);
+  const runsM=thisMonth.length, runsML=lastMonth.length, runsW=thisWeek.length, runsPW=prevWeek.length;
   const durM=dur(thisMonth);
 
   // Strip
@@ -1517,14 +1556,22 @@ function renderDashboard() {
   document.getElementById('s-dplus-month').textContent = dpM.toFixed(0)+' m';
   document.getElementById('s-dplus-week').textContent = dpW.toFixed(0)+' m';
   document.getElementById('s-runs-month').textContent = runsM;
+  document.getElementById('s-runs-week').textContent = runsW;
 
-  // Deltas
+  // Deltas monthly
   const pctKm = kmML>0?(kmM-kmML)/kmML*100:null;
   const pctDp = dpML>0?(dpM-dpML)/dpML*100:null;
   const pctRuns = runsML>0?(runsM-runsML)/runsML*100:null;
   document.getElementById('s-km-month-delta').innerHTML = deltaHTML(pctKm);
   document.getElementById('s-dplus-delta').innerHTML = deltaHTML(pctDp);
   document.getElementById('s-runs-delta').innerHTML = deltaHTML(pctRuns);
+  // Deltas weekly vs previous week
+  const pctKmW = kmPW>0?(kmW-kmPW)/kmPW*100:null;
+  const pctDpW = dpPW>0?(dpW-dpPW)/dpPW*100:null;
+  const pctRunsW = runsPW>0?(runsW-runsPW)/runsPW*100:null;
+  document.getElementById('s-km-week-delta').innerHTML = deltaHTML(pctKmW);
+  document.getElementById('s-dplus-week-delta').innerHTML = deltaHTML(pctDpW);
+  document.getElementById('s-runs-week-delta').innerHTML = deltaHTML(pctRunsW);
 
   // Simple stats cards
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
@@ -2183,13 +2230,18 @@ function renderRaces() {
     const color=diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
     const hasGpx=!!next.gpx_data;
     nextWidget.innerHTML=`<div class="next-race-big">
-      <div class="next-race-num" style="color:${color}">${diff}</div>
-      <div class="next-race-unit">jours</div>
-      <div style="font-weight:600;font-size:.9rem;margin-bottom:3px">${next.name}</div>
-      <div class="mono t2">${next.distance||'?'}km · D+${next.elevation||'?'}m · ${next.type}</div>
-      ${next.goal_time?`<div class="mono" style="color:${color};margin-top:4px">🎯 ${next.goal_time}</div>`:''}
-      ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green);margin-top:6px;display:inline-block">✓ GPX</span>`:''}
-      <button class="btn-prepare" style="margin-top:10px" onclick='goToEvent("${next.id}")'>${hasGpx?'🗺️ Voir stratégie':'📅 Voir l\'événement'}</button>
+      <div class="next-race-cd">
+        <div class="next-race-num" style="color:${color}">${diff}</div>
+        <div class="next-race-unit">jours</div>
+      </div>
+      <div class="next-race-info">
+        <div class="next-race-title">${next.name}</div>
+        <div class="mono t2" style="font-size:.62rem">${next.distance||'?'}km · D+${next.elevation||'?'}m · ${next.type}${next.goal_time?` · 🎯 ${next.goal_time}`:''}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green)">✓ GPX</span>`:''}
+          <button class="btn-prepare" onclick='goToEvent("${next.id}")'>${hasGpx?'🗺️ Voir stratégie':'📅 Voir l\'événement'}</button>
+        </div>
+      </div>
     </div>`;
   } else { if(nextWidget) nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>'; }
   if(!list) { renderCalendar(); return; }
@@ -3543,13 +3595,13 @@ function switchRenfoMode(mode,btn){
   document.getElementById('mode-progression').style.display=mode==='progression'?'block':'none';
 }
 
-function ankleContent(){return{blessures:[{name:'Entorse latérale',desc:'Lésion ligaments péronéo-astragaliens. Très fréquente en descente trail sur terrain irrégulier. Risque accru si historique d\'entorse ou ligaments affaiblis.'},{name:'Tendinopathie des péroniers',desc:'Surmenage des tendons stabilisateurs latéraux. Apparaît sur terrains dévers ou en surentraînement.'},{name:'Instabilité chronique',desc:'Séquelles d\'entorses répétées. Sensation d\'insécurité en terrain technique. Se compense par le renforcement musculaire.'}],exercices:[{title:'Équilibre unipodal',meta:'3×30s par jambe · 3×/semaine',desc:'Debout sur une jambe, maintenir 30s. Progresser : yeux fermés, surface instable. Compense les ligaments déficients par la proprioception.',ref:'Bahr et al., 1997 · Am J Sports Med',yt:'BH4Z04j5c1E'},{title:'Renfo péroniers — élastique',meta:'3×15 reps · 3×/semaine',desc:'Assis, élastique autour de l\'avant-pied. Tourner vers l\'extérieur contre résistance. Renforce les stabilisateurs latéraux.',ref:'Mafi et al., 2001 · BJSM',yt:'XyEaFQG5Hxc'},{title:'Step down excentrique',meta:'3×10 reps lent · 3×/semaine',desc:'Debout sur une marche, descendre lentement sur une jambe. Renforce le contrôle neuromusculaire en descente.',ref:'Heiderscheit et al., 2011',yt:'nspDpk90RWE'}]};}
-function kneeContent(){return{blessures:[{name:'Syndrome de l\'essuie-glace (ITB)',desc:'Friction bandelette ilio-tibiale sur condyle fémoral. Douleur latérale genou surtout en descente. Très fréquent en trail.'},{name:'Syndrome fémoro-patellaire',desc:'Douleur sous/autour rotule. Aggravé montée/descente. Lié à déséquilibre quadriceps/fessiers.'},{name:'Tendinopathie rotulienne',desc:'Douleur au tendon rotulien. Apparaît en surcharge brutale ou terrain dur répété.'}],exercices:[{title:'Clamshell — fessier moyen',meta:'3×20 reps · 3×/semaine',desc:'Allongé sur le côté, ouvrir le genou supérieur. Active le fessier moyen, stabilisateur clé du genou.',ref:'Fredericson et al., 2000 · Clin J Sport Med',yt:'3djM-j3-WMo'},{title:'Squat sumo avec élastique',meta:'3×15 reps · 3×/semaine',desc:'Élastique au-dessus des genoux, descente large. Renforce fessiers et stabilisateurs du genou.',ref:'Noehren et al., 2011 · JOSPT',yt:'aclHkVaku9U'},{title:'Foam roller ITB',meta:'2×60s · post-effort',desc:'Roller face externe de la cuisse. Libère les tensions de la bandelette. Ne pas rouler sur la douleur aiguë.',ref:'Cheatham et al., 2015 · IJSPT',yt:'7p2hLdGGFXE'}]};}
-function calfContent(){return{blessures:[{name:'Périostite tibiale',desc:'Inflammation périoste du tibia. Douleur diffuse face interne. Fréquente en reprise ou augmentation brutale de volume.'},{name:'Tendinopathie d\'Achille',desc:'Dégénérescence progressive du tendon. Raideur matinale, douleur 2-6cm au-dessus de l\'insertion.'},{name:'Claquage mollet',desc:'Déchirure partielle gastrocnémien ou soléaire. Douleur brutale en effort, impossibilité de continuer.'}],exercices:[{title:'Heel drop excentrique — protocole Alfredson',meta:'3×15 reps lent · 2×/jour · 12 semaines',desc:'Sur une marche, monter sur 2 pieds, descendre lentement sur 1. Protocole validé cliniquement pour tendinopathie d\'Achille.',ref:'Alfredson et al., 1998 · Am J Sports Med',yt:'4Dl0zAzsxBQ'},{title:'Renfo soléaire assis',meta:'3×20 reps · 3×/semaine',desc:'Assis, genoux à 90°, monter sur les pointes avec charge sur les cuisses. Cible le soléaire (endurance).',ref:'Silbernagel et al., 2007 · BJSM',yt:'3R4GKGP3pg4'}]};}
-function quadContent(){return{blessures:[{name:'Syndrome ischio-jambiers',desc:'Tendinopathie proximale ou distale. Douleur arrière cuisse, aggravée en montée trail.'},{name:'Contracture quadriceps',desc:'Surmenage en descente technique répétée. Travail excentrique sur km de D-.'},{name:'Syndrome du piriforme',desc:'Contraction excessive, peut comprimer le sciatique. Douleur fessière irradiante.'}],exercices:[{title:'Nordic curl',meta:'3×6-8 reps · 2×/semaine',desc:'Agenouillé pieds bloqués, descendre lentement vers l\'avant. Le plus efficace pour prévenir claquages ischio-jambiers.',ref:'Petersen et al., 2011 · Am J Sports Med',yt:'6SCEAWcuF0Y'},{title:'Squat bulgare',meta:'3×8 reps · 2×/semaine',desc:'Pied arrière surélevé, descente contrôlée. Quadriceps et fessiers unilatéral, corrige asymétries.',ref:'Speirs et al., 2016 · J Strength Cond',yt:'2C-uNgKwPLE'}]};}
-function hipContent(){return{blessures:[{name:'Tendinopathie trochantérienne',desc:'Douleur latérale hanche. Aggravée montée et surfaces déversées. Très fréquent en trail.'},{name:'Contracture du psoas',desc:'Fléchisseur suractivé. Raccourcissement progressif, bascule bassin, douleur lombaire.'}],exercices:[{title:'Hip thrust',meta:'3×12 reps · 3×/semaine',desc:'Dos contre banc, barre sur hanches, pousser bassin vers le haut. Exercice roi du grand fessier. Fondamental pour traileurs.',ref:'Contreras et al., 2015 · J Strength Cond',yt:'Zp26q4BY5HE'},{title:'Étirement psoas — fente basse',meta:'2×60s par côté · quotidien',desc:'Fente basse genou arrière au sol, basculer bassin en rétroversion. Libère le psoas, améliore l\'amplitude en montée.',ref:'Page, 2012 · Int J Sports Phys Ther',yt:'OPYTe3BZMPI'}]};}
-function backContent(){return{blessures:[{name:'Lombalgie du coureur',desc:'Core insuffisant + répétition impacts. Aggravée longues sorties.'},{name:'Hyperlordose compensatrice',desc:'Psoas court + fessiers faibles. Très fréquent chez traileurs.'}],exercices:[{title:'McGill Big 3 — planche + latérale + bird-dog',meta:'3×30s · quotidien',desc:'Les 3 exercices de Stuart McGill pour stabiliser la colonne sans la comprimer. Fondation de tout programme core running.',ref:'McGill, 2010 · J Strength Cond Res',yt:'ASdvHqQX7dw'},{title:'Dead bug',meta:'3×10 reps · 3×/semaine',desc:'Allongé sur le dos, abaisser alternativement bras et jambe opposée en gardant bas du dos plaqué.',ref:'Akuthota & Nadler, 2004',yt:'4XLEnwUr1d8'}]};}
-function footContent(){return{blessures:[{name:'Fasciite plantaire',desc:'Inflammation aponévrose plantaire. Douleur au talon le matin. Fréquente en trail avec D+ important.'},{name:'Métatarsalgie',desc:'Douleur sous avant-pied. Surcharge têtes métatarsiennes, souvent liée à attaque talon.'}],exercices:[{title:'Serviette avec les orteils',meta:'3×30s · quotidien',desc:'Ramasser une serviette avec les orteils. Renforce muscles intrinsèques du pied, améliore contrôle voûte plantaire.',ref:'Mulligan & Cook, 2013',yt:'1FIyPYAc5mI'},{title:'Short foot exercise',meta:'3×10s maintenu · 3×/semaine',desc:'Rapprocher la tête des métatarses vers le talon sans recroqueviller les orteils. Active le court fléchisseur.',ref:'Jung et al., 2011 · Man Ther',yt:'LWtXEAIBhyg'}]};}
+function ankleContent(){return{blessures:[{name:'Entorse latérale',desc:'Lésion ligaments péronéo-astragaliens. Très fréquente en descente trail sur terrain irrégulier. Risque accru si historique d\'entorse ou ligaments affaiblis.'},{name:'Tendinopathie des péroniers',desc:'Surmenage des tendons stabilisateurs latéraux. Apparaît sur terrains dévers ou en surentraînement.'},{name:'Instabilité chronique',desc:'Séquelles d\'entorses répétées. Sensation d\'insécurité en terrain technique. Se compense par le renforcement musculaire.'}],exercices:[{title:'Équilibre unipodal',meta:'3×30s par jambe · 3×/semaine',desc:'Debout sur une jambe, maintenir 30s. Progresser : yeux fermés, surface instable. Compense les ligaments déficients par la proprioception.',ref:'Bahr et al., 1997 · Am J Sports Med',yt:'équilibre unipodal proprioception cheville running'},{title:'Renfo péroniers — élastique',meta:'3×15 reps · 3×/semaine',desc:'Assis, élastique autour de l\'avant-pied. Tourner vers l\'extérieur contre résistance. Renforce les stabilisateurs latéraux.',ref:'Mafi et al., 2001 · BJSM',yt:'renforcement péroniers élastique cheville running'},{title:'Step down excentrique',meta:'3×10 reps lent · 3×/semaine',desc:'Debout sur une marche, descendre lentement sur une jambe. Renforce le contrôle neuromusculaire en descente.',ref:'Heiderscheit et al., 2011',yt:'step down excentrique genou contrôle neuromusculaire'}]};}
+function kneeContent(){return{blessures:[{name:'Syndrome de l\'essuie-glace (ITB)',desc:'Friction bandelette ilio-tibiale sur condyle fémoral. Douleur latérale genou surtout en descente. Très fréquent en trail.'},{name:'Syndrome fémoro-patellaire',desc:'Douleur sous/autour rotule. Aggravé montée/descente. Lié à déséquilibre quadriceps/fessiers.'},{name:'Tendinopathie rotulienne',desc:'Douleur au tendon rotulien. Apparaît en surcharge brutale ou terrain dur répété.'}],exercices:[{title:'Clamshell — fessier moyen',meta:'3×20 reps · 3×/semaine',desc:'Allongé sur le côté, ouvrir le genou supérieur. Active le fessier moyen, stabilisateur clé du genou.',ref:'Fredericson et al., 2000 · Clin J Sport Med',yt:'clamshell fessier moyen exercice running'},{title:'Squat sumo avec élastique',meta:'3×15 reps · 3×/semaine',desc:'Élastique au-dessus des genoux, descente large. Renforce fessiers et stabilisateurs du genou.',ref:'Noehren et al., 2011 · JOSPT',yt:'squat sumo élastique genou fessiers'},{title:'Foam roller ITB',meta:'2×60s · post-effort',desc:'Roller face externe de la cuisse. Libère les tensions de la bandelette. Ne pas rouler sur la douleur aiguë.',ref:'Cheatham et al., 2015 · IJSPT',yt:'foam roller ITB bandelette ilio-tibiale trail'}]};}
+function calfContent(){return{blessures:[{name:'Périostite tibiale',desc:'Inflammation périoste du tibia. Douleur diffuse face interne. Fréquente en reprise ou augmentation brutale de volume.'},{name:'Tendinopathie d\'Achille',desc:'Dégénérescence progressive du tendon. Raideur matinale, douleur 2-6cm au-dessus de l\'insertion.'},{name:'Claquage mollet',desc:'Déchirure partielle gastrocnémien ou soléaire. Douleur brutale en effort, impossibilité de continuer.'}],exercices:[{title:'Heel drop excentrique — protocole Alfredson',meta:'3×15 reps lent · 2×/jour · 12 semaines',desc:'Sur une marche, monter sur 2 pieds, descendre lentement sur 1. Protocole validé cliniquement pour tendinopathie d\'Achille.',ref:'Alfredson et al., 1998 · Am J Sports Med',yt:'heel drop excentrique Alfredson tendinite Achille'},{title:'Renfo soléaire assis',meta:'3×20 reps · 3×/semaine',desc:'Assis, genoux à 90°, monter sur les pointes avec charge sur les cuisses. Cible le soléaire (endurance).',ref:'Silbernagel et al., 2007 · BJSM',yt:'renforcement soléaire assis mollet running'}]};}
+function quadContent(){return{blessures:[{name:'Syndrome ischio-jambiers',desc:'Tendinopathie proximale ou distale. Douleur arrière cuisse, aggravée en montée trail.'},{name:'Contracture quadriceps',desc:'Surmenage en descente technique répétée. Travail excentrique sur km de D-.'},{name:'Syndrome du piriforme',desc:'Contraction excessive, peut comprimer le sciatique. Douleur fessière irradiante.'}],exercices:[{title:'Nordic curl',meta:'3×6-8 reps · 2×/semaine',desc:'Agenouillé pieds bloqués, descendre lentement vers l\'avant. Le plus efficace pour prévenir claquages ischio-jambiers.',ref:'Petersen et al., 2011 · Am J Sports Med',yt:'nordic curl ischio-jambiers prévention claquage'},{title:'Squat bulgare',meta:'3×8 reps · 2×/semaine',desc:'Pied arrière surélevé, descente contrôlée. Quadriceps et fessiers unilatéral, corrige asymétries.',ref:'Speirs et al., 2016 · J Strength Cond',yt:'squat bulgare quadriceps fessiers unilatéral'}]};}
+function hipContent(){return{blessures:[{name:'Tendinopathie trochantérienne',desc:'Douleur latérale hanche. Aggravée montée et surfaces déversées. Très fréquent en trail.'},{name:'Contracture du psoas',desc:'Fléchisseur suractivé. Raccourcissement progressif, bascule bassin, douleur lombaire.'}],exercices:[{title:'Hip thrust',meta:'3×12 reps · 3×/semaine',desc:'Dos contre banc, barre sur hanches, pousser bassin vers le haut. Exercice roi du grand fessier. Fondamental pour traileurs.',ref:'Contreras et al., 2015 · J Strength Cond',yt:'hip thrust grand fessier trail running force'},{title:'Étirement psoas — fente basse',meta:'2×60s par côté · quotidien',desc:'Fente basse genou arrière au sol, basculer bassin en rétroversion. Libère le psoas, améliore l\'amplitude en montée.',ref:'Page, 2012 · Int J Sports Phys Ther',yt:'étirement psoas fente basse trail running'}]};}
+function backContent(){return{blessures:[{name:'Lombalgie du coureur',desc:'Core insuffisant + répétition impacts. Aggravée longues sorties.'},{name:'Hyperlordose compensatrice',desc:'Psoas court + fessiers faibles. Très fréquent chez traileurs.'}],exercices:[{title:'McGill Big 3 — planche + latérale + bird-dog',meta:'3×30s · quotidien',desc:'Les 3 exercices de Stuart McGill pour stabiliser la colonne sans la comprimer. Fondation de tout programme core running.',ref:'McGill, 2010 · J Strength Cond Res',yt:'McGill big 3 core stabilité lombaire running'},{title:'Dead bug',meta:'3×10 reps · 3×/semaine',desc:'Allongé sur le dos, abaisser alternativement bras et jambe opposée en gardant bas du dos plaqué.',ref:'Akuthota & Nadler, 2004',yt:'dead bug exercice core stabilité lombaire'}]};}
+function footContent(){return{blessures:[{name:'Fasciite plantaire',desc:'Inflammation aponévrose plantaire. Douleur au talon le matin. Fréquente en trail avec D+ important.'},{name:'Métatarsalgie',desc:'Douleur sous avant-pied. Surcharge têtes métatarsiennes, souvent liée à attaque talon.'}],exercices:[{title:'Serviette avec les orteils',meta:'3×30s · quotidien',desc:'Ramasser une serviette avec les orteils. Renforce muscles intrinsèques du pied, améliore contrôle voûte plantaire.',ref:'Mulligan & Cook, 2013',yt:'renforcement pieds orteils voûte plantaire running'},{title:'Short foot exercise',meta:'3×10s maintenu · 3×/semaine',desc:'Rapprocher la tête des métatarses vers le talon sans recroqueviller les orteils. Active le court fléchisseur.',ref:'Jung et al., 2011 · Man Ther',yt:'short foot exercise voûte plantaire fascia'}]};}
 
 function headContent(){return{blessures:[{name:'Stress & anxiété pré-compétition',desc:'Activation du système sympathique avant une course. Pensées négatives, doute, tension musculaire. Très fréquent chez les coureurs ambitieux.'},{name:'Mur mental en course',desc:'Effondrement de la motivation en milieu de course. Dialogue intérieur négatif. Souvent déclenché par la douleur ou l\'inconfort.'},{name:'Burn-out du coureur',desc:'Épuisement psychologique lié à un entraînement trop rigide ou à des attentes irréalistes. Perte de plaisir, motivation zéro.'}],exercices:[{title:'Visualisation pré-course',meta:'10min la veille de la course',desc:'Ferme les yeux, visualise le parcours section par section. Imagine ta foulée sur les montées, ta FC qui redescend dans les descentes, ta respiration au ravito. Le cerveau ne distingue pas bien le réel du mental — il s\'entraîne aussi.',ref:'Guillot & Collet, 2008 · J Sport Sci',yt:''},{title:'Cohérence cardiaque 5min',meta:'Matin et soir · avant chaque sortie difficile',desc:'6 respirations par minute : 5s inspire par le nez, 5s expire par la bouche. 5 minutes. Réduit le cortisol, améliore la HRV, renforce le système nerveux parasympathique. L\'outil le plus puissant et le plus sous-estimé.',ref:'McCraty et al., 2009 · J Altern Complement Med',yt:''},{title:'Reformulation du dialogue intérieur',meta:'Technique à appliquer en course',desc:'Dès qu\'une pensée négative apparaît ("je vais abandonner", "trop dur"), remplace-la immédiatement par une affirmation concrète et factuelle : "ma foulée est efficace", "je respire bien", "je contrôle mon allure". Focalise sur le processus, pas le résultat.',ref:'Hardy et al., 1996 · J Sport Exerc Psychol',yt:''},{title:'Segmentation du parcours',meta:'Stratégie mentale en course',desc:'Ne pense jamais à la distance totale restante. Découpe la course en micro-objectifs : atteindre le prochain arbre, finir cette montée, rejoindre le prochain ravito. Chaque segment gagné renforce la confiance.',ref:'Tenenbaum, 2001 · J Sport Sci',yt:''}]};}
 const ZONE_FN={head:headContent,ankle_l:ankleContent,ankle_r:ankleContent,knee_l:kneeContent,knee_r:kneeContent,calf_l:calfContent,calf_r:calfContent,quad_l:quadContent,quad_r:quadContent,hip:hipContent,back:backContent,foot_l:footContent,foot_r:footContent,hamstring_l:quadContent,hamstring_r:quadContent,glute:hipContent,achilles_l:ankleContent,achilles_r:ankleContent,plantar_l:footContent,plantar_r:footContent};
@@ -3579,7 +3631,7 @@ function renderZoneContent(zone){
       <div class="clabel" style="margin-bottom:.5rem">Blessures fréquentes en trail/running</div>
       ${c.blessures.map(b=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:7px"><div style="font-weight:600;font-size:.82rem;color:var(--orange);margin-bottom:3px">⚠️ ${b.name}</div><div style="font-size:.76rem;color:var(--text2);line-height:1.5">${b.desc}</div></div>`).join('')}
       <div class="clabel" style="margin-bottom:.5rem;margin-top:1rem">Exercices de prévention</div>
-      ${c.exercices.map(e=>`<div class="exercise-card"><div class="exercise-title">${e.title}</div><div class="exercise-meta">${e.meta}</div><div class="exercise-desc">${e.desc}</div>${e.ref?`<div class="exercise-ref">📖 ${e.ref}</div>`:''} ${e.yt?`<a href="https://www.youtube.com/watch?v=${e.yt}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:.6rem;color:#ff4444;text-decoration:none;">▶ Voir l'exercice sur YouTube</a>`:''}</div>`).join('')}
+      ${c.exercices.map(e=>`<div class="exercise-card"><div class="exercise-title">${e.title}</div><div class="exercise-meta">${e.meta}</div><div class="exercise-desc">${e.desc}</div>${e.ref?`<div class="exercise-ref">📖 ${e.ref}</div>`:''} ${e.yt?`<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.yt)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:.6rem;color:#ff4444;text-decoration:none;">▶ Rechercher sur YouTube</a>`:''}</div>`).join('')}
     </div>`;
 }
 
