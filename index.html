@@ -504,7 +504,21 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
       <button class="hbtn" onclick="backToCalendar()">← Calendrier</button>
       <div id="eventViewTitle" style="flex:1;font-family:var(--display);font-size:1.3rem;letter-spacing:.03em"></div>
+      <button class="hbtn" id="btnEditRace" onclick="toggleEditRaceForm()">✏️ Modifier</button>
       <button class="hbtn" id="btnDeleteRace" style="color:var(--red);border-color:var(--red)">🗑 Supprimer</button>
+    </div>
+    <div id="editRaceForm" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 16px;margin-bottom:1rem;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="grid-column:1/-1;font-family:var(--display);font-size:.9rem;letter-spacing:.03em;margin-bottom:2px">Modifier l'événement</div>
+      <div><label class="fl">Nom de la course</label><input class="fi" id="editRaceName" type="text" placeholder="Nom"></div>
+      <div><label class="fl">Date</label><input class="fi" id="editRaceDate" type="date"></div>
+      <div><label class="fl">Type</label><select class="fi" id="editRaceType"><option value="Trail">⛰️ Trail</option><option value="Route">🏃 Route</option><option value="Ultra">🦅 Ultra</option></select></div>
+      <div><label class="fl">Distance (km)</label><input class="fi" id="editRaceDist" type="number" step="0.1" placeholder="ex: 21.1"></div>
+      <div><label class="fl">D+ (m)</label><input class="fi" id="editRaceDplus" type="number" placeholder="ex: 800"></div>
+      <div><label class="fl">Objectif temps</label><input class="fi" id="editRaceGoal" type="text" placeholder="ex: 2h30"></div>
+      <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="hbtn" onclick="toggleEditRaceForm()">Annuler</button>
+        <button class="hbtn" onclick="saveEditRace()" style="background:var(--cyan);color:#000;border-color:var(--cyan)">💾 Enregistrer</button>
+      </div>
     </div>
 
     <div class="upload-zone" id="gpxDrop"
@@ -1341,10 +1355,10 @@ function goToEvent(raceId) {
 function backToCalendar() {
   document.getElementById('eventView').style.display = 'none';
   document.getElementById('calView').style.display = 'block';
-  // Reset GPX state
   currentRaceContext = null;
   document.getElementById('stratResult').style.display='none';
   document.getElementById('gpxDrop').style.display='flex';
+  const ef=document.getElementById('editRaceForm');if(ef)ef.style.display='none';
   if(window._actMapInst2){window._actMapInst2.remove();window._actMapInst2=null;}
 }
 
@@ -1353,6 +1367,50 @@ async function deleteRace(raceId) {
   await sb.from('race_calendar').delete().eq('id', raceId);
   await loadRaces();
   backToCalendar();
+  renderCalendar();
+}
+
+function toggleEditRaceForm() {
+  const form = document.getElementById('editRaceForm');
+  if(!form) return;
+  const isHidden = form.style.display === 'none' || !form.style.display;
+  if(isHidden) {
+    // Pre-fill with current race data
+    const race = currentRaceContext;
+    if(race) {
+      document.getElementById('editRaceName').value = race.name || '';
+      document.getElementById('editRaceDate').value = race.date ? race.date.slice(0,10) : '';
+      document.getElementById('editRaceType').value = race.type || 'Trail';
+      document.getElementById('editRaceDist').value = race.distance || '';
+      document.getElementById('editRaceDplus').value = race.elevation || '';
+      document.getElementById('editRaceGoal').value = race.goal_time || '';
+    }
+    form.style.display = 'grid';
+  } else {
+    form.style.display = 'none';
+  }
+}
+
+async function saveEditRace() {
+  if(!currentRaceContext?.id) return;
+  const name = document.getElementById('editRaceName').value.trim();
+  const date = document.getElementById('editRaceDate').value;
+  const type = document.getElementById('editRaceType').value;
+  const distance = parseFloat(document.getElementById('editRaceDist').value) || null;
+  const elevation = parseInt(document.getElementById('editRaceDplus').value) || null;
+  const goal_time = document.getElementById('editRaceGoal').value.trim() || null;
+  if(!name || !date) return;
+  const {error} = await sb.from('race_calendar').update({name,date,type,distance,elevation,goal_time}).eq('id', currentRaceContext.id);
+  if(error){alert('Erreur: '+error.message);return;}
+  await loadRaces();
+  // Update current race context
+  const updated = (races||[]).find(r=>String(r.id)===String(currentRaceContext.id));
+  if(updated) {
+    currentRaceContext = updated;
+    const titleEl = document.getElementById('eventViewTitle');
+    if(titleEl) titleEl.textContent = `${updated.type==='Trail'?'⛰️':updated.type==='Ultra'?'🦅':'🏃'} ${updated.name} — ${new Date(updated.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
+  }
+  document.getElementById('editRaceForm').style.display = 'none';
   renderCalendar();
 }
 
@@ -2505,8 +2563,8 @@ async function analyzeGPX(points, fname) {
   res.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:1.25rem">
       <div>
-        <div style="font-family:var(--display);font-size:2rem;letter-spacing:.03em">${raceName}</div>
-        ${raceDate?`<div class="mono t2">${raceDate}</div>`:''}
+        ${!currentRaceContext?`<div style="font-family:var(--display);font-size:2rem;letter-spacing:.03em">${raceName}</div>`:''}
+        ${raceDate&&!currentRaceContext?`<div class="mono t2">${raceDate}</div>`:''}
         <div class="mono t2" style="font-size:.6rem;margin-top:4px">${projSource}</div>
         <div style="display:flex;gap:6px;margin-top:6px">
           <span class="strat-tag" style="border-color:${isTrail?'var(--orange)40':'var(--cyan)40'};color:${isTrail?'var(--orange)':'var(--cyan)'}">${isTrail?'⛰️ Trail — RPE':'🏃 Route — FC structurée'}</span>
@@ -2650,6 +2708,18 @@ async function analyzeGPX(points, fname) {
     return {up:'rgba(255,107,53,.2)',down:'rgba(167,139,250,.2)',flat:'rgba(0,212,255,.15)'}[sec.type];
   });
 
+  function syncMapFromChartIdx(idx){
+    if(!leafletMap) return;
+    const s=samples[idx];
+    if(!s) return;
+    const targetDist=s.d*1000;
+    const cd=window._gpxCumDist||[];
+    let closest=0,minD=Infinity;
+    cd.forEach((d,i)=>{const diff=Math.abs(d-targetDist);if(diff<minD){minD=diff;closest=i;}});
+    const pts=window._gpxPoints||[];
+    if(window._hoverMarker&&pts[closest])window._hoverMarker.setLatLng([pts[closest].lat,pts[closest].lon]).setStyle({opacity:1,fillOpacity:1});
+  }
+
   window._gpxChart=new Chart(chartCtx,{
     type:'line',
     data:{
@@ -2669,7 +2739,6 @@ async function analyzeGPX(points, fname) {
             label:c=>{
               const idx=c.dataIndex;
               const alt=Math.round(c.parsed.y);
-              // Calculate slope between adjacent samples
               let slope='';
               if(idx>0&&samples[idx-1]?.alt&&samples[idx]?.alt){
                 const dAlt=samples[idx].alt-samples[idx-1].alt;
@@ -2684,14 +2753,7 @@ async function analyzeGPX(points, fname) {
       },
       onHover:(e,els,chart)=>{
         if(els.length&&leafletMap){
-          const idx=els[0].index;
-          const s=samples[idx];
-          const targetDist=s.d*1000;
-          const cumDist=window._gpxCumDist||[];
-          let closest=0,minD=Infinity;
-          cumDist.forEach((d,i)=>{const diff=Math.abs(d-targetDist);if(diff<minD){minD=diff;closest=i;}});
-          const pts=window._gpxPoints||[];
-          if(window._hoverMarker&&pts[closest])window._hoverMarker.setLatLng([pts[closest].lat,pts[closest].lon]).setStyle({opacity:1,fillOpacity:1});
+          syncMapFromChartIdx(els[0].index);
         } else {
           if(window._hoverMarker)window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
         }
@@ -2701,6 +2763,29 @@ async function analyzeGPX(points, fname) {
         y:{min:Math.max(0,altMin-30),max:altMax+30,ticks:{callback:v=>v+'m',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}}
       }
     }
+  });
+
+  // Touch support: sync map marker on mobile swipe over chart
+  chartCtx.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const touch=e.touches[0];
+    const rect=chartCtx.getBoundingClientRect();
+    const xRel=touch.clientX-rect.left;
+    const chart=window._gpxChart;
+    if(!chart)return;
+    const area=chart.chartArea;
+    if(!area)return;
+    const ratio=Math.max(0,Math.min(1,(xRel-area.left)/(area.right-area.left)));
+    const idx=Math.round(ratio*(samples.length-1));
+    syncMapFromChartIdx(idx);
+    if(window._gpxChart){
+      window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===idx?samples[i].alt:null),borderColor:'#fff',backgroundColor:'#fff',pointRadius:samples.map((_,i)=>i===idx?6:0),pointBackgroundColor:'#fff',fill:false,tension:0,showLine:false};
+      window._gpxChart.update('none');
+    }
+  },{passive:false});
+  chartCtx.addEventListener('touchend',()=>{
+    if(window._hoverMarker)window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
+    if(window._gpxChart){window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map(()=>null),pointRadius:0};window._gpxChart.update('none');}
   });
 
   // Toujours stocker le GPX pour permettre la liaison ultérieure
@@ -2717,39 +2802,42 @@ function buildDetailedSections(kmSecs){
   const cumAlt = [0];
   for(const s of kmSecs) cumAlt.push(cumAlt[cumAlt.length-1] + s.dplus - (s.dminus||0));
 
-  // Smooth altitude with 5-point window to remove micro-oscillations
-  const sm = cumAlt.map((_,i)=>{
-    const win = cumAlt.slice(Math.max(0,i-2), Math.min(cumAlt.length,i+3));
-    return win.reduce((a,b)=>a+b,0)/win.length;
-  });
+  // No smoothing — use raw profile so short climbs are preserved
+  const MIN_CHANGE = 12; // metres — minimum amplitude to create a section
 
-  // Detect significant peaks and valleys
-  const MIN_CHANGE = 20; // metres — minimum climb/descent to create a section
-  const extrema = [{idx:0, alt:sm[0]}];
-  for(let i=1;i<sm.length-1;i++){
-    const prev=sm[i-1], cur=sm[i], next=sm[i+1];
-    if((cur>=prev && cur>=next) || (cur<=prev && cur<=next)){
+  // Pass 1: collect all local extrema on raw cumAlt
+  const extrema = [{idx:0, alt:cumAlt[0]}];
+  for(let i=1;i<cumAlt.length-1;i++){
+    const prev=cumAlt[i-1], cur=cumAlt[i], next=cumAlt[i+1];
+    const isPeak = cur>=prev && cur>=next;
+    const isVall = cur<=prev && cur<=next;
+    if(isPeak||isVall){
       const last=extrema[extrema.length-1];
-      if(Math.abs(cur-last.alt)>=MIN_CHANGE) extrema.push({idx:i, alt:cur});
-      else if((cur>last.alt&&cur>extrema[extrema.length-1]?.alt)||(cur<last.alt)) {
-        // Replace last if this extremum is more extreme in same direction
-        extrema[extrema.length-1]={idx:i,alt:cur};
+      if(Math.abs(cur-last.alt)>=MIN_CHANGE){
+        extrema.push({idx:i, alt:cur});
+      } else {
+        // Extend in same direction (keep the more extreme value)
+        const isGoingUp = cur > last.alt;
+        if(isGoingUp && cur > last.alt) extrema[extrema.length-1] = {idx:i, alt:cur};
+        else if(!isGoingUp && cur < last.alt) extrema[extrema.length-1] = {idx:i, alt:cur};
       }
     }
   }
-  extrema.push({idx:sm.length-1, alt:sm[sm.length-1]});
+  extrema.push({idx:cumAlt.length-1, alt:cumAlt[cumAlt.length-1]});
 
-  // Merge consecutive extrema that don't meet threshold
+  // Pass 2: merge extrema that are too close in altitude (< MIN_CHANGE)
   const filtered=[extrema[0]];
   for(let i=1;i<extrema.length;i++){
     const last=filtered[filtered.length-1];
-    if(Math.abs(extrema[i].alt-last.alt)>=MIN_CHANGE) filtered.push(extrema[i]);
-    else {
-      // Replace with the more extreme one in the same direction
+    const diff=extrema[i].alt-last.alt;
+    if(Math.abs(diff)>=MIN_CHANGE){
+      filtered.push(extrema[i]);
+    } else {
+      // Replace with whichever is more extreme relative to the point before last
       const prev2=filtered.length>=2?filtered[filtered.length-2]:null;
-      if(!prev2) filtered[filtered.length-1]=extrema[i];
-      else if(extrema[i].alt>last.alt) filtered[filtered.length-1]={...last,idx:extrema[i].idx,alt:Math.max(last.alt,extrema[i].alt)};
-      else filtered[filtered.length-1]={...last,idx:extrema[i].idx,alt:Math.min(last.alt,extrema[i].alt)};
+      if(!prev2){filtered[filtered.length-1]=extrema[i];}
+      else if(extrema[i].alt>last.alt) filtered[filtered.length-1]={idx:extrema[i].idx,alt:Math.max(last.alt,extrema[i].alt)};
+      else filtered[filtered.length-1]={idx:extrema[i].idx,alt:Math.min(last.alt,extrema[i].alt)};
     }
   }
 
