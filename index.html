@@ -565,98 +565,114 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div id="mode-prevention">
     <div class="grid-2">
       <!-- SVG CORPS -->
-      <div class="card" style="display:flex;flex-direction:column;align-items:center">
-        <div class="clabel">Clique sur une zone</div>
-        <svg id="bodySvg" viewBox="0 0 200 420" style="width:100%;max-width:200px;cursor:pointer">
-          <defs>
-            <style>
-              .bz{fill:#1c2738;stroke:#334455;stroke-width:1.5;transition:all .2s;cursor:pointer;}
-              .bz:hover{fill:rgba(0,212,255,.25);stroke:#00d4ff;}
-              .bz.selected{fill:rgba(255,107,53,.3);stroke:#ff6b35;stroke-width:2;}
-              .bl{fill:none;stroke:#0d1219;stroke-width:1;}
-              .bt{font-size:6px;fill:#6b7d94;font-family:monospace;pointer-events:none;}
-            </style>
-          </defs>
+      <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div class="mono t3" style="font-size:.58rem;letter-spacing:.08em">CLIQUE SUR UNE ZONE</div>
+        <div style="display:flex;gap:18px;justify-content:center;align-items:flex-end">
 
-      <!-- SILHOUETTE DE BASE (fond) -->
-      <!-- Tête -->
-      <ellipse cx="100" cy="28" rx="19" ry="22" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cou -->
-      <rect x="92" y="48" width="16" height="12" fill="#131b25" stroke="none"/>
-      <!-- Torse -->
-      <path d="M68,60 Q62,65 58,80 L55,148 Q58,155 100,157 Q142,155 145,148 L142,80 Q138,65 132,60 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras gauche -->
-      <path d="M58,80 Q45,85 38,100 Q32,118 33,145 L42,145 Q43,122 48,106 Q54,92 68,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras droit -->
-      <path d="M142,80 Q155,85 162,100 Q168,118 167,145 L158,145 Q157,122 152,106 Q146,92 132,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bassin -->
-      <path d="M55,148 Q58,165 70,172 L130,172 Q142,165 145,148 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse gauche -->
-      <path d="M70,170 Q62,175 60,195 L58,245 Q60,255 80,257 Q88,255 88,245 L86,195 Q85,178 100,175 Q85,170 70,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse droite -->
-      <path d="M130,170 Q138,175 140,195 L142,245 Q140,255 120,257 Q112,255 112,245 L114,195 Q115,178 100,175 Q115,170 130,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou gauche -->
-      <ellipse cx="74" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou droit -->
-      <ellipse cx="126" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe gauche -->
-      <path d="M62,268 Q58,290 60,320 L88,320 Q90,290 86,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe droite -->
-      <path d="M138,268 Q142,290 140,320 L112,320 Q110,290 114,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville gauche -->
-      <ellipse cx="74" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville droite -->
-      <ellipse cx="126" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied gauche -->
-      <path d="M61,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied droit -->
-      <path d="M139,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- FRONT -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <svg id="bodySvg" viewBox="0 0 200 370" style="width:115px;cursor:pointer">
+              <defs>
+                <style>
+                  .bz{fill:rgba(30,51,85,.85);stroke:#2d4a78;stroke-width:1.5;transition:all .2s;cursor:pointer;}
+                  .bz:hover{fill:rgba(0,212,255,.28);stroke:#00d4ff;stroke-width:2;}
+                  .bz.selected{fill:rgba(255,107,53,.32);stroke:#ff6b35;stroke-width:2.5;}
+                  .bzb{fill:rgba(30,51,85,.85);stroke:#2d4a78;stroke-width:1.5;transition:all .2s;cursor:pointer;}
+                  .bzb:hover{fill:rgba(0,212,255,.28);stroke:#00d4ff;stroke-width:2;}
+                  .bzb.selected{fill:rgba(255,107,53,.32);stroke:#ff6b35;stroke-width:2.5;}
+                  .sg{fill:#1e3355;stroke:#2d4a78;stroke-width:1;}
+                  .gl{stroke:rgba(255,255,255,.14);stroke-width:.8;stroke-dasharray:4 3;fill:none;}
+                </style>
+              </defs>
+              <!-- silhouette -->
+              <ellipse class="sg" cx="100" cy="26" rx="19" ry="22"/>
+              <rect class="sg" x="92" y="46" width="16" height="14" stroke="none"/>
+              <path class="sg" d="M68,58 Q60,64 57,80 L55,148 Q58,155 100,157 Q142,155 145,148 L143,80 Q140,64 132,58 Z"/>
+              <path class="sg" d="M58,78 Q44,84 37,100 Q31,118 32,145 L41,145 Q42,122 47,106 Q53,91 68,87 Z"/>
+              <path class="sg" d="M142,78 Q156,84 163,100 Q169,118 168,145 L159,145 Q158,122 153,106 Q147,91 132,87 Z"/>
+              <path class="sg" d="M55,148 Q58,166 70,173 L130,173 Q142,166 145,148 Z"/>
+              <path class="sg" d="M70,171 Q61,176 59,196 L57,246 Q60,256 80,258 Q89,256 88,246 L86,196 Q85,178 100,175 Q85,170 70,171 Z"/>
+              <path class="sg" d="M130,171 Q139,176 141,196 L143,246 Q140,256 120,258 Q111,256 112,246 L114,196 Q115,178 100,175 Q115,170 130,171 Z"/>
+              <ellipse class="sg" cx="74" cy="259" rx="14" ry="12"/>
+              <ellipse class="sg" cx="126" cy="259" rx="14" ry="12"/>
+              <path class="sg" d="M62,267 Q57,290 59,320 L88,320 Q90,290 87,267 Z"/>
+              <path class="sg" d="M138,267 Q143,290 141,320 L112,320 Q110,290 113,267 Z"/>
+              <ellipse class="sg" cx="74" cy="323" rx="13" ry="8"/>
+              <ellipse class="sg" cx="126" cy="323" rx="13" ry="8"/>
+              <path class="sg" d="M62,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z"/>
+              <path class="sg" d="M138,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z"/>
+              <!-- grid lines -->
+              <line class="gl" x1="57" y1="80" x2="143" y2="80"/>
+              <line class="gl" x1="55" y1="148" x2="145" y2="148"/>
+              <line class="gl" x1="57" y1="210" x2="143" y2="210"/>
+              <line class="gl" x1="58" y1="260" x2="142" y2="260"/>
+              <line class="gl" x1="60" y1="318" x2="140" y2="318"/>
+              <line class="gl" x1="100" y1="6" x2="100" y2="350"/>
+              <!-- clickable zones -->
+              <ellipse class="bz" data-zone="head" cx="100" cy="26" rx="20" ry="23"/>
+              <path class="bz" data-zone="back" d="M70,60 Q63,67 61,81 L60,147 Q80,153 100,154 Q120,153 140,147 L139,81 Q137,67 130,60 Q115,56 100,55 Q85,56 70,60 Z"/>
+              <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
+              <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
+              <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
+              <ellipse class="bz" data-zone="knee_l" cx="74" cy="259" rx="15" ry="13"/>
+              <ellipse class="bz" data-zone="knee_r" cx="126" cy="259" rx="15" ry="13"/>
+              <path class="bz" data-zone="calf_l" d="M61,269 Q57,291 59,320 L88,320 Q90,291 87,269 Z"/>
+              <path class="bz" data-zone="calf_r" d="M139,269 Q143,291 141,320 L112,320 Q110,291 113,269 Z"/>
+              <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="14" ry="9"/>
+              <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="14" ry="9"/>
+              <path class="bz" data-zone="foot_l" d="M61,329 Q54,336 54,343 Q54,350 62,352 L90,352 Q94,350 94,343 L90,331 Z"/>
+              <path class="bz" data-zone="foot_r" d="M139,329 Q146,336 146,343 Q146,350 138,352 L110,352 Q106,350 106,343 L110,331 Z"/>
+            </svg>
+            <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">FRONT</div>
+          </div>
 
-      <!-- ZONES CLIQUABLES (transparentes par-dessus) -->
-      <!-- Tête -->
-      <ellipse class="bz" data-zone="head" cx="100" cy="28" rx="20" ry="23"/>
-      <!-- Dos/Core -->
-      <path class="bz" data-zone="back" d="M70,62 Q64,68 61,82 L60,146 Q80,152 100,153 Q120,152 140,146 L139,82 Q136,68 130,62 Q115,58 100,57 Q85,58 70,62 Z"/>
-      <!-- Hanche/ITB -->
-      <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
-      <!-- Cuisse gauche -->
-      <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
-      <!-- Cuisse droite -->
-      <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
-      <!-- Genou gauche -->
-      <ellipse class="bz" data-zone="knee_l" cx="74" cy="260" rx="16" ry="13"/>
-      <!-- Genou droit -->
-      <ellipse class="bz" data-zone="knee_r" cx="126" cy="260" rx="16" ry="13"/>
-      <!-- Mollet/Tibia gauche -->
-      <path class="bz" data-zone="calf_l" d="M61,270 Q57,292 59,320 L89,320 Q91,292 87,270 Z"/>
-      <!-- Mollet/Tibia droit -->
-      <path class="bz" data-zone="calf_r" d="M139,270 Q143,292 141,320 L111,320 Q109,292 113,270 Z"/>
-      <!-- Cheville gauche -->
-      <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="15" ry="9"/>
-      <!-- Cheville droite -->
-      <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="15" ry="9"/>
-      <!-- Pied gauche -->
-      <path class="bz" data-zone="foot_l" d="M60,330 Q53,337 53,344 Q53,350 62,352 L91,352 Q95,350 95,344 L91,332 Z"/>
-      <!-- Pied droit -->
-      <path class="bz" data-zone="foot_r" d="M140,330 Q147,337 147,344 Q147,350 138,352 L109,352 Q105,350 105,344 L109,332 Z"/>
+          <!-- BACK -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <svg id="bodySvgBack" viewBox="0 0 200 370" style="width:115px;cursor:pointer">
+              <!-- silhouette (mirrored = same shapes, back-facing) -->
+              <ellipse class="sg" cx="100" cy="26" rx="19" ry="22"/>
+              <rect class="sg" x="92" y="46" width="16" height="14" stroke="none"/>
+              <path class="sg" d="M68,58 Q60,64 57,80 L55,148 Q58,155 100,157 Q142,155 145,148 L143,80 Q140,64 132,58 Z"/>
+              <path class="sg" d="M58,78 Q44,84 37,100 Q31,118 32,145 L41,145 Q42,122 47,106 Q53,91 68,87 Z"/>
+              <path class="sg" d="M142,78 Q156,84 163,100 Q169,118 168,145 L159,145 Q158,122 153,106 Q147,91 132,87 Z"/>
+              <path class="sg" d="M55,148 Q58,166 70,173 L130,173 Q142,166 145,148 Z"/>
+              <path class="sg" d="M70,171 Q61,176 59,196 L57,246 Q60,256 80,258 Q89,256 88,246 L86,196 Q85,178 100,175 Q85,170 70,171 Z"/>
+              <path class="sg" d="M130,171 Q139,176 141,196 L143,246 Q140,256 120,258 Q111,256 112,246 L114,196 Q115,178 100,175 Q115,170 130,171 Z"/>
+              <ellipse class="sg" cx="74" cy="259" rx="14" ry="12"/>
+              <ellipse class="sg" cx="126" cy="259" rx="14" ry="12"/>
+              <path class="sg" d="M62,267 Q57,290 59,320 L88,320 Q90,290 87,267 Z"/>
+              <path class="sg" d="M138,267 Q143,290 141,320 L112,320 Q110,290 113,267 Z"/>
+              <ellipse class="sg" cx="74" cy="323" rx="13" ry="8"/>
+              <ellipse class="sg" cx="126" cy="323" rx="13" ry="8"/>
+              <path class="sg" d="M62,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z"/>
+              <path class="sg" d="M138,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z"/>
+              <!-- grid lines -->
+              <line class="gl" x1="57" y1="80" x2="143" y2="80"/>
+              <line class="gl" x1="55" y1="148" x2="145" y2="148"/>
+              <line class="gl" x1="57" y1="210" x2="143" y2="210"/>
+              <line class="gl" x1="58" y1="260" x2="142" y2="260"/>
+              <line class="gl" x1="60" y1="318" x2="140" y2="318"/>
+              <line class="gl" x1="100" y1="6" x2="100" y2="350"/>
+              <!-- back clickable zones -->
+              <ellipse class="bzb" data-zone="head" cx="100" cy="26" rx="20" ry="23"/>
+              <path class="bzb" data-zone="back" d="M70,60 Q63,67 61,81 L60,147 Q80,153 100,154 Q120,153 140,147 L139,81 Q137,67 130,60 Q115,56 100,55 Q85,56 70,60 Z"/>
+              <path class="bzb" data-zone="glute" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
+              <path class="bzb" data-zone="hamstring_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
+              <path class="bzb" data-zone="hamstring_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
+              <ellipse class="bzb" data-zone="knee_l" cx="74" cy="259" rx="15" ry="13"/>
+              <ellipse class="bzb" data-zone="knee_r" cx="126" cy="259" rx="15" ry="13"/>
+              <path class="bzb" data-zone="calf_l" d="M61,269 Q57,291 59,320 L88,320 Q90,291 87,269 Z"/>
+              <path class="bzb" data-zone="calf_r" d="M139,269 Q143,291 141,320 L112,320 Q110,291 113,269 Z"/>
+              <ellipse class="bzb" data-zone="achilles_l" cx="74" cy="324" rx="14" ry="9"/>
+              <ellipse class="bzb" data-zone="achilles_r" cx="126" cy="324" rx="14" ry="9"/>
+              <path class="bzb" data-zone="plantar_l" d="M61,329 Q54,336 54,343 Q54,350 62,352 L90,352 Q94,350 94,343 L90,331 Z"/>
+              <path class="bzb" data-zone="plantar_r" d="M139,329 Q146,336 146,343 Q146,350 138,352 L110,352 Q106,350 106,343 L110,331 Z"/>
+            </svg>
+            <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">BACK</div>
+          </div>
 
-      <!-- LABELS -->
-      <text class="bt" x="100" y="28" text-anchor="middle">Mental</text>
-      <text class="bt" x="100" y="110" text-anchor="middle">Dos / Core</text>
-      <text class="bt" x="100" y="165" text-anchor="middle">Hanche / ITB</text>
-      <text class="bt" x="68" y="215" text-anchor="middle">Cuisse G</text>
-      <text class="bt" x="132" y="215" text-anchor="middle">Cuisse D</text>
-      <text class="bt" x="68" y="262" text-anchor="middle">Genou G</text>
-      <text class="bt" x="132" y="262" text-anchor="middle">Genou D</text>
-      <text class="bt" x="68" y="298" text-anchor="middle">Mollet G</text>
-      <text class="bt" x="132" y="298" text-anchor="middle">Mollet D</text>
-      <text class="bt" x="68" y="326" text-anchor="middle">Cheville G</text>
-      <text class="bt" x="132" y="326" text-anchor="middle">Cheville D</text>
-      <text class="bt" x="68" y="348" text-anchor="middle">Pied G</text>
-      <text class="bt" x="132" y="348" text-anchor="middle">Pied D</text>
-    </svg>
-    <div class="mono t3" style="font-size:.58rem;margin-top:.5rem;text-align:center">Clique sur une zone</div>
-  </div>
+        </div>
+      </div>
 
   <!-- CONTENU ZONE SÉLECTIONNÉE -->
   <div id="renfoContent">
@@ -732,7 +748,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div class="card">
     <div class="clabel">Données physiologiques</div>
     <div class="fg"><label class="fl">Prénom / Nom</label><input class="fi" id="p-name" placeholder=""></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
       <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" id="p-birthdate"></div>
       <div class="fg"><label class="fl">Sexe</label><select class="fi" id="p-sex"><option value="">—</option><option value="M">Homme</option><option value="F">Femme</option></select></div>
       <div class="fg"><label class="fl">Poids (kg)</label><input class="fi" type="number" id="p-weight" placeholder="" step="0.1"></div>
@@ -3536,16 +3552,17 @@ function backContent(){return{blessures:[{name:'Lombalgie du coureur',desc:'Core
 function footContent(){return{blessures:[{name:'Fasciite plantaire',desc:'Inflammation aponévrose plantaire. Douleur au talon le matin. Fréquente en trail avec D+ important.'},{name:'Métatarsalgie',desc:'Douleur sous avant-pied. Surcharge têtes métatarsiennes, souvent liée à attaque talon.'}],exercices:[{title:'Serviette avec les orteils',meta:'3×30s · quotidien',desc:'Ramasser une serviette avec les orteils. Renforce muscles intrinsèques du pied, améliore contrôle voûte plantaire.',ref:'Mulligan & Cook, 2013',yt:'1FIyPYAc5mI'},{title:'Short foot exercise',meta:'3×10s maintenu · 3×/semaine',desc:'Rapprocher la tête des métatarses vers le talon sans recroqueviller les orteils. Active le court fléchisseur.',ref:'Jung et al., 2011 · Man Ther',yt:'LWtXEAIBhyg'}]};}
 
 function headContent(){return{blessures:[{name:'Stress & anxiété pré-compétition',desc:'Activation du système sympathique avant une course. Pensées négatives, doute, tension musculaire. Très fréquent chez les coureurs ambitieux.'},{name:'Mur mental en course',desc:'Effondrement de la motivation en milieu de course. Dialogue intérieur négatif. Souvent déclenché par la douleur ou l\'inconfort.'},{name:'Burn-out du coureur',desc:'Épuisement psychologique lié à un entraînement trop rigide ou à des attentes irréalistes. Perte de plaisir, motivation zéro.'}],exercices:[{title:'Visualisation pré-course',meta:'10min la veille de la course',desc:'Ferme les yeux, visualise le parcours section par section. Imagine ta foulée sur les montées, ta FC qui redescend dans les descentes, ta respiration au ravito. Le cerveau ne distingue pas bien le réel du mental — il s\'entraîne aussi.',ref:'Guillot & Collet, 2008 · J Sport Sci',yt:''},{title:'Cohérence cardiaque 5min',meta:'Matin et soir · avant chaque sortie difficile',desc:'6 respirations par minute : 5s inspire par le nez, 5s expire par la bouche. 5 minutes. Réduit le cortisol, améliore la HRV, renforce le système nerveux parasympathique. L\'outil le plus puissant et le plus sous-estimé.',ref:'McCraty et al., 2009 · J Altern Complement Med',yt:''},{title:'Reformulation du dialogue intérieur',meta:'Technique à appliquer en course',desc:'Dès qu\'une pensée négative apparaît ("je vais abandonner", "trop dur"), remplace-la immédiatement par une affirmation concrète et factuelle : "ma foulée est efficace", "je respire bien", "je contrôle mon allure". Focalise sur le processus, pas le résultat.',ref:'Hardy et al., 1996 · J Sport Exerc Psychol',yt:''},{title:'Segmentation du parcours',meta:'Stratégie mentale en course',desc:'Ne pense jamais à la distance totale restante. Découpe la course en micro-objectifs : atteindre le prochain arbre, finir cette montée, rejoindre le prochain ravito. Chaque segment gagné renforce la confiance.',ref:'Tenenbaum, 2001 · J Sport Sci',yt:''}]};}
-const ZONE_FN={head:headContent,ankle_l:ankleContent,ankle_r:ankleContent,knee_l:kneeContent,knee_r:kneeContent,calf_l:calfContent,calf_r:calfContent,quad_l:quadContent,quad_r:quadContent,hip:hipContent,back:backContent,foot_l:footContent,foot_r:footContent};
-const ZONE_INFO={head:{name:'Mental & Préparation psychologique',color:'var(--purple)'},ankle_l:{name:'Cheville gauche',color:'var(--orange)'},ankle_r:{name:'Cheville droite',color:'var(--orange)'},knee_l:{name:'Genou gauche',color:'var(--yellow)'},knee_r:{name:'Genou droit',color:'var(--yellow)'},calf_l:{name:'Mollet / Tibia gauche',color:'var(--cyan)'},calf_r:{name:'Mollet / Tibia droit',color:'var(--cyan)'},quad_l:{name:'Quadriceps gauche',color:'var(--purple)'},quad_r:{name:'Quadriceps droit',color:'var(--purple)'},hip:{name:'Hanche / ITB',color:'var(--red)'},back:{name:'Dos / Core',color:'var(--green)'},foot_l:{name:'Pied gauche',color:'var(--orange)'},foot_r:{name:'Pied droit',color:'var(--orange)'}};
+const ZONE_FN={head:headContent,ankle_l:ankleContent,ankle_r:ankleContent,knee_l:kneeContent,knee_r:kneeContent,calf_l:calfContent,calf_r:calfContent,quad_l:quadContent,quad_r:quadContent,hip:hipContent,back:backContent,foot_l:footContent,foot_r:footContent,hamstring_l:quadContent,hamstring_r:quadContent,glute:hipContent,achilles_l:ankleContent,achilles_r:ankleContent,plantar_l:footContent,plantar_r:footContent};
+const ZONE_INFO={head:{name:'Mental & Préparation psychologique',color:'var(--purple)'},ankle_l:{name:'Cheville gauche',color:'var(--orange)'},ankle_r:{name:'Cheville droite',color:'var(--orange)'},knee_l:{name:'Genou gauche',color:'var(--yellow)'},knee_r:{name:'Genou droit',color:'var(--yellow)'},calf_l:{name:'Mollet / Tibia gauche',color:'var(--cyan)'},calf_r:{name:'Mollet / Tibia droit',color:'var(--cyan)'},quad_l:{name:'Quadriceps gauche',color:'var(--purple)'},quad_r:{name:'Quadriceps droit',color:'var(--purple)'},hip:{name:'Hanche / ITB',color:'var(--red)'},back:{name:'Dos / Core',color:'var(--green)'},foot_l:{name:'Pied gauche',color:'var(--orange)'},foot_r:{name:'Pied droit',color:'var(--orange)'},hamstring_l:{name:'Ischio-jambiers gauche',color:'var(--purple)'},hamstring_r:{name:'Ischio-jambiers droit',color:'var(--purple)'},glute:{name:'Fessiers / ITB',color:'var(--red)'},achilles_l:{name:'Tendon d\'Achille gauche',color:'var(--orange)'},achilles_r:{name:'Tendon d\'Achille droit',color:'var(--orange)'},plantar_l:{name:'Fascia plantaire gauche',color:'var(--orange)'},plantar_r:{name:'Fascia plantaire droit',color:'var(--orange)'}};
 
 function initBodySvg(){
-  document.querySelectorAll('.bz').forEach(el=>{
+  document.querySelectorAll('.bz,.bzb').forEach(el=>{
     el.addEventListener('click',()=>{
       const zone=el.dataset.zone;
       if(!ZONE_INFO[zone])return;
-      document.querySelectorAll('.bz').forEach(z=>z.classList.remove('selected'));
-      el.classList.add('selected');
+      document.querySelectorAll('.bz,.bzb').forEach(z=>z.classList.remove('selected'));
+      // highlight same zone on both SVGs
+      document.querySelectorAll(`[data-zone="${zone}"]`).forEach(z=>z.classList.add('selected'));
       renderZoneContent(zone);
     });
   });
