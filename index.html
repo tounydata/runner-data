@@ -956,12 +956,11 @@ const tE = t => ({Run:'🏃',TrailRun:'⛰️'}[t]||'🏃');
 const tL = t => ({Run:'Route',TrailRun:'Trail'}[t]||'Run');
 const bC = t => t==='TrailRun'?'linear-gradient(90deg,#ff6b35,#fbbf24)':'linear-gradient(90deg,#00d4ff,#a78bfa)';
 
-function deltaHTML(pct) {
+function deltaHTML(pct, label='mois dernier') {
   if (!pct && pct !== 0) return '';
-  const abs = Math.abs(pct);
-  if (pct > 5) return `<span class="delta-up">↑ +${Math.round(pct)}% vs mois dernier</span>`;
-  if (pct < -5) return `<span class="delta-down">↓ ${Math.round(pct)}% vs mois dernier</span>`;
-  return `<span class="delta-eq">= stable vs mois dernier</span>`;
+  if (pct > 5) return `<span class="delta-up">↑ +${Math.round(pct)}% vs ${label}</span>`;
+  if (pct < -5) return `<span class="delta-down">↓ ${Math.round(pct)}% vs ${label}</span>`;
+  return `<span class="delta-eq">= stable vs ${label}</span>`;
 }
 
 // ════════════════════════════════════════════════════
@@ -1569,9 +1568,9 @@ function renderDashboard() {
   const pctKmW = kmPW>0?(kmW-kmPW)/kmPW*100:null;
   const pctDpW = dpPW>0?(dpW-dpPW)/dpPW*100:null;
   const pctRunsW = runsPW>0?(runsW-runsPW)/runsPW*100:null;
-  document.getElementById('s-km-week-delta').innerHTML = deltaHTML(pctKmW);
-  document.getElementById('s-dplus-week-delta').innerHTML = deltaHTML(pctDpW);
-  document.getElementById('s-runs-week-delta').innerHTML = deltaHTML(pctRunsW);
+  document.getElementById('s-km-week-delta').innerHTML = deltaHTML(pctKmW,'sem. précédente');
+  document.getElementById('s-dplus-week-delta').innerHTML = deltaHTML(pctDpW,'sem. précédente');
+  document.getElementById('s-runs-week-delta').innerHTML = deltaHTML(pctRunsW,'sem. précédente');
 
   // Simple stats cards
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
