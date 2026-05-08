@@ -1576,12 +1576,10 @@ function renderDashboard() {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const withHR = thisMonth.filter(a=>a.average_heartrate);
   const avgFC = withHR.length ? Math.round(withHR.reduce((s,a)=>s+a.average_heartrate,0)/withHR.length) : null;
-  const aerobic = withHR.length ? Math.round(withHR.filter(a=>a.average_heartrate/fcMax<.8).length/withHR.length*100) : null;
-
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    ${aerobic!==null?`<div class="s-stat"><div class="s-sv tc">${aerobic}%</div><div class="s-sl">% aérobie</div><div style="font-size:.58rem;color:var(--text3)">&lt;80% FCmax (${Math.round(fcMax*.8)} bpm)</div></div>`:''}
+    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--text3)">…</div><div class="s-sl">% aérobie sem.</div><div style="font-size:.58rem;color:var(--text3)">&lt;75% FCmax (${Math.round(fcMax*.75)} bpm)</div></div>
   `;
 
   // Annual chart
@@ -1589,6 +1587,34 @@ function renderDashboard() {
 
   // Activities grid
   renderActivities();
+
+  // Async: fetch HR streams for this week and compute real aerobic %
+  loadAerobicStat(thisWeek, fcMax);
+}
+
+async function loadAerobicStat(weekActs, fcMax) {
+  const threshold = fcMax * 0.75;
+  const actsWithHR = weekActs.filter(a => isRun(a.type));
+  if (!actsWithHR.length) { document.getElementById('aerobicStatVal').textContent = '—'; return; }
+
+  let totalPts = 0, aerobicPts = 0;
+  await Promise.all(actsWithHR.map(async a => {
+    try {
+      const streams = await fetchStreams(a.id);
+      const hr = streams.heartrate?.data;
+      if (!hr?.length) return;
+      totalPts += hr.length;
+      aerobicPts += hr.filter(v => v < threshold).length;
+    } catch {}
+  }));
+
+  const el = document.getElementById('aerobicStatVal');
+  if (!el) return;
+  if (totalPts === 0) { el.textContent = '—'; return; }
+  const pct = Math.round(aerobicPts / totalPts * 100);
+  el.style.color = '';
+  el.style.fontSize = '';
+  el.textContent = pct + '%';
 }
 
 // ════════════════════════════════════════════════════
