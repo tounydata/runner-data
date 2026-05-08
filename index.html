@@ -1335,14 +1335,13 @@ function calNavMonth(dir) {
 function openEventView(raceId) {
   const race = (races||[]).find(r=>String(r.id)===String(raceId));
   if(!race) return;
+  window._openEventRace = race; // stable reference for edit form
   document.getElementById('calView').style.display = 'none';
   document.getElementById('eventView').style.display = 'block';
   const titleEl = document.getElementById('eventViewTitle');
   if(titleEl) titleEl.textContent = `${race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃'} ${race.name} — ${new Date(race.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
-  // Wire up delete button
   const delBtn = document.getElementById('btnDeleteRace');
   if(delBtn) delBtn.onclick = ()=>deleteRace(raceId);
-  // Trigger existing prepareRace logic
   prepareRace(race);
 }
 
@@ -1359,6 +1358,7 @@ function backToCalendar() {
   document.getElementById('stratResult').style.display='none';
   document.getElementById('gpxDrop').style.display='flex';
   const ef=document.getElementById('editRaceForm');if(ef)ef.style.display='none';
+  window._openEventRace=null;
   if(window._actMapInst2){window._actMapInst2.remove();window._actMapInst2=null;}
 }
 
@@ -1375,14 +1375,13 @@ function toggleEditRaceForm() {
   if(!form) return;
   const isHidden = form.style.display === 'none' || !form.style.display;
   if(isHidden) {
-    // Pre-fill with current race data
-    const race = currentRaceContext;
+    const race = currentRaceContext || window._openEventRace;
     if(race) {
       document.getElementById('editRaceName').value = race.name || '';
       document.getElementById('editRaceDate').value = race.date ? race.date.slice(0,10) : '';
       document.getElementById('editRaceType').value = race.type || 'Trail';
-      document.getElementById('editRaceDist').value = race.distance || '';
-      document.getElementById('editRaceDplus').value = race.elevation || '';
+      document.getElementById('editRaceDist').value = race.distance != null ? race.distance : '';
+      document.getElementById('editRaceDplus').value = race.elevation != null ? race.elevation : '';
       document.getElementById('editRaceGoal').value = race.goal_time || '';
     }
     form.style.display = 'grid';
@@ -1392,21 +1391,22 @@ function toggleEditRaceForm() {
 }
 
 async function saveEditRace() {
-  if(!currentRaceContext?.id) return;
+  const race = currentRaceContext || window._openEventRace;
+  if(!race?.id) return;
   const name = document.getElementById('editRaceName').value.trim();
   const date = document.getElementById('editRaceDate').value;
   const type = document.getElementById('editRaceType').value;
   const distance = parseFloat(document.getElementById('editRaceDist').value) || null;
   const elevation = parseInt(document.getElementById('editRaceDplus').value) || null;
   const goal_time = document.getElementById('editRaceGoal').value.trim() || null;
-  if(!name || !date) return;
-  const {error} = await sb.from('race_calendar').update({name,date,type,distance,elevation,goal_time}).eq('id', currentRaceContext.id);
+  if(!name || !date) { alert('Nom et date requis'); return; }
+  const {error} = await sb.from('race_calendar').update({name,date,type,distance,elevation,goal_time}).eq('id', race.id);
   if(error){alert('Erreur: '+error.message);return;}
   await loadRaces();
-  // Update current race context
-  const updated = (races||[]).find(r=>String(r.id)===String(currentRaceContext.id));
+  const updated = (races||[]).find(r=>String(r.id)===String(race.id));
   if(updated) {
-    currentRaceContext = updated;
+    window._openEventRace = updated;
+    if(currentRaceContext?.id===updated.id) currentRaceContext = updated;
     const titleEl = document.getElementById('eventViewTitle');
     if(titleEl) titleEl.textContent = `${updated.type==='Trail'?'⛰️':updated.type==='Ultra'?'🦅':'🏃'} ${updated.name} — ${new Date(updated.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
   }
@@ -2320,10 +2320,9 @@ async function confirmLinkActivity(raceId, raceName, actId, modal) {
 }
 
 function prepareRace(race) {
-  currentRaceContext = race;
-  // Switch to strategy panel
-  showPanel('strategie', document.querySelector('.nbtn[onclick*="strategie"]'));
+  // Reset UI state, then restore context AFTER reset (resetStrategy clears it)
   resetStrategy();
+  currentRaceContext = race;
   // If GPX already saved, load it directly
   if (race.gpx_data) {
     try {
