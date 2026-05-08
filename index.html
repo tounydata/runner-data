@@ -191,7 +191,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 /* ── PROFILE ── */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:800px){.profile-grid{grid-template-columns:1fr}}
-.fg{margin-bottom:1rem;}
+.fg{margin-bottom:1rem;min-width:0;}
 .fl{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block;}
 .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px;}
 .pain-zone{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .2s;}
@@ -1576,12 +1576,12 @@ function renderDashboard() {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const withHR = thisMonth.filter(a=>a.average_heartrate);
   const avgFC = withHR.length ? Math.round(withHR.reduce((s,a)=>s+a.average_heartrate,0)/withHR.length) : null;
-  const z2 = withHR.length ? Math.round(withHR.filter(a=>a.average_heartrate/fcMax>=.6&&a.average_heartrate/fcMax<.7).length/withHR.length*100) : null;
+  const aerobic = withHR.length ? Math.round(withHR.filter(a=>a.average_heartrate/fcMax<.8).length/withHR.length*100) : null;
 
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    ${z2!==null?`<div class="s-stat"><div class="s-sv tc">${z2}%</div><div class="s-sl">% Z2</div><div style="font-size:.58rem;color:var(--text3)">60-70% FCmax</div></div>`:''}
+    ${aerobic!==null?`<div class="s-stat"><div class="s-sv tc">${aerobic}%</div><div class="s-sl">% aérobie</div><div style="font-size:.58rem;color:var(--text3)">&lt;80% FCmax (${Math.round(fcMax*.8)} bpm)</div></div>`:''}
   `;
 
   // Annual chart
