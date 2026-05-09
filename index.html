@@ -2803,9 +2803,7 @@ async function analyzeGPX(points, fname) {
   res.style.display='block';
   document.getElementById('gpxDrop').style.display='none';
 
-  const isTrail=isTrailRace();
-
-  // Update gear menu: show "Sauvegarder GPX" item only if GPX pending and race context available
+  // isTrail already declared above
   const saveGpxItem = document.getElementById('raceMenuSaveGpx');
   if(saveGpxItem) saveGpxItem.style.display = currentRaceContext?.id ? 'block' : 'none';
 
