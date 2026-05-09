@@ -549,6 +549,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
     <input type="file" id="gpxFile" accept=".gpx" style="display:none" onchange="handleGpxFile(event)">
 
     <div id="stratResult" style="display:none"></div>
+    <div id="eventComparisonSection" class="mt2"></div>
   </div>
 
 </div>
@@ -1405,7 +1406,17 @@ function openEventView(raceId) {
   if(titleEl) titleEl.textContent = `${race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃'} ${race.name} — ${new Date(race.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
   const delBtn = document.getElementById('btnDeleteRace');
   if(delBtn) delBtn.onclick = ()=>deleteRace(raceId);
+  const compSec = document.getElementById('eventComparisonSection');
+  if(compSec) compSec.innerHTML = '';
   prepareRace(race);
+  // Load comparison if race already has linked activity + GPX
+  if(race.strava_activity_id && race.gpx_data) {
+    const actId = race.strava_activity_id;
+    const actObj = allActivities.find(a=>String(a.id)===String(actId)) || {id:actId, moving_time:0};
+    fetchStreams(actId).then(streams => {
+      renderRaceComparison(actObj, streams, race, 'eventComparisonSection');
+    }).catch(()=>{});
+  }
 }
 
 function goToEvent(raceId) {
@@ -1422,6 +1433,7 @@ function backToCalendar() {
   document.getElementById('gpxDrop').style.display='flex';
   const ef=document.getElementById('editRaceForm');if(ef)ef.style.display='none';
   const rm=document.getElementById('raceMenu');if(rm)rm.style.display='none';
+  const cs=document.getElementById('eventComparisonSection');if(cs)cs.innerHTML='';
   window._openEventRace=null;
   if(window._actMapInst2){window._actMapInst2.remove();window._actMapInst2=null;}
 }
@@ -2043,8 +2055,8 @@ function renderAthleteProfile(streams, act) {
     </div>`;
 }
 
-async function renderRaceComparison(act, streams, race) {
-  const section = document.getElementById('raceComparisonSection');
+async function renderRaceComparison(act, streams, race, targetId) {
+  const section = document.getElementById(targetId||'raceComparisonSection')||document.getElementById('eventComparisonSection');
   if(!section || !race.gpx_data) return;
 
   let gpxPts;
@@ -2509,8 +2521,21 @@ async function confirmLinkActivity(raceId, raceName, actId, modal) {
     .update({strava_activity_id: actId})
     .eq('id', raceId);
   if(!error){
-    await loadRaces(); // reload from DB
+    await loadRaces();
     if(modal) modal.remove();
+    // Trigger comparison in event view if it's open for this race
+    const updatedRace = races.find(r=>String(r.id)===String(raceId));
+    const compSection = document.getElementById('eventComparisonSection');
+    if(updatedRace?.gpx_data && compSection) {
+      showToast('Liaison effectuée, chargement de la comparaison…', 'info');
+      try {
+        const streams = await fetchStreams(actId);
+        const actObj = allActivities.find(a=>String(a.id)===String(actId)) || {id:actId, moving_time:0};
+        renderRaceComparison(actObj, streams, updatedRace, 'eventComparisonSection');
+      } catch(e) { console.warn('comparison fetch failed', e); }
+    } else {
+      showToast('Activité liée ✓', 'success');
+    }
   }
 }
 
@@ -2786,8 +2811,13 @@ async function analyzeGPX(points, fname) {
       <div class="mono t3" style="font-size:.56rem;margin-top:8px">Minetti et al., 2002 · ${currentRaceContext?.goal_time?`Calibré sur objectif ${currentRaceContext.goal_time}`:userProfile.prs?.semi?`PR semi ${userProfile.prs.semi.time}`:'Renseigne tes PR ou objectif temps dans le calendrier'}</div>
     </div>
 
-    <div class="stitle mt3">Plan de course — sections</div>
+    <div class="stitle mt3" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Plan de course — sections</span>
+      <span class="mono t3" style="font-size:.65rem;font-weight:400">${sections.length} section${sections.length>1?'s':''}</span>
+    </div>
+    <div id="sectionsScroll" style="max-height:460px;overflow-y:auto;border-radius:var(--r);border:1px solid var(--border);padding:4px 0;scroll-behavior:smooth">
     ${sections.map((s,i)=>renderDetailedSection(s,sectionTimes[i],i)).join('')}
+    </div>
 
     <div class="card mt3"><div class="clabel">Tableau de splits km par km</div><div style="overflow-x:auto"><table class="splits-table"><thead><tr><th>Km</th><th>Type</th><th>Pente</th><th>D+</th><th>D-</th><th>Alt</th><th>Durée sect.</th><th>Temps cumulé</th><th>Conseil FC</th></tr></thead><tbody>${splits}</tbody></table></div></div>
 
@@ -2971,16 +3001,18 @@ async function analyzeGPX(points, fname) {
   // Toujours stocker le GPX pour permettre la liaison ultérieure
   window._pendingGpxSave = points.filter((_,i)=>i%5===0).map(p=>({lat:p.lat,lon:p.lon,ele:p.ele}));
 
-  // Auto-save to DB when in race event context — prevents losing GPX on navigation
+  // Auto-save to DB when in race event context — capture id/json before async to survive navigation
   if (currentRaceContext?.id) {
+    const savedRaceId = currentRaceContext.id;
+    const savedGpxJson = JSON.stringify(window._pendingGpxSave);
     sb.from('race_calendar')
-      .update({gpx_data: JSON.stringify(window._pendingGpxSave)})
-      .eq('id', currentRaceContext.id)
+      .update({gpx_data: savedGpxJson})
+      .eq('id', savedRaceId)
       .then(({error}) => {
         if (!error) {
-          const idx = races.findIndex(r=>r.id===currentRaceContext?.id);
-          if(idx>=0) races[idx].gpx_data = JSON.stringify(window._pendingGpxSave);
-          if(currentRaceContext) currentRaceContext.gpx_data = JSON.stringify(window._pendingGpxSave);
+          const idx = races.findIndex(r=>r.id===savedRaceId);
+          if(idx>=0) races[idx].gpx_data = savedGpxJson;
+          if(currentRaceContext?.id===savedRaceId) currentRaceContext.gpx_data = savedGpxJson;
           const si = document.getElementById('raceMenuSaveGpx');
           if(si) si.style.display = 'none';
           showToast('GPX enregistré ✓', 'success');
