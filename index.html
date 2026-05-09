@@ -34,7 +34,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 .auth-tabs{display:flex;gap:2px;background:var(--bg4);border-radius:8px;padding:3px;margin-bottom:1.5rem;}
 .auth-tab{flex:1;padding:7px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;transition:all .2s;}
 .auth-tab.active{background:var(--bg2);color:var(--text);}
-.fi{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
+.fi{width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--body);font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
 .fi:focus{border-color:var(--cyan);}
 .fi::placeholder{color:var(--text3);}
 select.fi{cursor:pointer;}
@@ -79,7 +79,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 .clabel{font-family:var(--mono);font-size:.56rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
 
 /* ── STRIP ── */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
 @media(max-width:800px){.strip{grid-template-columns:repeat(3,1fr)}}
 .scell{background:var(--bg2);padding:12px 16px;text-align:center;}
 .sval{font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;line-height:1;}
@@ -166,17 +166,32 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 .strat-name{font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin:.2rem 0 .4rem;}
 .strat-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.4rem;}
 .strat-tag{font-family:var(--mono);font-size:.56rem;padding:2px 7px;border-radius:16px;border:1px solid;}
+.race-menu-item{display:block;width:100%;text-align:left;padding:8px 12px;background:transparent;border:none;color:var(--text1);font-family:var(--mono);font-size:.72rem;cursor:pointer;border-radius:7px;transition:background .15s;white-space:nowrap;}
+.race-menu-item:hover{background:rgba(255,255,255,.08);}
 .strat-body{font-size:.76rem;color:var(--text2);line-height:1.6;}
 .nutr-table{width:100%;border-collapse:collapse;font-size:.75rem;}
 .nutr-table th{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:7px 11px;text-align:left;border-bottom:1px solid var(--border);}
 .nutr-table td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:top;}
 .nutr-table tr:last-child td{border-bottom:none;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;}
+.cal-day-label{font-family:var(--mono);font-size:.52rem;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
+.cal-cell{min-height:52px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 6px;cursor:default;position:relative;transition:all .15s;}
+.cal-cell.other-month{opacity:.35;}
+.cal-cell.today{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan);}
+.cal-cell.has-event{background:var(--bg3);border-color:var(--purple);cursor:pointer;}
+.cal-cell.has-event:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.35);}
+.cal-day-num{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-bottom:3px;}
+.cal-event-dot{font-size:.62rem;line-height:1.3;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cal-event-type{font-size:.5rem;font-family:var(--mono);color:var(--text3);margin-top:1px;}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.cal-month-title{flex:1;font-family:var(--display);font-size:1.1rem;letter-spacing:.03em;text-align:center;}
 .time-proj{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.25rem;}
 
 /* ── PROFILE ── */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:800px){.profile-grid{grid-template-columns:1fr}}
-.fg{margin-bottom:1rem;}
+.fg{margin-bottom:1rem;min-width:0;}
 .fl{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block;}
 .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px;}
 .pain-zone{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .2s;}
@@ -208,9 +223,12 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 @media(max-width:600px){.race-form-grid{grid-template-columns:1fr}}
 
 /* ── NEXT RACE ── */
-.next-race-big{text-align:center;padding:.5rem;}
-.next-race-num{font-family:var(--display);font-size:4rem;line-height:1;}
-.next-race-unit{font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.next-race-big{display:flex;align-items:center;gap:16px;padding:.25rem 0;}
+.next-race-cd{text-align:center;flex-shrink:0;min-width:64px;}
+.next-race-num{font-family:var(--display);font-size:3.6rem;line-height:1;}
+.next-race-unit{font-family:var(--mono);font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.next-race-info{flex:1;min-width:0;}
+.next-race-title{font-family:var(--display);font-size:1.35rem;letter-spacing:.03em;line-height:1.2;margin-bottom:.35rem;}
 
 /* ── MISC ── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -339,7 +357,10 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <header>
   <div class="logo" style="cursor:pointer" onclick="showPanel('dashboard',document.querySelector('.nbtn'))">
     <div class="logo-mark" id="avatarMark" style="overflow:hidden;padding:0;font-size:13px;letter-spacing:0" onclick="event.stopPropagation();openProfil()">AO</div>
-    <div onclick="event.stopPropagation();openProfil()"><div class="logo-name" id="headerName" style="font-size:.75rem;font-weight:600;color:var(--text)">Runner OS</div></div>
+    <div onclick="event.stopPropagation();openProfil()">
+      <div style="font-family:var(--display);font-size:.9rem;letter-spacing:.06em;color:var(--cyan);line-height:1">VORCELAB</div>
+      <div class="logo-name" id="headerName" style="font-size:.55rem;color:var(--text3)">Runner OS</div>
+    </div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <div class="strava-pill"><div class="dot dot-off" id="statusDot"></div><span id="statusText">Strava</span></div>
@@ -351,7 +372,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
 <nav>
   <button class="nbtn active" onclick="showPanel('dashboard',this)">Dashboard</button>
-  <button class="nbtn" onclick="showPanel('strategie',this)">Stratégie Course</button>
+  <button class="nbtn" onclick="showPanel('strategie',this)">Calendrier</button>
   <button class="nbtn" onclick="showPanel('renfo',this)">Renfo & Prévention</button>
 </nav>
 
@@ -402,10 +423,11 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <!-- STRIP -->
 <div class="strip">
   <div class="scell"><div class="sval tg" id="s-km-month">—</div><div class="slbl">km / mois</div><div class="sdelta" id="s-km-month-delta"></div></div>
-  <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div></div>
+  <div class="scell"><div class="sval tg" id="s-km-week">—</div><div class="slbl">km / semaine</div><div class="sdelta" id="s-km-week-delta"></div></div>
   <div class="scell"><div class="sval to" id="s-dplus-month">—</div><div class="slbl">D+ / mois</div><div class="sdelta" id="s-dplus-delta"></div></div>
-  <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div></div>
+  <div class="scell"><div class="sval to" id="s-dplus-week">—</div><div class="slbl">D+ / semaine</div><div class="sdelta" id="s-dplus-week-delta"></div></div>
   <div class="scell"><div class="sval" id="s-runs-month">—</div><div class="slbl">sorties / mois</div><div class="sdelta" id="s-runs-delta"></div></div>
+  <div class="scell"><div class="sval" id="s-runs-week">—</div><div class="slbl">sorties / sem.</div><div class="sdelta" id="s-runs-week-delta"></div></div>
 </div>
 
 <div class="grid-2">
@@ -421,7 +443,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div class="card">
     <div class="clabel">Prochaine course</div>
     <div id="nextRaceWidget"><div class="mono t3">Aucune course planifiée</div></div>
-    <div class="mono t3" style="font-size:.58rem;margin-top:8px">Gère tes courses dans <span style="color:var(--cyan);cursor:pointer" onclick="showPanel('strategie',document.querySelector('.nbtn[onclick*=strategie]'))">Stratégie Course →</span></div>
+    <div class="mono t3" style="font-size:.58rem;margin-top:8px">Clique sur ton événement pour accéder à la stratégie complète</div>
   </div>
 </div>
 
@@ -440,47 +462,96 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <!-- ══ STRATÉGIE ══ -->
 
 <div class="panel" id="panel-strategie">
-  <div id="stratHeader">
-    <div class="stitle">Stratégie Course</div>
-    <div class="mono t2 mt1" style="margin-bottom:1.25rem">Upload un GPX ou associe une course de ton calendrier</div>
 
-<!-- Calendrier courses -->
-<div class="card" style="margin-bottom:1rem">
-  <div class="clabel">Mes courses</div>
-  <div class="race-list" id="raceList"><div class="mono t3">Aucune course planifiée</div></div>
-  <div class="add-race-btn mt2" onclick="toggleRaceForm()">+ Ajouter une course</div>
-  <div class="race-form" id="raceForm">
-    <div class="race-form-grid">
-      <div class="fg"><label class="fl">Nom</label><input class="fi" id="rName" placeholder="Trail du Muguet"></div>
-      <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="rDate"></div>
-      <div class="fg"><label class="fl">Distance (km)</label><input class="fi" type="number" id="rDist" placeholder=""></div>
-      <div class="fg"><label class="fl">D+ (m)</label><input class="fi" type="number" id="rElev" placeholder=""></div>
-      <div class="fg"><label class="fl">Type</label><select class="fi" id="rType"><option value="Trail">Trail</option><option value="Route">Route</option><option value="Ultra">Ultra</option></select></div>
-      <div class="fg"><label class="fl">Objectif temps</label><input class="fi" id="rGoal" placeholder="ex: 4h30"></div>
+  <!-- CALENDAR VIEW -->
+  <div id="calView">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem">
+      <div class="stitle" style="margin:0">Calendrier</div>
+      <button class="hbtn" onclick="showAddRaceForm()" style="background:var(--purple);color:#fff;border-color:var(--purple)">+ Ajouter une course</button>
     </div>
-    <button class="save-btn" onclick="saveRace()">Enregistrer</button>
+
+    <!-- Add race form (hidden by default) -->
+    <div class="card" id="addRaceCard" style="display:none;margin-bottom:1rem">
+      <div class="clabel" style="margin-bottom:10px">Nouvelle course</div>
+      <div class="race-form-grid">
+        <div class="fg"><label class="fl">Nom</label><input class="fi" id="rName" placeholder="Trail du Muguet"></div>
+        <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="rDate"></div>
+        <div class="fg"><label class="fl">Distance (km)</label><input class="fi" type="number" id="rDist" placeholder=""></div>
+        <div class="fg"><label class="fl">D+ (m)</label><input class="fi" type="number" id="rElev" placeholder=""></div>
+        <div class="fg"><label class="fl">Type</label><select class="fi" id="rType"><option value="Trail">Trail</option><option value="Route">Route</option><option value="Ultra">Ultra</option></select></div>
+        <div class="fg"><label class="fl">Objectif temps</label><input class="fi" id="rGoal" placeholder="ex: 4h30"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="save-btn" onclick="saveRace()">Enregistrer</button>
+        <button class="hbtn" onclick="document.getElementById('addRaceCard').style.display='none'">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Month navigation -->
+    <div class="cal-nav">
+      <button class="hbtn" onclick="calNavMonth(-1)">‹</button>
+      <div class="cal-month-title" id="calMonthTitle"></div>
+      <button class="hbtn" onclick="calNavMonth(1)">›</button>
+    </div>
+
+    <!-- Day labels -->
+    <div class="cal-header">
+      <div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div>
+      <div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <!-- Upcoming list -->
+    <div id="upcomingRaces" style="margin-top:1.5rem"></div>
   </div>
-</div>
 
-<!-- Race selector from calendar -->
-<div id="raceSelector" style="display:none;margin-bottom:1rem">
-  <div class="clabel">Associer à une course</div>
-  <div id="raceSelectorList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-</div>
+  <!-- EVENT DETAIL VIEW (hidden by default) -->
+  <div id="eventView" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+      <button class="hbtn" onclick="backToCalendar()">← Calendrier</button>
+      <div id="eventViewTitle" style="flex:1;font-family:var(--display);font-size:1.3rem;letter-spacing:.03em;min-width:0;overflow:hidden;text-overflow:ellipsis"></div>
+      <div style="position:relative;flex-shrink:0" id="raceMenuWrap">
+        <button class="hbtn" onclick="toggleRaceMenu(event)" style="font-size:1rem;padding:6px 10px">⚙️</button>
+        <div id="raceMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:200;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+          <button class="race-menu-item" onclick="toggleEditRaceForm();toggleRaceMenu()">✏️ Modifier</button>
+          <button class="race-menu-item" onclick="raceMenuChangeGpx()">🗺️ Changer de GPX</button>
+          <button class="race-menu-item" id="raceMenuSaveGpx" style="display:none" onclick="saveGpxToRace();toggleRaceMenu()">💾 Enregistrer GPX</button>
+          <button class="race-menu-item" onclick="raceMenuLinkActivity();toggleRaceMenu()">🔗 Lier à une activité</button>
+          <button class="race-menu-item" onclick="window.print();toggleRaceMenu()">🖨️ Imprimer</button>
+          <div style="border-top:1px solid var(--border);margin:4px 2px"></div>
+          <button class="race-menu-item" id="btnDeleteRace" style="color:var(--red)">🗑️ Supprimer</button>
+        </div>
+      </div>
+    </div>
+    <div id="editRaceForm" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 16px;margin-bottom:1rem;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="grid-column:1/-1;font-family:var(--display);font-size:.9rem;letter-spacing:.03em;margin-bottom:2px">Modifier l'événement</div>
+      <div><label class="fl">Nom de la course</label><input class="fi" id="editRaceName" type="text" placeholder="Nom"></div>
+      <div><label class="fl">Date</label><input class="fi" id="editRaceDate" type="date"></div>
+      <div><label class="fl">Type</label><select class="fi" id="editRaceType"><option value="Trail">⛰️ Trail</option><option value="Route">🏃 Route</option><option value="Ultra">🦅 Ultra</option></select></div>
+      <div><label class="fl">Distance (km)</label><input class="fi" id="editRaceDist" type="number" step="0.1" placeholder="ex: 21.1"></div>
+      <div><label class="fl">D+ (m)</label><input class="fi" id="editRaceDplus" type="number" placeholder="ex: 800"></div>
+      <div><label class="fl">Objectif temps</label><input class="fi" id="editRaceGoal" type="text" placeholder="ex: 2h30"></div>
+      <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="hbtn" onclick="toggleEditRaceForm()">Annuler</button>
+        <button class="hbtn" onclick="saveEditRace()" style="background:var(--cyan);color:#000;border-color:var(--cyan)">💾 Enregistrer</button>
+      </div>
+    </div>
 
-<div class="upload-zone" id="gpxDrop"
-  onclick="document.getElementById('gpxFile').click()"
-  ondragover="event.preventDefault();this.classList.add('drag')"
-  ondragleave="this.classList.remove('drag')"
-  ondrop="handleGpxDrop(event)">
-  <div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div>
-  <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div>
-  <div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>
-</div>
-<input type="file" id="gpxFile" accept=".gpx" style="display:none" onchange="handleGpxFile(event)">
+    <div class="upload-zone" id="gpxDrop"
+      onclick="document.getElementById('gpxFile').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleGpxDrop(event)">
+      <div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div>
+      <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div>
+      <div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>
+    </div>
+    <input type="file" id="gpxFile" accept=".gpx" style="display:none" onchange="handleGpxFile(event)">
 
+    <div id="stratResult" style="display:none"></div>
+    <div id="eventComparisonSection" class="mt2"></div>
   </div>
-  <div id="stratResult" style="display:none"></div>
+
 </div>
 
 <!-- ══ RENFO & PRÉVENTION ══ -->
@@ -500,98 +571,146 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div id="mode-prevention">
     <div class="grid-2">
       <!-- SVG CORPS -->
-      <div class="card" style="display:flex;flex-direction:column;align-items:center">
-        <div class="clabel">Clique sur une zone</div>
-        <svg id="bodySvg" viewBox="0 0 200 420" style="width:100%;max-width:200px;cursor:pointer">
-          <defs>
-            <style>
-              .bz{fill:#1c2738;stroke:#334455;stroke-width:1.5;transition:all .2s;cursor:pointer;}
-              .bz:hover{fill:rgba(0,212,255,.25);stroke:#00d4ff;}
-              .bz.selected{fill:rgba(255,107,53,.3);stroke:#ff6b35;stroke-width:2;}
-              .bl{fill:none;stroke:#0d1219;stroke-width:1;}
-              .bt{font-size:6px;fill:#6b7d94;font-family:monospace;pointer-events:none;}
-            </style>
-          </defs>
+      <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div class="mono t3" style="font-size:.58rem;letter-spacing:.08em">CLIQUE SUR UNE ZONE</div>
+        <div style="display:flex;gap:18px;justify-content:center;align-items:flex-end">
 
-      <!-- SILHOUETTE DE BASE (fond) -->
-      <!-- Tête -->
-      <ellipse cx="100" cy="28" rx="19" ry="22" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cou -->
-      <rect x="92" y="48" width="16" height="12" fill="#131b25" stroke="none"/>
-      <!-- Torse -->
-      <path d="M68,60 Q62,65 58,80 L55,148 Q58,155 100,157 Q142,155 145,148 L142,80 Q138,65 132,60 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras gauche -->
-      <path d="M58,80 Q45,85 38,100 Q32,118 33,145 L42,145 Q43,122 48,106 Q54,92 68,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bras droit -->
-      <path d="M142,80 Q155,85 162,100 Q168,118 167,145 L158,145 Q157,122 152,106 Q146,92 132,88 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Bassin -->
-      <path d="M55,148 Q58,165 70,172 L130,172 Q142,165 145,148 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse gauche -->
-      <path d="M70,170 Q62,175 60,195 L58,245 Q60,255 80,257 Q88,255 88,245 L86,195 Q85,178 100,175 Q85,170 70,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cuisse droite -->
-      <path d="M130,170 Q138,175 140,195 L142,245 Q140,255 120,257 Q112,255 112,245 L114,195 Q115,178 100,175 Q115,170 130,170 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou gauche -->
-      <ellipse cx="74" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Genou droit -->
-      <ellipse cx="126" cy="260" rx="14" ry="12" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe gauche -->
-      <path d="M62,268 Q58,290 60,320 L88,320 Q90,290 86,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Jambe droite -->
-      <path d="M138,268 Q142,290 140,320 L112,320 Q110,290 114,268 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville gauche -->
-      <ellipse cx="74" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Cheville droite -->
-      <ellipse cx="126" cy="323" rx="13" ry="8" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied gauche -->
-      <path d="M61,328 Q55,335 55,342 Q55,348 62,350 L90,350 Q94,348 94,342 L90,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
-      <!-- Pied droit -->
-      <path d="M139,328 Q145,335 145,342 Q145,348 138,350 L110,350 Q106,348 106,342 L110,330 Z" fill="#131b25" stroke="#1c2738" stroke-width="1"/>
+          <!-- FRONT -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <svg id="bodySvg" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
+              <defs>
+                <style>
+                  .bz{fill:rgba(30,58,105,.7);stroke:#3a6abf;stroke-width:1.2;transition:all .2s;cursor:pointer;}
+                  .bz:hover{fill:rgba(0,212,255,.3);stroke:#00d4ff;stroke-width:1.8;}
+                  .bz.selected{fill:rgba(255,107,53,.35);stroke:#ff6b35;stroke-width:2;}
+                  .bzb{fill:rgba(30,58,105,.7);stroke:#3a6abf;stroke-width:1.2;transition:all .2s;cursor:pointer;}
+                  .bzb:hover{fill:rgba(0,212,255,.3);stroke:#00d4ff;stroke-width:1.8;}
+                  .bzb.selected{fill:rgba(255,107,53,.35);stroke:#ff6b35;stroke-width:2;}
+                  .sg{fill:#1e3a69;stroke:#2d5a9a;stroke-width:1.2;}
+                  .sg2{fill:none;stroke:#1a3058;stroke-width:1;}
+                  .gl{stroke:rgba(255,255,255,.13);stroke-width:.7;stroke-dasharray:4 3;fill:none;}
+                  .dl{stroke:rgba(255,255,255,.18);stroke-width:.9;fill:none;pointer-events:none;}
+                </style>
+              </defs>
+              <!-- HEAD -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <!-- NECK -->
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z" stroke="none"/>
+              <!-- TORSO: broad shoulders → chest → waist taper → hips -->
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <!-- LEFT ARM: bicep wide, forearm tapers -->
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <!-- RIGHT ARM -->
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <!-- PELVIS -->
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <!-- LEFT THIGH: wider at hip, narrows to knee -->
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <!-- RIGHT THIGH -->
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <!-- LEFT KNEE -->
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <!-- RIGHT KNEE -->
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <!-- LEFT CALF: diamond shape - wide middle narrow top/bottom -->
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <!-- RIGHT CALF -->
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <!-- LEFT ANKLE -->
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <!-- RIGHT ANKLE -->
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <!-- LEFT FOOT -->
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <!-- RIGHT FOOT -->
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- FRONT definition lines -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="95"/>
+              <path class="dl" d="M91,62 C86,66 80,70 74,78"/>
+              <path class="dl" d="M109,62 C114,66 120,70 126,78"/>
+              <line class="dl" x1="67" y1="196" x2="67" y2="268"/>
+              <line class="dl" x1="133" y1="196" x2="133" y2="268"/>
+              <!-- grid lines -->
+              <line class="gl" x1="43" y1="88" x2="157" y2="88"/>
+              <line class="gl" x1="41" y1="155" x2="159" y2="155"/>
+              <line class="gl" x1="46" y1="218" x2="154" y2="218"/>
+              <line class="gl" x1="46" y1="278" x2="154" y2="278"/>
+              <line class="gl" x1="50" y1="340" x2="150" y2="340"/>
+              <line class="gl" x1="100" y1="4" x2="100" y2="372"/>
+              <!-- CLICKABLE ZONES (transparent overlays) -->
+              <ellipse class="bz" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
+              <path class="bz" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="bz" data-zone="hip" d="M57,154 C54,166 56,178 64,183 L136,183 C144,178 146,166 143,154 L118,151 Q100,153 82,151 Z"/>
+              <path class="bz" data-zone="quad_l" d="M64,181 C55,188 48,207 46,233 L46,261 C48,273 60,280 76,278 C85,276 89,268 89,259 L89,231 C89,207 92,188 100,184 C86,180 64,179 64,181 Z"/>
+              <path class="bz" data-zone="quad_r" d="M136,181 C145,188 152,207 154,233 L154,261 C152,273 140,280 124,278 C115,276 111,268 111,259 L111,231 C111,207 108,188 100,184 C114,180 136,179 136,181 Z"/>
+              <ellipse class="bz" data-zone="knee_l" cx="67" cy="280" rx="18" ry="14"/>
+              <ellipse class="bz" data-zone="knee_r" cx="133" cy="280" rx="18" ry="14"/>
+              <path class="bz" data-zone="calf_l" d="M55,291 C48,305 48,319 52,331 C55,338 61,342 67,342 L77,342 C83,342 88,338 91,331 C95,319 94,305 88,291 Z"/>
+              <path class="bz" data-zone="calf_r" d="M145,291 C152,305 152,319 148,331 C145,338 139,342 133,342 L123,342 C117,342 112,338 109,331 C105,319 106,305 112,291 Z"/>
+              <ellipse class="bz" data-zone="ankle_l" cx="67" cy="344" rx="13" ry="9"/>
+              <ellipse class="bz" data-zone="ankle_r" cx="133" cy="344" rx="13" ry="9"/>
+              <path class="bz" data-zone="foot_l" d="M56,351 C50,356 48,362 50,367 C52,371 58,373 68,373 L84,373 C88,371 88,367 86,361 L82,352 Z"/>
+              <path class="bz" data-zone="foot_r" d="M144,351 C150,356 152,362 150,367 C148,371 142,373 132,373 L116,373 C112,371 112,367 114,361 L118,352 Z"/>
+            </svg>
+            <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">FRONT</div>
+          </div>
 
-      <!-- ZONES CLIQUABLES (transparentes par-dessus) -->
-      <!-- Tête -->
-      <ellipse class="bz" data-zone="head" cx="100" cy="28" rx="20" ry="23"/>
-      <!-- Dos/Core -->
-      <path class="bz" data-zone="back" d="M70,62 Q64,68 61,82 L60,146 Q80,152 100,153 Q120,152 140,146 L139,82 Q136,68 130,62 Q115,58 100,57 Q85,58 70,62 Z"/>
-      <!-- Hanche/ITB -->
-      <path class="bz" data-zone="hip" d="M57,148 Q58,168 72,174 L128,174 Q142,168 143,148 L120,144 Q100,146 80,144 Z"/>
-      <!-- Cuisse gauche -->
-      <path class="bz" data-zone="quad_l" d="M71,174 Q61,178 59,198 L57,248 Q62,258 80,259 Q90,256 89,246 L87,196 Q86,178 100,176 Q85,173 71,174 Z"/>
-      <!-- Cuisse droite -->
-      <path class="bz" data-zone="quad_r" d="M129,174 Q139,178 141,198 L143,248 Q138,258 120,259 Q110,256 111,246 L113,196 Q114,178 100,176 Q115,173 129,174 Z"/>
-      <!-- Genou gauche -->
-      <ellipse class="bz" data-zone="knee_l" cx="74" cy="260" rx="16" ry="13"/>
-      <!-- Genou droit -->
-      <ellipse class="bz" data-zone="knee_r" cx="126" cy="260" rx="16" ry="13"/>
-      <!-- Mollet/Tibia gauche -->
-      <path class="bz" data-zone="calf_l" d="M61,270 Q57,292 59,320 L89,320 Q91,292 87,270 Z"/>
-      <!-- Mollet/Tibia droit -->
-      <path class="bz" data-zone="calf_r" d="M139,270 Q143,292 141,320 L111,320 Q109,292 113,270 Z"/>
-      <!-- Cheville gauche -->
-      <ellipse class="bz" data-zone="ankle_l" cx="74" cy="324" rx="15" ry="9"/>
-      <!-- Cheville droite -->
-      <ellipse class="bz" data-zone="ankle_r" cx="126" cy="324" rx="15" ry="9"/>
-      <!-- Pied gauche -->
-      <path class="bz" data-zone="foot_l" d="M60,330 Q53,337 53,344 Q53,350 62,352 L91,352 Q95,350 95,344 L91,332 Z"/>
-      <!-- Pied droit -->
-      <path class="bz" data-zone="foot_r" d="M140,330 Q147,337 147,344 Q147,350 138,352 L109,352 Q105,350 105,344 L109,332 Z"/>
+          <!-- BACK -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <svg id="bodySvgBack" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
+              <!-- BACK silhouette (same proportions, back-specific details) -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z" stroke="none"/>
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- BACK definition lines: spine, shoulder blades, glute -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="182"/>
+              <path class="dl" d="M84,72 C80,84 80,100 84,114"/>
+              <path class="dl" d="M116,72 C120,84 120,100 116,114"/>
+              <line class="dl" x1="100" y1="182" x2="100" y2="206"/>
+              <!-- grid lines -->
+              <line class="gl" x1="43" y1="88" x2="157" y2="88"/>
+              <line class="gl" x1="41" y1="155" x2="159" y2="155"/>
+              <line class="gl" x1="46" y1="218" x2="154" y2="218"/>
+              <line class="gl" x1="46" y1="278" x2="154" y2="278"/>
+              <line class="gl" x1="50" y1="340" x2="150" y2="340"/>
+              <line class="gl" x1="100" y1="4" x2="100" y2="372"/>
+              <!-- BACK CLICKABLE ZONES -->
+              <ellipse class="bzb" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
+              <path class="bzb" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="bzb" data-zone="glute" d="M57,154 C54,166 56,178 64,183 L136,183 C144,178 146,166 143,154 L118,151 Q100,153 82,151 Z"/>
+              <path class="bzb" data-zone="hamstring_l" d="M64,181 C55,188 48,207 46,233 L46,261 C48,273 60,280 76,278 C85,276 89,268 89,259 L89,231 C89,207 92,188 100,184 C86,180 64,179 64,181 Z"/>
+              <path class="bzb" data-zone="hamstring_r" d="M136,181 C145,188 152,207 154,233 L154,261 C152,273 140,280 124,278 C115,276 111,268 111,259 L111,231 C111,207 108,188 100,184 C114,180 136,179 136,181 Z"/>
+              <ellipse class="bzb" data-zone="knee_l" cx="67" cy="280" rx="18" ry="14"/>
+              <ellipse class="bzb" data-zone="knee_r" cx="133" cy="280" rx="18" ry="14"/>
+              <path class="bzb" data-zone="calf_l" d="M55,291 C48,305 48,319 52,331 C55,338 61,342 67,342 L77,342 C83,342 88,338 91,331 C95,319 94,305 88,291 Z"/>
+              <path class="bzb" data-zone="calf_r" d="M145,291 C152,305 152,319 148,331 C145,338 139,342 133,342 L123,342 C117,342 112,338 109,331 C105,319 106,305 112,291 Z"/>
+              <ellipse class="bzb" data-zone="achilles_l" cx="67" cy="344" rx="13" ry="9"/>
+              <ellipse class="bzb" data-zone="achilles_r" cx="133" cy="344" rx="13" ry="9"/>
+              <path class="bzb" data-zone="plantar_l" d="M56,351 C50,356 48,362 50,367 C52,371 58,373 68,373 L84,373 C88,371 88,367 86,361 L82,352 Z"/>
+              <path class="bzb" data-zone="plantar_r" d="M144,351 C150,356 152,362 150,367 C148,371 142,373 132,373 L116,373 C112,371 112,367 114,361 L118,352 Z"/>
+            </svg>
+            <div class="mono t3" style="font-size:.52rem;letter-spacing:.1em">BACK</div>
+          </div>
 
-      <!-- LABELS -->
-      <text class="bt" x="100" y="28" text-anchor="middle">Mental</text>
-      <text class="bt" x="100" y="110" text-anchor="middle">Dos / Core</text>
-      <text class="bt" x="100" y="165" text-anchor="middle">Hanche / ITB</text>
-      <text class="bt" x="68" y="215" text-anchor="middle">Cuisse G</text>
-      <text class="bt" x="132" y="215" text-anchor="middle">Cuisse D</text>
-      <text class="bt" x="68" y="262" text-anchor="middle">Genou G</text>
-      <text class="bt" x="132" y="262" text-anchor="middle">Genou D</text>
-      <text class="bt" x="68" y="298" text-anchor="middle">Mollet G</text>
-      <text class="bt" x="132" y="298" text-anchor="middle">Mollet D</text>
-      <text class="bt" x="68" y="326" text-anchor="middle">Cheville G</text>
-      <text class="bt" x="132" y="326" text-anchor="middle">Cheville D</text>
-      <text class="bt" x="68" y="348" text-anchor="middle">Pied G</text>
-      <text class="bt" x="132" y="348" text-anchor="middle">Pied D</text>
-    </svg>
-    <div class="mono t3" style="font-size:.58rem;margin-top:.5rem;text-align:center">Clique sur une zone</div>
-  </div>
+        </div>
+      </div>
 
   <!-- CONTENU ZONE SÉLECTIONNÉE -->
   <div id="renfoContent">
@@ -667,7 +786,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div class="card">
     <div class="clabel">Données physiologiques</div>
     <div class="fg"><label class="fl">Prénom / Nom</label><input class="fi" id="p-name" placeholder=""></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
       <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" id="p-birthdate"></div>
       <div class="fg"><label class="fl">Sexe</label><select class="fi" id="p-sex"><option value="">—</option><option value="M">Homme</option><option value="F">Femme</option></select></div>
       <div class="fg"><label class="fl">Poids (kg)</label><input class="fi" type="number" id="p-weight" placeholder="" step="0.1"></div>
@@ -839,12 +958,11 @@ const tE = t => ({Run:'🏃',TrailRun:'⛰️'}[t]||'🏃');
 const tL = t => ({Run:'Route',TrailRun:'Trail'}[t]||'Run');
 const bC = t => t==='TrailRun'?'linear-gradient(90deg,#ff6b35,#fbbf24)':'linear-gradient(90deg,#00d4ff,#a78bfa)';
 
-function deltaHTML(pct) {
+function deltaHTML(pct, label='mois dernier') {
   if (!pct && pct !== 0) return '';
-  const abs = Math.abs(pct);
-  if (pct > 5) return `<span class="delta-up">↑ +${Math.round(pct)}% vs mois dernier</span>`;
-  if (pct < -5) return `<span class="delta-down">↓ ${Math.round(pct)}% vs mois dernier</span>`;
-  return `<span class="delta-eq">= stable vs mois dernier</span>`;
+  if (pct > 5) return `<span class="delta-up">↑ +${Math.round(pct)}% vs ${label}</span>`;
+  if (pct < -5) return `<span class="delta-down">↓ ${Math.round(pct)}% vs ${label}</span>`;
+  return `<span class="delta-eq">= stable vs ${label}</span>`;
 }
 
 // ════════════════════════════════════════════════════
@@ -864,6 +982,7 @@ function showPanel(name, btn) {
   document.getElementById('panel-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
   // Reset drop zone when navigating to strategie directly (not via prepareRace)
+  if(name==='strategie') { renderCalendar(); }
   if(name==='strategie' && !currentRaceContext) {
     const drop=document.getElementById('gpxDrop');
     if(drop){
@@ -1184,7 +1303,7 @@ async function fetchStreams(activityId) {
     const r = await fetch(`${SUPA_URL}/functions/v1/strava-activity`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ activityId }),
+      body: JSON.stringify({ activityId, keys: 'time,distance,altitude,heartrate,velocity_smooth,cadence,latlng' }),
     });
     if (!r.ok) return {};
     return r.json();
@@ -1199,6 +1318,204 @@ async function fetchWeather(lat, lon, date) {
     return {temp:data.hourly?.temperature_2m?.[h]??null,precip:data.hourly?.precipitation?.[h]??null,wind:data.hourly?.windspeed_10m?.[h]??null};
   } catch { return null; }
 }
+
+// ════════════════════════════════════════════════════
+// MONTHLY CALENDAR
+// ════════════════════════════════════════════════════
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+
+function showAddRaceForm() {
+  const card = document.getElementById('addRaceCard');
+  if(card) card.style.display = card.style.display==='none'?'block':'none';
+}
+
+function renderCalendar() {
+  const titleEl = document.getElementById('calMonthTitle');
+  const gridEl = document.getElementById('calGrid');
+  if(!titleEl || !gridEl) return;
+
+  const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  titleEl.textContent = `${months[calMonth]} ${calYear}`;
+
+  const today = new Date();
+  // First day of month (0=Sun..6=Sat → convert to Mon-based 0-6)
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  // Build lookup: dateStr → race
+  const raceByDate = {};
+  (races||[]).forEach(r => { if(r.date) raceByDate[r.date.substring(0,10)] = r; });
+
+  let cells = '';
+  const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+
+  for(let i = 0; i < totalCells; i++){
+    let dayNum, month = calMonth, year = calYear, otherMonth = false;
+    if(i < startDow){ dayNum = daysInPrev - startDow + i + 1; month = calMonth-1; if(month<0){month=11;year=calYear-1;} otherMonth=true; }
+    else if(i >= startDow + daysInMonth){ dayNum = i - startDow - daysInMonth + 1; month = calMonth+1; if(month>11){month=0;year=calYear+1;} otherMonth=true; }
+    else { dayNum = i - startDow + 1; }
+
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const isToday = !otherMonth && year===today.getFullYear() && month===today.getMonth() && dayNum===today.getDate();
+    const race = raceByDate[dateStr];
+    const typeEmoji = race ? (race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃') : '';
+
+    cells += `<div class="cal-cell${otherMonth?' other-month':''}${isToday?' today':''}${race?' has-event':''}" ${race?`onclick="openEventView('${race.id}')"`:''}>
+      <div class="cal-day-num">${dayNum}</div>
+      ${race ? `<div class="cal-event-dot">${typeEmoji} ${race.name}</div><div class="cal-event-type">${race.distance||'?'}km${race.elevation?` · ${race.elevation}m D+`:''}</div>` : ''}
+    </div>`;
+  }
+  gridEl.innerHTML = cells;
+
+  // Upcoming races list
+  const upcoming = (races||[]).filter(r=>r.date && new Date(r.date)>=new Date()).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,5);
+  const upEl = document.getElementById('upcomingRaces');
+  if(upEl){
+    upEl.innerHTML = upcoming.length ? `
+      <div class="clabel" style="margin-bottom:8px">Prochaines courses</div>
+      ${upcoming.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="openEventView('${r.id}')">
+        <div style="font-size:1.2rem">${r.type==='Trail'?'⛰️':r.type==='Ultra'?'🦅':'🏃'}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.85rem">${r.name}</div>
+          <div class="mono t3" style="font-size:.6rem">${new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${r.distance||'?'}km${r.elevation?` · ${r.elevation}m D+`:''}</div>
+        </div>
+        <div class="mono" style="font-size:.7rem;color:var(--cyan)">${Math.ceil((new Date(r.date)-new Date())/(1000*60*60*24))}j →</div>
+      </div>`).join('')}` : '<div class="mono t3">Aucune course à venir — clique sur "+ Ajouter une course"</div>';
+  }
+}
+
+function calNavMonth(dir) {
+  calMonth += dir;
+  if(calMonth > 11){ calMonth=0; calYear++; }
+  if(calMonth < 0){ calMonth=11; calYear--; }
+  renderCalendar();
+}
+
+function openEventView(raceId) {
+  const race = (races||[]).find(r=>String(r.id)===String(raceId));
+  if(!race) return;
+  window._openEventRace = race; // stable reference for edit form
+  document.getElementById('calView').style.display = 'none';
+  document.getElementById('eventView').style.display = 'block';
+  const titleEl = document.getElementById('eventViewTitle');
+  if(titleEl) titleEl.textContent = `${race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃'} ${race.name} — ${new Date(race.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
+  const delBtn = document.getElementById('btnDeleteRace');
+  if(delBtn) delBtn.onclick = ()=>deleteRace(raceId);
+  const compSec = document.getElementById('eventComparisonSection');
+  if(compSec) compSec.innerHTML = '';
+  prepareRace(race);
+  // Load comparison if race already has linked activity + GPX
+  if(race.strava_activity_id && race.gpx_data) {
+    const actId = race.strava_activity_id;
+    const actObj = allActivities.find(a=>String(a.id)===String(actId)) || {id:actId, moving_time:0};
+    fetchStreams(actId).then(streams => {
+      renderRaceComparison(actObj, streams, race, 'eventComparisonSection');
+    }).catch(()=>{});
+  }
+}
+
+function goToEvent(raceId) {
+  const btn = document.querySelector('.nbtn[onclick*="strategie"]');
+  showPanel('strategie', btn);
+  openEventView(raceId);
+}
+
+function backToCalendar() {
+  document.getElementById('eventView').style.display = 'none';
+  document.getElementById('calView').style.display = 'block';
+  currentRaceContext = null;
+  document.getElementById('stratResult').style.display='none';
+  document.getElementById('gpxDrop').style.display='flex';
+  const ef=document.getElementById('editRaceForm');if(ef)ef.style.display='none';
+  const rm=document.getElementById('raceMenu');if(rm)rm.style.display='none';
+  const cs=document.getElementById('eventComparisonSection');if(cs)cs.innerHTML='';
+  window._openEventRace=null;
+  if(window._actMapInst2){window._actMapInst2.remove();window._actMapInst2=null;}
+}
+
+async function deleteRace(raceId) {
+  if(!confirm('Supprimer cette course ?')) return;
+  await sb.from('race_calendar').delete().eq('id', raceId);
+  await loadRaces();
+  backToCalendar();
+  renderCalendar();
+}
+
+function toggleEditRaceForm() {
+  const form = document.getElementById('editRaceForm');
+  if(!form) return;
+  const isHidden = form.style.display === 'none' || !form.style.display;
+  if(isHidden) {
+    const race = currentRaceContext || window._openEventRace;
+    if(race) {
+      document.getElementById('editRaceName').value = race.name || '';
+      document.getElementById('editRaceDate').value = race.date ? race.date.slice(0,10) : '';
+      document.getElementById('editRaceType').value = race.type || 'Trail';
+      document.getElementById('editRaceDist').value = race.distance != null ? race.distance : '';
+      document.getElementById('editRaceDplus').value = race.elevation != null ? race.elevation : '';
+      document.getElementById('editRaceGoal').value = race.goal_time || '';
+    }
+    form.style.display = 'grid';
+  } else {
+    form.style.display = 'none';
+  }
+}
+
+async function saveEditRace() {
+  const race = currentRaceContext || window._openEventRace;
+  if(!race?.id) return;
+  const name = document.getElementById('editRaceName').value.trim();
+  const date = document.getElementById('editRaceDate').value;
+  const type = document.getElementById('editRaceType').value;
+  const distance = parseFloat(document.getElementById('editRaceDist').value) || null;
+  const elevation = parseInt(document.getElementById('editRaceDplus').value) || null;
+  const goal_time = document.getElementById('editRaceGoal').value.trim() || null;
+  if(!name || !date) { alert('Nom et date requis'); return; }
+  const {error} = await sb.from('race_calendar').update({name,date,type,distance,elevation,goal_time}).eq('id', race.id);
+  if(error){alert('Erreur: '+error.message);return;}
+  await loadRaces();
+  const updated = (races||[]).find(r=>String(r.id)===String(race.id));
+  if(updated) {
+    window._openEventRace = updated;
+    if(currentRaceContext?.id===updated.id) currentRaceContext = updated;
+    const titleEl = document.getElementById('eventViewTitle');
+    if(titleEl) titleEl.textContent = `${updated.type==='Trail'?'⛰️':updated.type==='Ultra'?'🦅':'🏃'} ${updated.name} — ${new Date(updated.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
+  }
+  document.getElementById('editRaceForm').style.display = 'none';
+  renderCalendar();
+}
+
+function toggleRaceMenu(e) {
+  if(e) e.stopPropagation();
+  const menu = document.getElementById('raceMenu');
+  if(!menu) return;
+  const opening = menu.style.display === 'none';
+  menu.style.display = opening ? 'block' : 'none';
+  if(opening) {
+    const saveItem = document.getElementById('raceMenuSaveGpx');
+    if(saveItem) saveItem.style.display = (currentRaceContext?.id && window._pendingGpxSave) ? 'block' : 'none';
+  }
+}
+
+function raceMenuChangeGpx() {
+  const race = window._openEventRace;
+  toggleRaceMenu();
+  resetStrategy();
+  currentRaceContext = race;
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('raceMenuWrap');
+  const menu = document.getElementById('raceMenu');
+  if(menu && menu.style.display !== 'none' && wrap && !wrap.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
 
 // ════════════════════════════════════════════════════
 // ONBOARDING
@@ -1231,7 +1548,9 @@ function renderDashboard() {
     return d.getMonth()===lm.getMonth() && d.getFullYear()===lm.getFullYear();
   });
   const weekAgo = Date.now()-7*24*3600*1000;
+  const prevWeekAgo = Date.now()-14*24*3600*1000;
   const thisWeek = allActivities.filter(a => new Date(a.start_date).getTime()>weekAgo);
+  const prevWeek = allActivities.filter(a => { const t=new Date(a.start_date).getTime(); return t>prevWeekAgo && t<=weekAgo; });
 
   const km = r => r.reduce((s,a)=>s+a.distance/1000,0);
   const dp = r => r.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
@@ -1239,7 +1558,8 @@ function renderDashboard() {
 
   const kmM=km(thisMonth), kmW=km(thisWeek), dpM=dp(thisMonth), dpW=dp(thisWeek);
   const kmML=km(lastMonth), dpML=dp(lastMonth);
-  const runsM=thisMonth.length, runsML=lastMonth.length;
+  const kmPW=km(prevWeek), dpPW=dp(prevWeek);
+  const runsM=thisMonth.length, runsML=lastMonth.length, runsW=thisWeek.length, runsPW=prevWeek.length;
   const durM=dur(thisMonth);
 
   // Strip
@@ -1248,25 +1568,31 @@ function renderDashboard() {
   document.getElementById('s-dplus-month').textContent = dpM.toFixed(0)+' m';
   document.getElementById('s-dplus-week').textContent = dpW.toFixed(0)+' m';
   document.getElementById('s-runs-month').textContent = runsM;
+  document.getElementById('s-runs-week').textContent = runsW;
 
-  // Deltas
+  // Deltas monthly
   const pctKm = kmML>0?(kmM-kmML)/kmML*100:null;
   const pctDp = dpML>0?(dpM-dpML)/dpML*100:null;
   const pctRuns = runsML>0?(runsM-runsML)/runsML*100:null;
   document.getElementById('s-km-month-delta').innerHTML = deltaHTML(pctKm);
   document.getElementById('s-dplus-delta').innerHTML = deltaHTML(pctDp);
   document.getElementById('s-runs-delta').innerHTML = deltaHTML(pctRuns);
+  // Deltas weekly vs previous week
+  const pctKmW = kmPW>0?(kmW-kmPW)/kmPW*100:null;
+  const pctDpW = dpPW>0?(dpW-dpPW)/dpPW*100:null;
+  const pctRunsW = runsPW>0?(runsW-runsPW)/runsPW*100:null;
+  document.getElementById('s-km-week-delta').innerHTML = deltaHTML(pctKmW,'sem. précédente');
+  document.getElementById('s-dplus-week-delta').innerHTML = deltaHTML(pctDpW,'sem. précédente');
+  document.getElementById('s-runs-week-delta').innerHTML = deltaHTML(pctRunsW,'sem. précédente');
 
   // Simple stats cards
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
   const withHR = thisMonth.filter(a=>a.average_heartrate);
   const avgFC = withHR.length ? Math.round(withHR.reduce((s,a)=>s+a.average_heartrate,0)/withHR.length) : null;
-  const z2 = withHR.length ? Math.round(withHR.filter(a=>a.average_heartrate/fcMax>=.6&&a.average_heartrate/fcMax<.7).length/withHR.length*100) : null;
-
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    ${z2!==null?`<div class="s-stat"><div class="s-sv tc">${z2}%</div><div class="s-sl">% Z2</div><div style="font-size:.58rem;color:var(--text3)">60-70% FCmax</div></div>`:''}
+    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--text3)">…</div><div class="s-sl">% aérobie sem.</div><div style="font-size:.58rem;color:var(--text3)">&lt;75% FCmax (${Math.round(fcMax*.75)} bpm)</div></div>
   `;
 
   // Annual chart
@@ -1274,6 +1600,34 @@ function renderDashboard() {
 
   // Activities grid
   renderActivities();
+
+  // Async: fetch HR streams for this week and compute real aerobic %
+  loadAerobicStat(thisWeek, fcMax);
+}
+
+async function loadAerobicStat(weekActs, fcMax) {
+  const threshold = fcMax * 0.75;
+  const actsWithHR = weekActs.filter(a => isRun(a.type));
+  if (!actsWithHR.length) { document.getElementById('aerobicStatVal').textContent = '—'; return; }
+
+  let totalPts = 0, aerobicPts = 0;
+  await Promise.all(actsWithHR.map(async a => {
+    try {
+      const streams = await fetchStreams(a.id);
+      const hr = streams.heartrate?.data;
+      if (!hr?.length) return;
+      totalPts += hr.length;
+      aerobicPts += hr.filter(v => v < threshold).length;
+    } catch {}
+  }));
+
+  const el = document.getElementById('aerobicStatVal');
+  if (!el) return;
+  if (totalPts === 0) { el.textContent = '—'; return; }
+  const pct = Math.round(aerobicPts / totalPts * 100);
+  el.style.color = '';
+  el.style.fontSize = '';
+  el.textContent = pct + '%';
 }
 
 // ════════════════════════════════════════════════════
@@ -1380,26 +1734,63 @@ function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 async function generateAIAnalysis(act, streams, paf) {
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
-  const seuil = userProfile.lactate_threshold || 181;
   const zones = [0,0,0,0,0];
   const hrS = streams.heartrate?.data||[];
   if(hrS.length){hrS.forEach(h=>{const p=h/fcMax;if(p<.6)zones[0]++;else if(p<.7)zones[1]++;else if(p<.8)zones[2]++;else if(p<.9)zones[3]++;else zones[4]++;});const tot=hrS.length;zones.forEach((_,i)=>zones[i]=Math.round(zones[i]/tot*100));}
+
+  // Detect interval/fractionné session
+  const nameLC = (act.name||'').toLowerCase();
+  const intervalKeywords = ['fractionné','fractionnés','interval','intervals','vma','répétition','répétitions','séries','vitesse','split','splits','fartlek','tempo','lactate','r400','r200','r1000'];
+  const nameIsInterval = intervalKeywords.some(k => nameLC.includes(k));
+  const hrVarianceHigh = zones[3]+zones[4] >= 25; // 25%+ in Z4-Z5
+  const isInterval = nameIsInterval || hrVarianceHigh;
+
+  let sessionTypeBlock = '';
+  if(isInterval){
+    // Try to detect interval structure from velocity stream
+    const velD = streams.velocity_smooth?.data||[];
+    const distD = streams.distance?.data||[];
+    let intervalCount = 0;
+    if(velD.length > 10){
+      // Count transitions from slow (<3.5m/s) to fast (>4m/s)
+      let inFast = false;
+      for(let i=1;i<velD.length;i++){
+        if(!inFast && velD[i]>4.0) { inFast=true; intervalCount++; }
+        else if(inFast && velD[i]<3.5) inFast=false;
+      }
+    }
+    const avgPaceZ45 = act.average_speed ? fmtP(act.average_speed) : 'N/A';
+    sessionTypeBlock = `TYPE DE SÉANCE: FRACTIONNÉ / INTERVALLES
+- Répétitions détectées: ~${intervalCount||'plusieurs'}
+- Zones intensives (Z4+Z5): ${zones[3]+zones[4]}% du temps
+- Allure moyenne sur la séance: ${avgPaceZ45}/km
+→ Analyse spécifiquement la qualité des répétitions, la gestion de la récupération, et si l'intensité cible a été maintenue.`;
+  } else {
+    sessionTypeBlock = `TYPE DE SÉANCE: SORTIE CONTINUE (endurance / tempo)`;
+  }
 
   const prompt = `Tu es un coach running expert. Analyse cette sortie course à pied de manière concise et personnalisée en 4-5 phrases maximum. Sois direct, factuel, et actionnable. Ne commence pas par "Cette sortie" ou "Voici".
 
 DONNÉES ATHLÈTE:
 - Age: ${userProfile.age||34} ans | Poids: ${userProfile.weight||79}kg | VO2max: ${userProfile.vo2max||50.4}
-- FC max: ${fcMax} bpm | Seuil lactique: ${seuil} bpm (${userProfile.lactate_pace||'4:50'}/km)
+- FC max: ${fcMax} bpm
 - Zones douloureuses: ${(userProfile.pain_zones||[]).join(', ')||'aucune'}
 
+${sessionTypeBlock}
+
 DONNÉES SORTIE:
-- Type: ${act.type} | Distance: ${(act.distance/1000).toFixed(2)}km | Durée: ${fmtD(act.moving_time)}
+- Nom: ${act.name}
+- Distance: ${(act.distance/1000).toFixed(2)}km | Durée: ${fmtD(act.moving_time)}
 - Allure moyenne: ${fmtP(act.average_speed)}/km | Allure normalisée PAF: ${paf.paceNorm}/km
 - D+: ${act.total_elevation_gain||0}m | FC moy: ${act.average_heartrate||'N/A'} bpm | FC max: ${act.max_heartrate||'N/A'} bpm
 - Répartition zones FC: Z1=${zones[0]}% Z2=${zones[1]}% Z3=${zones[2]}% Z4=${zones[3]}% Z5=${zones[4]}%
 - Pénalité conditions: +${(paf.totalAdj*100).toFixed(0)}% (${paf.factors.map(f=>f.label+' '+f.value).join(', ')})
 
-Donne une analyse courte incluant: qualité de l'effort, gestion FC, point fort et 1 conseil concret.`;
+${isInterval
+  ? 'Analyse la qualité des répétitions, la régularité de l\'effort, la récupération entre les séries, et donne 1 conseil concret pour la prochaine séance de fractionné.'
+  : 'Analyse la qualité de l\'effort, la gestion FC, le point fort de la séance, et donne 1 conseil concret.'
+}
+Ne mentionne pas le seuil lactique sauf si la séance est explicitement un travail au seuil.`;
 
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -1428,10 +1819,16 @@ async function openAnalyse(act) {
   document.body.style.overflow = 'hidden';
   document.getElementById('analyseInner').innerHTML = `<div class="loading" style="min-height:300px"><div class="spinner"></div><div class="mono">Chargement des données...</div></div>`;
 
-  const [streams, weather] = await Promise.all([
-    fetchStreams(act.id),
-    act.start_latlng?.length>=2 ? fetchWeather(act.start_latlng[0],act.start_latlng[1],act.start_date_local) : Promise.resolve(null)
-  ]);
+  const streams = await fetchStreams(act.id);
+  // Fallback: use first latlng point from streams if start_latlng missing
+  let lat0 = act.start_latlng?.[0], lon0 = act.start_latlng?.[1];
+  const llStream = streams.latlng?.data;
+  if((lat0==null||lon0==null) && Array.isArray(llStream) && llStream.length){
+    lat0 = llStream[0][0]; lon0 = llStream[0][1];
+  }
+  const weather = (lat0!=null && lon0!=null)
+    ? await fetchWeather(lat0, lon0, act.start_date_local)
+    : null;
 
   const paf = computePAF(act, weather);
   const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
@@ -1493,6 +1890,8 @@ async function openAnalyse(act) {
       <div class="card"><div class="clabel">Répartition zones FC</div><div class="chart-wrap" style="height:190px"><canvas id="azChart"></canvas></div></div>
     </div>
 
+    ${(Array.isArray(llStream) && llStream.length>1) ? `<div class="card mt2"><div class="clabel">Carte du parcours</div><div id="actMap" style="height:300px;border-radius:8px;overflow:hidden;margin-top:8px"></div></div>` : ''}
+
     <!-- PROFIL ATHLÈTE PAR SECTION (si streams dispo) -->
     <div id="athleteProfileSection" class="mt2"></div>
 
@@ -1503,6 +1902,23 @@ async function openAnalyse(act) {
   if(cA.length){new Chart(document.getElementById('apChart'),{type:'line',data:{labels:cDist,datasets:[{label:'Alt',data:cA,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:1.5,yAxisID:'yA'},...(cH.length?[{label:'FC',data:cH,borderColor:'#f43f5e',backgroundColor:'transparent',fill:false,tension:.4,pointRadius:0,borderWidth:1.5,borderDash:[3,2],yAxisID:'yH'}]:[])]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,font:{size:9},callback:v=>v+'km'},grid:{color:'rgba(255,255,255,.05)'}},yA:{position:'left',ticks:{font:{size:9},callback:v=>v+'m'},grid:{color:'rgba(255,255,255,.05)'}},yH:{position:'right',min:50,max:220,ticks:{font:{size:9}},grid:{display:false}}}}})}
   const zv=Object.values(zd);if(zv.some(v=>v>0)){new Chart(document.getElementById('azChart'),{type:'doughnut',data:{labels:['Z1 <60%','Z2 60-70%','Z3 70-80%','Z4 80-90%','Z5 >90%'],datasets:[{data:zv,backgroundColor:['#3b82f6','#2ecc71','#fbbf24','#ff6b35','#f43f5e'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10},color:'#6b7d94',padding:8}}}}})}
 
+  // Activity map
+  if(Array.isArray(llStream) && llStream.length>1 && document.getElementById('actMap')){
+    try {
+      if(window._actMapInst){window._actMapInst.remove();window._actMapInst=null;}
+      const mapEl = document.getElementById('actMap');
+      window._actMapInst = L.map(mapEl,{zoomControl:true,scrollWheelZoom:false});
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(window._actMapInst);
+      const step = Math.max(1, Math.floor(llStream.length/500));
+      const pts = llStream.filter((_,i)=>i%step===0);
+      const poly = L.polyline(pts,{color:'#00d4ff',weight:4,opacity:.9}).addTo(window._actMapInst);
+      L.circleMarker(llStream[0],{radius:7,fillColor:'#2ecc71',color:'#fff',weight:2,fillOpacity:1}).addTo(window._actMapInst);
+      L.circleMarker(llStream[llStream.length-1],{radius:7,fillColor:'#f43f5e',color:'#fff',weight:2,fillOpacity:1}).addTo(window._actMapInst);
+      window._actMapInst.fitBounds(poly.getBounds(),{padding:[18,18]});
+      setTimeout(()=>window._actMapInst&&window._actMapInst.invalidateSize(), 80);
+    } catch(e){ console.warn('Map render failed', e); }
+  }
+
   // Athlete profile by section (VAM, recovery, etc.)
   renderAthleteProfile(streams, act);
 
@@ -1511,15 +1927,14 @@ async function openAnalyse(act) {
   const linkedRace = races.find(r => String(r.strava_activity_id) === String(act.id));
   if(linkedRace?.gpx_data) {
     renderRaceComparison(act, streams, linkedRace);
-  } else {
-    // Populate link panel race list
-    const linkList = document.getElementById('linkActivityRaceList');
-    if(linkList) {
-      const past = races.filter(r => new Date(r.date) < new Date());
-      linkList.innerHTML = past.length
-        ? past.map(r=>`<button class="race-sel-btn" data-raceid="${r.id}" data-racename="${r.name.replace(/"/g,'&quot;')}" data-actid="${act.id}" onclick="linkActivityToRace(this.dataset.raceid, this.dataset.racename, parseInt(this.dataset.actid))">📅 ${r.name} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}</button>`).join('')
-        : '<span class="mono t3">Aucune course passée dans le calendrier</span>';
-    }
+  }
+  // Always populate link panel with all races (so user can re-link or attach to any course)
+  const linkList = document.getElementById('linkActivityRaceList');
+  if(linkList) {
+    const sorted = [...races].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    linkList.innerHTML = sorted.length
+      ? sorted.map(r=>`<button class="race-sel-btn" data-raceid="${r.id}" data-racename="${r.name.replace(/"/g,'&quot;')}" data-actid="${act.id}" onclick="linkActivityToRace(this.dataset.raceid, this.dataset.racename, parseInt(this.dataset.actid))">📅 ${r.name} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}</button>`).join('')
+      : '<span class="mono t3">Aucune course dans le calendrier — ajoutes-en une depuis l\'onglet Calendrier</span>';
   }
 
   // AI analysis async
@@ -1576,20 +1991,21 @@ function renderAthleteProfile(streams, act) {
   let inUphill=false, uphillStart=null;
   let prevState='flat';
 
-  for(let i=10; i<altD.length-10; i++){
-    const elev10 = altD[i+10]-altD[i]; // elevation over next 10 points
-    const dist10 = distD[i+10]-distD[i];
-    const grade = dist10>0 ? elev10/dist10*100 : 0;
+  const WIN = Math.min(30, Math.floor(altD.length/10)); // adaptive lookahead
+  for(let i=WIN; i<altD.length-WIN; i++){
+    const elevN = altD[i+WIN]-altD[i];
+    const distN = distD[i+WIN]-distD[i];
+    const grade = distN>0 ? elevN/distN*100 : 0;
 
-    if(grade > 5 && !inUphill){
+    if(grade > 4 && !inUphill){
       inUphill=true;
       uphillStart={idx:i, alt:altD[i], dist:distD[i], time:i};
-    } else if(grade <= 2 && inUphill){
+    } else if(grade <= 1.5 && inUphill){
       inUphill=false;
       const dAlt=altD[i]-uphillStart.alt;
       const dTime=(i-uphillStart.time);
       const dDist=distD[i]-uphillStart.dist;
-      if(dAlt>30 && dTime>0){
+      if(dAlt>10 && dTime>0){
         const vam=dAlt/(dTime/3600);
         const avgHR=hrD.length?hrD.slice(uphillStart.idx,i).reduce((a,b)=>a+b,0)/(i-uphillStart.idx):null;
         uphillSections.push({vam:Math.round(vam),dAlt:Math.round(dAlt),dist:Math.round(dDist),avgHR:avgHR?Math.round(avgHR):null});
@@ -1608,7 +2024,10 @@ function renderAthleteProfile(streams, act) {
     }
   }
 
-  if(!uphillSections.length && !recoveries.length) return;
+  if(!uphillSections.length && !recoveries.length) {
+    section.innerHTML = `<div class="card"><div class="clabel">Profil athlète</div><div class="mono t3" style="font-size:.75rem;padding:8px 0">Pas de montées significatives détectées sur cette sortie.</div></div>`;
+    return;
+  }
 
   const avgVAM = uphillSections.length ? Math.round(uphillSections.reduce((a,b)=>a+b.vam,0)/uphillSections.length) : null;
   const maxVAM = uphillSections.length ? Math.max(...uphillSections.map(s=>s.vam)) : null;
@@ -1636,37 +2055,36 @@ function renderAthleteProfile(streams, act) {
     </div>`;
 }
 
-function renderRaceComparison(act, streams, race) {
-  const section = document.getElementById('raceComparisonSection');
+async function renderRaceComparison(act, streams, race, targetId) {
+  const section = document.getElementById(targetId||'raceComparisonSection')||document.getElementById('eventComparisonSection');
   if(!section || !race.gpx_data) return;
 
-  // Parse GPX points
   let gpxPts;
   try { gpxPts = JSON.parse(race.gpx_data); } catch { return; }
+  if (!gpxPts || gpxPts.length < 10) return;
 
-  // Rebuild cumDist from GPX
   const cumDist=[0];
   for(let i=1;i<gpxPts.length;i++) cumDist.push(cumDist[i-1]+hav(gpxPts[i-1],gpxPts[i]));
   const totalDist=cumDist[cumDist.length-1];
+  if (totalDist < 100) return;
 
-  // Build sections from GPX (500m segments)
   const kmSecs=[];let segTarget=500,prevIdx=0;
   for(let i=0;i<cumDist.length;i++){
     if(cumDist[i]>=segTarget||i===cumDist.length-1){
-      let sdp=0;
-      for(let j=prevIdx+1;j<=i;j++){if(gpxPts[j]?.ele&&gpxPts[j-1]?.ele){const diff=gpxPts[j].ele-gpxPts[j-1].ele;if(diff>0)sdp+=diff;}}
+      let sdp=0,sdm=0;
+      for(let j=prevIdx+1;j<=i;j++){if(gpxPts[j]?.ele&&gpxPts[j-1]?.ele){const diff=gpxPts[j].ele-gpxPts[j-1].ele;if(diff>0)sdp+=diff;else sdm+=Math.abs(diff);}}
       const segDist=cumDist[i]-cumDist[prevIdx];
       const elevChange=gpxPts[i]?.ele&&gpxPts[prevIdx]?.ele?gpxPts[i].ele-gpxPts[prevIdx].ele:0;
       const grade=segDist>0?(elevChange/segDist)*100:0;
-      kmSecs.push({startKm:+(cumDist[prevIdx]/1000).toFixed(2),endKm:+(cumDist[i]/1000).toFixed(2),dist:segDist,dplus:Math.round(sdp),grade:+grade.toFixed(1)});
+      kmSecs.push({startKm:+(cumDist[prevIdx]/1000).toFixed(2),endKm:+(cumDist[i]/1000).toFixed(2),dist:segDist,dplus:Math.round(sdp),dminus:Math.round(sdm),grade:+grade.toFixed(1)});
       prevIdx=i;segTarget=cumDist[i]+500;
     }
   }
 
-  // Build logical sections
   const sections=buildDetailedSections(kmSecs);
+  const totalDplus=sections.reduce((a,s)=>a+(s.dplus||0),0);
+  const totalDminus=sections.reduce((a,s)=>a+(s.dminus||0),0);
 
-  // Get base pace for predictions
   let basePaceS=320;
   if(race.goal_time){
     const parts=race.goal_time.split(/[h:]/);
@@ -1678,24 +2096,21 @@ function renderRaceComparison(act, streams, race) {
     basePaceS=userProfile.prs.semi.timeS/21097*1000;
   }
 
-  // Compute predicted time per section
   const predicted=sections.map(s=>{
     const g=s.grade/100;
     let pen=g>0?g*8:g<-0.2?Math.abs(g)*4:g<-0.1?Math.abs(g)*2:0;
     return Math.round(basePaceS*(1+pen)*s.dist/1000);
   });
 
-  // Compute actual time per section from streams
   const distD=streams.distance?.data||[];
   const actual=sections.map(s=>{
     if(!distD.length) return null;
     const startIdx=distD.findIndex(d=>d>=s.startKm*1000);
     const endIdx=distD.findIndex(d=>d>=s.endKm*1000);
     if(startIdx<0||endIdx<0||endIdx<=startIdx) return null;
-    return endIdx-startIdx; // seconds (1 data point = 1 second on Strava)
+    return endIdx-startIdx;
   });
 
-  // HR per section
   const hrD=streams.heartrate?.data||[];
   const sectionHR=sections.map(s=>{
     if(!hrD.length||!distD.length) return null;
@@ -1706,15 +2121,28 @@ function renderRaceComparison(act, streams, race) {
     return slice.length ? Math.round(slice.reduce((a,b)=>a+b,0)/slice.length) : null;
   });
 
+  // Calorie estimation: weight × (dist_km + D+/100 + D-/200) — Minetti km-equivalent model
+  const weight = userProfile.weight || 70;
+  const predCal = Math.round(weight * (totalDist/1000 + totalDplus/100 + totalDminus/200));
+  const actCal = act.calories && act.calories > 0 ? act.calories : null;
+  const calDiff = actCal ? Math.round((actCal - predCal) / predCal * 100) : null;
+
+  // Fetch historical weather for race start location + date (fire-and-forget, don't block render)
+  let weather = null;
+  const startPt = gpxPts.find(p=>p.lat&&p.lon);
+  const raceDate = race.date || act.start_date;
+  if (startPt && raceDate) {
+    weather = await fetchWeather(startPt.lat, startPt.lon, raceDate).catch(()=>null);
+  }
+
   const cols={up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'};
   const icons={up:'⛰️',down:'🎿',flat:'➡️'};
 
   const rows = sections.map((s,i) => {
-    const pred=predicted[i];
-    const real=actual[i];
+    const pred=predicted[i], real=actual[i];
     const diff=real&&pred ? Math.round((real-pred)/pred*100) : null;
-    const diffColor = diff===null?'var(--text3)':Math.abs(diff)<=10?'var(--green)':Math.abs(diff)<=25?'var(--yellow)':'var(--red)';
-    const diffIcon = diff===null?'—':diff>25?'⚠️':diff>10?'~':diff<-10?'✓':'✓';
+    const diffColor=diff===null?'var(--text3)':Math.abs(diff)<=10?'var(--green)':Math.abs(diff)<=25?'var(--yellow)':'var(--red)';
+    const diffIcon=diff===null?'—':diff>25?'⚠️':diff>10?'~':'✓';
     return `<tr>
       <td style="color:${cols[s.type]}">${icons[s.type]} ${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)} km</td>
       <td class="mono">${s.type==='up'?`+${s.dplus}m`:s.type==='down'?`-${s.dminus}m`:'—'}</td>
@@ -1725,15 +2153,50 @@ function renderRaceComparison(act, streams, race) {
     </tr>`;
   }).join('');
 
-  // Verdict global
-  const validDiffs = sections.map((_,i)=>{
-    const p=predicted[i],r=actual[i];
-    return r&&p?(r-p)/p*100:null;
-  }).filter(d=>d!==null);
-  const uphillDiffs = sections.map((s,i)=>s.type==='up'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
-  const avgUpDiff = uphillDiffs.length ? Math.round(uphillDiffs.reduce((a,b)=>a+b,0)/uphillDiffs.length) : null;
+  const validDiffs=sections.map((_,i)=>{const p=predicted[i],r=actual[i];return r&&p?(r-p)/p*100:null;}).filter(d=>d!==null);
+  const uphillDiffs=sections.map((s,i)=>s.type==='up'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
+  const downDiffs=sections.map((s,i)=>s.type==='down'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
+  const flatDiffs=sections.map((s,i)=>s.type==='flat'&&actual[i]&&predicted[i]?(actual[i]-predicted[i])/predicted[i]*100:null).filter(d=>d!==null);
+  const avgUpDiff=uphillDiffs.length?Math.round(uphillDiffs.reduce((a,b)=>a+b,0)/uphillDiffs.length):null;
+  const avgDownDiff=downDiffs.length?Math.round(downDiffs.reduce((a,b)=>a+b,0)/downDiffs.length):null;
+  const avgFlatDiff=flatDiffs.length?Math.round(flatDiffs.reduce((a,b)=>a+b,0)/flatDiffs.length):null;
 
-  section.innerHTML = `
+  const sportType=(currentRaceContext||window._openEventRace)?.type||race.type||'Trail';
+  const calibChips=[
+    avgUpDiff!==null?`⛰️ Montées ${avgUpDiff>0?'+':''}${avgUpDiff}% (×${(1+avgUpDiff/100).toFixed(2)})`:'',
+    avgDownDiff!==null?`🎿 Descentes ${avgDownDiff>0?'+':''}${avgDownDiff}% (×${(1+avgDownDiff/100).toFixed(2)})`:'',
+    avgFlatDiff!==null?`➡️ Plat ${avgFlatDiff>0?'+':''}${avgFlatDiff}% (×${(1+avgFlatDiff/100).toFixed(2)})`:'',
+  ].filter(Boolean);
+
+  const weatherAlerts=weather?[
+    weather.temp>=28?'⚠️ Chaleur importante — impact direct sur la FC et le chrono':'',
+    weather.temp<=3?'❄️ Froid extrême — rigidité musculaire, économie de course dégradée':'',
+    weather.wind>=30?'💨 Vent fort — pénalise les sections exposées':'',
+    weather.precip>=3?'🌧️ Pluie significative — sol glissant, freinage en descente':'',
+  ].filter(Boolean):[];
+
+  const weatherHTML=weather?`
+    <div class="card" style="background:var(--bg3);margin-top:12px">
+      <div class="clabel" style="margin-bottom:.5rem">🌤️ Conditions le jour de course</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:${weatherAlerts.length?'8px':'0'}">
+        ${weather.temp!==null?`<span class="mono" style="font-size:.78rem">🌡️ ${weather.temp}°C</span>`:''}
+        ${weather.wind!==null?`<span class="mono" style="font-size:.78rem">💨 ${weather.wind} km/h</span>`:''}
+        ${weather.precip!==null?`<span class="mono" style="font-size:.78rem">🌧️ ${weather.precip} mm</span>`:''}
+      </div>
+      ${weatherAlerts.map(a=>`<div class="mono t3" style="font-size:.6rem;margin-top:4px;color:var(--yellow)">${a}</div>`).join('')}
+    </div>`:'';
+
+  const calHTML=`
+    <div class="card" style="background:var(--bg3);margin-top:12px">
+      <div class="clabel" style="margin-bottom:.5rem">🔥 Dépense énergétique</div>
+      <div style="display:grid;grid-template-columns:${actCal?'1fr 1fr 1fr':'1fr'};gap:8px">
+        <div class="s-stat"><div class="s-sv">${predCal}</div><div class="s-sl">Prévu (kcal)</div><div style="font-size:.55rem;color:var(--text3)">Modèle Minetti · ${weight}kg</div></div>
+        ${actCal?`<div class="s-stat"><div class="s-sv">${actCal}</div><div class="s-sl">Réel Strava (kcal)</div></div>`:''}
+        ${calDiff!==null?`<div class="s-stat"><div class="s-sv" style="color:${Math.abs(calDiff)<=15?'var(--green)':'var(--yellow)'}">${calDiff>0?'+':''}${calDiff}%</div><div class="s-sl">Écart</div><div style="font-size:.55rem;color:var(--text3)">${Math.abs(calDiff)>15?'Calibration en cours':'Estimation cohérente'}</div></div>`:''}
+      </div>
+    </div>`;
+
+  section.innerHTML=`
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
         <div class="clabel" style="margin:0">Comparaison prévu / réel — ${race.name}</div>
@@ -1745,32 +2208,93 @@ function renderRaceComparison(act, streams, race) {
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <div class="mono t3" style="font-size:.56rem;margin-top:8px">
-        ✓ = ±10% · ~ = ±25% · ⚠️ = >25% d'écart
-        ${avgUpDiff!==null && Math.abs(avgUpDiff)>10 ? `<br>💡 Coefficient personnel montée : ×${(1+avgUpDiff/100).toFixed(2)} — appliqué aux prochaines projections sur ce type de course.` : ''}
+      <div class="mono t3" style="font-size:.56rem;margin-top:8px">✓ = ±10% · ~ = ±25% · ⚠️ = &gt;25% d'écart</div>
+    </div>
+    ${weatherHTML}
+    ${calHTML}
+    ${calibChips.length?`
+    <div class="card" style="background:var(--bg3);margin-top:12px">
+      <div class="clabel" style="margin-bottom:.5rem">📈 Calibration algorithme — ${sportType}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        ${calibChips.map(c=>`<span class="mono" style="background:var(--bg4);padding:4px 10px;border-radius:20px;font-size:.65rem">${c}</span>`).join('')}
       </div>
-    </div>`;
+      <div class="mono t3" style="font-size:.56rem">Coefficients sauvegardés · utilisés pour calibrer les prochaines projections ${sportType}</div>
+    </div>`:''}`;
 
-  // Store personal coefficient for future predictions
-  if(avgUpDiff !== null) {
-    userProfile.coeff_uphill = 1 + avgUpDiff/100;
-    sb.from('profiles').upsert({id:currentUser.id, coeff_uphill: userProfile.coeff_uphill});
+  // Save calibration coefficients (per sport type)
+  const coeffKey=sportType.toLowerCase().includes('trail')||sportType.toLowerCase().includes('ultra')?'trail':'road';
+  if(avgUpDiff!==null){userProfile.coeff_uphill=1+avgUpDiff/100;userProfile[`coeff_up_${coeffKey}`]=userProfile.coeff_uphill;}
+  if(avgDownDiff!==null){userProfile.coeff_downhill=1+avgDownDiff/100;userProfile[`coeff_down_${coeffKey}`]=userProfile.coeff_downhill;}
+  if(avgFlatDiff!==null){userProfile.coeff_flat=1+avgFlatDiff/100;userProfile[`coeff_flat_${coeffKey}`]=userProfile.coeff_flat;}
+  if(avgUpDiff!==null){
+    sb.from('profiles').upsert({id:currentUser.id,coeff_uphill:userProfile.coeff_uphill}).then(()=>{});
   }
+
+  // AI analysis — enriched with weather, calories, section losses
+  if(validDiffs.length >= 2) {
+    const aiBox=document.createElement('div');
+    aiBox.className='ai-analysis mt2';
+    aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-loading"><div class="spinner"></div><div>Analyse en cours...</div></div>`;
+    section.appendChild(aiBox);
+
+    const avgDiff=validDiffs.length?Math.round(validDiffs.reduce((a,b)=>a+b,0)/validDiffs.length):0;
+    const weatherCtx=weather?`CONDITIONS MÉTÉO LE JOUR J: ${[weather.temp!==null?weather.temp+'°C':'',weather.wind!==null?'vent '+weather.wind+'km/h':'',weather.precip!==null?'précip '+weather.precip+'mm':''].filter(Boolean).join(' · ')}`:' (météo non disponible)';
+    const calCtx=actCal?`ÉNERGIE: prévu ${predCal} kcal · Strava ${actCal} kcal (écart ${calDiff>0?'+':''}${calDiff}%)`:' (calories Strava non disponibles)';
+
+    const compPrompt=`Tu es un coach running expert. Voici le bilan complet d'une course. Analyse-le de manière structurée et directement actionnable. 6-8 phrases. Commence sans formule d'introduction.
+
+COURSE: ${race.name} · ${(totalDist/1000).toFixed(1)}km · D+${totalDplus}m · D-${totalDminus}m · Type: ${sportType}
+ATHLÈTE: ${weight}kg · FC max ${userProfile.fc_max||200} bpm · VO2max ${userProfile.vo2max||50}
+${weatherCtx}
+${calCtx}
+
+PERTES DE TEMPS PAR SECTION (type · km · dénivelé · prévu → réel · écart · FC moy):
+${sections.map((s,i)=>{
+  const p=predicted[i],r=actual[i];
+  const d=r&&p?Math.round((r-p)/p*100):null;
+  return `  ${icons[s.type]} km${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)} (${s.type==='up'?'+'+s.dplus+'m D+':s.type==='down'?'-'+s.dminus+'m D-':'plat'}) : ${fmtT(p)} → ${r?fmtT(r):'—'}${d!==null?' | '+(d>0?'+':'')+d+'%':''}${sectionHR[i]?' | FC '+sectionHR[i]+'bpm':''}`;
+}).join('\n')}
+
+CALIBRATION RÉSULTANTE:${avgUpDiff!==null?' montées '+(avgUpDiff>0?'+':'')+avgUpDiff+'%':''}${avgDownDiff!==null?' · descentes '+(avgDownDiff>0?'+':'')+avgDownDiff+'%':''}${avgFlatDiff!==null?' · plat '+(avgFlatDiff>0?'+':'')+avgFlatDiff+'%':''}
+ÉCART GLOBAL: ${avgDiff>0?'+':''}${avgDiff}% vs algorithme
+
+Points à traiter: 1) Où et pourquoi les plus grosses pertes de temps (fatigue tardive, technique, météo, nutrition, sous-estimation du parcours) 2) Ce que la FC révèle sur la gestion de l'effort section par section 3) Impact météo si conditions difficiles 4) Ajustements stratégiques pour la prochaine course similaire. Si la chaleur/froid/vent/pluie était significatif, intègre-le dans l'analyse des écarts.`;
+
+    try {
+      const {data:{session}}=await sb.auth.getSession();
+      const resp=await fetch('https://wanzrkdgqmcctwvnbmuv.supabase.co/functions/v1/smooth-processor',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${session?.access_token||SUPA_KEY}`},
+        body:JSON.stringify({prompt:compPrompt})
+      });
+      const data=resp.ok?await resp.json():null;
+      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-text">${data?.text||'Analyse non disponible.'}</div>`;
+    } catch {
+      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-text">Analyse IA non disponible.</div>`;
+    }
+  }
+}
+
+function raceMenuLinkActivity() {
+  const race = currentRaceContext || window._openEventRace;
+  if (!race) return;
+  linkActivityFromRace(race);
 }
 
 function closeAnalyse() {
   document.getElementById('analyseOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  if(window._actMapInst){window._actMapInst.remove();window._actMapInst=null;}
 }
 
 // ════════════════════════════════════════════════════
 // RACE CALENDAR
 // ════════════════════════════════════════════════════
-function toggleRaceForm() { document.getElementById('raceForm').classList.toggle('open'); }
+function toggleRaceForm() { const f=document.getElementById('raceForm'); if(f) f.classList.toggle('open'); else showAddRaceForm(); }
 
 async function loadRaces() {
   const {data} = await sb.from('race_calendar').select('*').eq('user_id',currentUser.id).order('date');
-  if (data) { races=data; renderRaces(); populateRaceSelector(); }
+  if (data) { races=data; renderRaces(); populateRaceSelector(); renderCalendar(); }
 }
 
 async function saveRace() {
@@ -1785,32 +2309,42 @@ async function saveRace() {
   };
   if(!race.name||!race.date)return;
   const {error}=await sb.from('race_calendar').insert(race);
-  if(!error){document.getElementById('raceForm').classList.remove('open');await loadRaces();}
+  if(!error){const rf=document.getElementById('raceForm');if(rf)rf.classList.remove('open');const arc=document.getElementById('addRaceCard');if(arc)arc.style.display='none';await loadRaces();}
 }
 
-async function deleteRace(id) { await sb.from('race_calendar').delete().eq('id',id); await loadRaces(); }
+// deleteRace defined in MONTHLY CALENDAR section above
 
 function renderRaces() {
   const list=document.getElementById('raceList');
   const nextWidget=document.getElementById('nextRaceWidget');
-  if(!races.length){list.innerHTML='<div class="mono t3">Aucune course planifiée</div>';nextWidget.innerHTML='<div class="mono t3">Aucune course planifiée</div>';return;}
+  if(!races.length){
+    if(list) list.innerHTML='<div class="mono t3">Aucune course planifiée</div>';
+    if(nextWidget) nextWidget.innerHTML='<div class="mono t3">Aucune course planifiée</div>';
+    renderCalendar(); return;
+  }
   const now=new Date();
   const upcoming=races.filter(r=>new Date(r.date)>=now).sort((a,b)=>new Date(a.date)-new Date(b.date));
   const next=upcoming[0];
-  if(next){
+  if(next && nextWidget){
     const diff=Math.ceil((new Date(next.date)-now)/86400000);
     const color=diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
     const hasGpx=!!next.gpx_data;
     nextWidget.innerHTML=`<div class="next-race-big">
-      <div class="next-race-num" style="color:${color}">${diff}</div>
-      <div class="next-race-unit">jours</div>
-      <div style="font-weight:600;font-size:.9rem;margin-bottom:3px">${next.name}</div>
-      <div class="mono t2">${next.distance||'?'}km · D+${next.elevation||'?'}m · ${next.type}</div>
-      ${next.goal_time?`<div class="mono" style="color:${color};margin-top:4px">🎯 ${next.goal_time}</div>`:''}
-      ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green);margin-top:6px;display:inline-block">✓ GPX</span>`:''}
-      <button class="btn-prepare" style="margin-top:10px" onclick='prepareRace(${JSON.stringify(next)})'>${hasGpx?'🗺️ Voir stratégie':'🗺️ Préparer la course'}</button>
+      <div class="next-race-cd">
+        <div class="next-race-num" style="color:${color}">${diff}</div>
+        <div class="next-race-unit">jours</div>
+      </div>
+      <div class="next-race-info">
+        <div class="next-race-title">${next.name}</div>
+        <div class="mono t2" style="font-size:.62rem">${next.distance||'?'}km · D+${next.elevation||'?'}m · ${next.type}${next.goal_time?` · 🎯 ${next.goal_time}`:''}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green)">✓ GPX</span>`:''}
+          <button class="btn-prepare" onclick='goToEvent("${next.id}")'>${hasGpx?'🗺️ Voir stratégie':'📅 Voir l\'événement'}</button>
+        </div>
+      </div>
     </div>`;
-  } else {nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>';}
+  } else { if(nextWidget) nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>'; }
+  if(!list) { renderCalendar(); return; }
   list.innerHTML=races.map(r=>{
     const d=new Date(r.date),diff=Math.ceil((d-now)/86400000),past=diff<0;
     const color=past?'var(--text3)':diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
@@ -1987,23 +2521,41 @@ async function confirmLinkActivity(raceId, raceName, actId, modal) {
     .update({strava_activity_id: actId})
     .eq('id', raceId);
   if(!error){
-    await loadRaces(); // reload from DB
+    await loadRaces();
     if(modal) modal.remove();
+    // Trigger comparison in event view if it's open for this race
+    const updatedRace = races.find(r=>String(r.id)===String(raceId));
+    const compSection = document.getElementById('eventComparisonSection');
+    if(updatedRace?.gpx_data && compSection) {
+      showToast('Liaison effectuée, chargement de la comparaison…', 'info');
+      try {
+        const streams = await fetchStreams(actId);
+        const actObj = allActivities.find(a=>String(a.id)===String(actId)) || {id:actId, moving_time:0};
+        renderRaceComparison(actObj, streams, updatedRace, 'eventComparisonSection');
+      } catch(e) { console.warn('comparison fetch failed', e); }
+    } else {
+      showToast('Activité liée ✓', 'success');
+    }
   }
 }
 
 function prepareRace(race) {
-  currentRaceContext = race;
-  // Switch to strategy panel
-  showPanel('strategie', document.querySelector('.nbtn[onclick*="strategie"]'));
+  // Reset UI state, then restore context AFTER reset (resetStrategy clears it)
   resetStrategy();
+  currentRaceContext = race;
   // If GPX already saved, load it directly
   if (race.gpx_data) {
     try {
       const points = JSON.parse(race.gpx_data);
+      // Guard: need at least 10 points and real coordinates
+      const validPts = points.filter(p => p.lat && p.lon && Math.abs(p.lat) > 0.001);
+      if (validPts.length < 10) { showGpxUploadPrompt(race); return; }
+      // Guard: distance > 100m
+      let d = 0;
+      for(let i=1;i<validPts.length;i++) d += hav(validPts[i-1], validPts[i]);
+      if (d < 100) { showGpxUploadPrompt(race); return; }
       analyzeGPX(points, race.name);
     } catch(e) {
-      // GPX data malformed, ask for upload
       showGpxUploadPrompt(race);
     }
   } else {
@@ -2227,30 +2779,12 @@ async function analyzeGPX(points, fname) {
 
   const isTrail=isTrailRace();
 
+  // Update gear menu: show "Sauvegarder GPX" item only if GPX pending and race context available
+  const saveGpxItem = document.getElementById('raceMenuSaveGpx');
+  if(saveGpxItem) saveGpxItem.style.display = currentRaceContext?.id ? 'block' : 'none';
+
   res.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:1.25rem">
-      <div>
-        <div style="font-family:var(--display);font-size:2rem;letter-spacing:.03em">${raceName}</div>
-        ${raceDate?`<div class="mono t2">${raceDate}</div>`:''}
-        <div class="mono t2" style="font-size:.6rem;margin-top:4px">${projSource}</div>
-        <div style="display:flex;gap:6px;margin-top:6px">
-          <span class="strat-tag" style="border-color:${isTrail?'var(--orange)40':'var(--cyan)40'};color:${isTrail?'var(--orange)':'var(--cyan)'}">${isTrail?'⛰️ Trail — RPE':'🏃 Route — FC structurée'}</span>
-          ${qualityCount>=4?`<span class="strat-tag" style="border-color:var(--green)40;color:var(--green)">📈 ${qualityCount} séances qualité analysées</span>`:'<span class="strat-tag" style="border-color:var(--text3)40;color:var(--text3)">Fais plus de séances qualité pour affiner</span>'}
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-print">
-        <button onclick="resetStrategy()" class="hbtn">← Changer de GPX</button>
-        ${currentRaceContext?.id
-          ? `<button onclick="saveGpxToRace()" class="hbtn" id="btnSaveGpx" style="background:var(--green);color:#000;border-color:var(--green)">💾 Associer à ${currentRaceContext.name}</button>`
-          : `<button onclick="showLinkRacePanel()" class="hbtn" id="btnLinkRace" style="background:var(--purple);color:#fff;border-color:var(--purple)">🔗 Lier à un événement</button>`
-        }
-        <button onclick="window.print()" class="hbtn" style="background:var(--cyan);color:#000;border-color:var(--cyan)">🖨️ Imprimer</button>
-      </div>
-      <div id="linkRacePanel" style="display:none;margin-top:.75rem;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:12px">
-        <div class="clabel" style="margin-bottom:8px">Choisir un événement</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">${races.filter(r=>new Date(r.date)>=new Date()).map(r=>`<button class="race-sel-btn" data-raceid="${r.id}" data-racename="${r.name.replace(/"/g,'&quot;')}" onclick="linkGpxToRace(this.dataset.raceid,this.dataset.racename)">📅 ${r.name}</button>`).join('')||'<span class="mono t3">Aucune course à venir</span>'}</div>
-      </div>
-    </div>
+    ${!currentRaceContext?`<div style="font-family:var(--display);font-size:1.6rem;letter-spacing:.03em;margin-bottom:.25rem">${raceName}</div><div class="mono t2" style="margin-bottom:1rem">${raceDate}</div>`:''}
 
     <div class="s-stats">
       <div class="s-stat"><div class="s-sv tc">${distKm.toFixed(2)} km</div><div class="s-sl">Distance</div></div>
@@ -2277,8 +2811,13 @@ async function analyzeGPX(points, fname) {
       <div class="mono t3" style="font-size:.56rem;margin-top:8px">Minetti et al., 2002 · ${currentRaceContext?.goal_time?`Calibré sur objectif ${currentRaceContext.goal_time}`:userProfile.prs?.semi?`PR semi ${userProfile.prs.semi.time}`:'Renseigne tes PR ou objectif temps dans le calendrier'}</div>
     </div>
 
-    <div class="stitle mt3">Plan de course — sections</div>
+    <div class="stitle mt3" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Plan de course — sections</span>
+      <span class="mono t3" style="font-size:.65rem;font-weight:400">${sections.length} section${sections.length>1?'s':''}</span>
+    </div>
+    <div id="sectionsScroll" style="max-height:460px;overflow-y:auto;border-radius:var(--r);border:1px solid var(--border);padding:4px 0;scroll-behavior:smooth">
     ${sections.map((s,i)=>renderDetailedSection(s,sectionTimes[i],i)).join('')}
+    </div>
 
     <div class="card mt3"><div class="clabel">Tableau de splits km par km</div><div style="overflow-x:auto"><table class="splits-table"><thead><tr><th>Km</th><th>Type</th><th>Pente</th><th>D+</th><th>D-</th><th>Alt</th><th>Durée sect.</th><th>Temps cumulé</th><th>Conseil FC</th></tr></thead><tbody>${splits}</tbody></table></div></div>
 
@@ -2379,6 +2918,18 @@ async function analyzeGPX(points, fname) {
     return {up:'rgba(255,107,53,.2)',down:'rgba(167,139,250,.2)',flat:'rgba(0,212,255,.15)'}[sec.type];
   });
 
+  function syncMapFromChartIdx(idx){
+    if(!leafletMap) return;
+    const s=samples[idx];
+    if(!s) return;
+    const targetDist=s.d*1000;
+    const cd=window._gpxCumDist||[];
+    let closest=0,minD=Infinity;
+    cd.forEach((d,i)=>{const diff=Math.abs(d-targetDist);if(diff<minD){minD=diff;closest=i;}});
+    const pts=window._gpxPoints||[];
+    if(window._hoverMarker&&pts[closest])window._hoverMarker.setLatLng([pts[closest].lat,pts[closest].lon]).setStyle({opacity:1,fillOpacity:1});
+  }
+
   window._gpxChart=new Chart(chartCtx,{
     type:'line',
     data:{
@@ -2398,7 +2949,6 @@ async function analyzeGPX(points, fname) {
             label:c=>{
               const idx=c.dataIndex;
               const alt=Math.round(c.parsed.y);
-              // Calculate slope between adjacent samples
               let slope='';
               if(idx>0&&samples[idx-1]?.alt&&samples[idx]?.alt){
                 const dAlt=samples[idx].alt-samples[idx-1].alt;
@@ -2413,14 +2963,7 @@ async function analyzeGPX(points, fname) {
       },
       onHover:(e,els,chart)=>{
         if(els.length&&leafletMap){
-          const idx=els[0].index;
-          const s=samples[idx];
-          const targetDist=s.d*1000;
-          const cumDist=window._gpxCumDist||[];
-          let closest=0,minD=Infinity;
-          cumDist.forEach((d,i)=>{const diff=Math.abs(d-targetDist);if(diff<minD){minD=diff;closest=i;}});
-          const pts=window._gpxPoints||[];
-          if(window._hoverMarker&&pts[closest])window._hoverMarker.setLatLng([pts[closest].lat,pts[closest].lon]).setStyle({opacity:1,fillOpacity:1});
+          syncMapFromChartIdx(els[0].index);
         } else {
           if(window._hoverMarker)window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
         }
@@ -2432,67 +2975,136 @@ async function analyzeGPX(points, fname) {
     }
   });
 
+  // Touch support: sync map marker on mobile swipe over chart
+  chartCtx.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const touch=e.touches[0];
+    const rect=chartCtx.getBoundingClientRect();
+    const xRel=touch.clientX-rect.left;
+    const chart=window._gpxChart;
+    if(!chart)return;
+    const area=chart.chartArea;
+    if(!area)return;
+    const ratio=Math.max(0,Math.min(1,(xRel-area.left)/(area.right-area.left)));
+    const idx=Math.round(ratio*(samples.length-1));
+    syncMapFromChartIdx(idx);
+    if(window._gpxChart){
+      window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===idx?samples[i].alt:null),borderColor:'#fff',backgroundColor:'#fff',pointRadius:samples.map((_,i)=>i===idx?6:0),pointBackgroundColor:'#fff',fill:false,tension:0,showLine:false};
+      window._gpxChart.update('none');
+    }
+  },{passive:false});
+  chartCtx.addEventListener('touchend',()=>{
+    if(window._hoverMarker)window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
+    if(window._gpxChart){window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map(()=>null),pointRadius:0};window._gpxChart.update('none');}
+  });
+
   // Toujours stocker le GPX pour permettre la liaison ultérieure
   window._pendingGpxSave = points.filter((_,i)=>i%5===0).map(p=>({lat:p.lat,lon:p.lon,ele:p.ele}));
+
+  // Auto-save to DB when in race event context — capture id/json before async to survive navigation
+  if (currentRaceContext?.id) {
+    const savedRaceId = currentRaceContext.id;
+    const savedGpxJson = JSON.stringify(window._pendingGpxSave);
+    sb.from('race_calendar')
+      .update({gpx_data: savedGpxJson})
+      .eq('id', savedRaceId)
+      .then(({error}) => {
+        if (!error) {
+          const idx = races.findIndex(r=>r.id===savedRaceId);
+          if(idx>=0) races[idx].gpx_data = savedGpxJson;
+          if(currentRaceContext?.id===savedRaceId) currentRaceContext.gpx_data = savedGpxJson;
+          const si = document.getElementById('raceMenuSaveGpx');
+          if(si) si.style.display = 'none';
+          showToast('GPX enregistré ✓', 'success');
+        }
+      });
+  }
 }
 
 function buildDetailedSections(kmSecs){
-  // Smooth grades over 3-km window to avoid choppy sections
-  const smoothed = kmSecs.map((s,i)=>{
-    const window3 = kmSecs.slice(Math.max(0,i-1), Math.min(kmSecs.length,i+2));
-    const avgGrade = window3.reduce((a,k)=>a+k.grade,0)/window3.length;
-    return {...s, gradeSmooth: avgGrade};
-  });
+  if(!kmSecs.length) return [];
 
-  const out=[];let i=0;
-  while(i<smoothed.length){
-    const s=smoothed[i];
-    // Uphill: grade > 6% smoothed, must be at least 200m D+
-    if(s.gradeSmooth>6){
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth>3)j++;
-      const seg=smoothed.slice(i,j);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const dm=seg.reduce((a,k)=>a+k.dminus,0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      const avgG=distM>0?dp/distM*100:0;
-      // Only create uphill section if significant D+
-      if(dp>80){
-        out.push({type:'up',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dplus:Math.round(dp),dminus:Math.round(dm),dist:distM,grade:+avgG.toFixed(1)});
-        i=j;
+  // Helper: get endKm from either field name (analyzeGPX uses 'km', comparison uses 'endKm')
+  const endOf = s => s.km ?? s.endKm ?? s.startKm;
+
+  // Build cumulative net altitude profile: cumAlt[i] = net gain from start to end of segment i
+  const cumAlt = [0];
+  for(const s of kmSecs) cumAlt.push(cumAlt[cumAlt.length-1] + s.dplus - (s.dminus||0));
+
+  // No smoothing — use raw profile so short climbs are preserved
+  const MIN_CHANGE = 12; // metres — minimum amplitude to create a section
+
+  // Pass 1: collect all local extrema on raw cumAlt
+  const extrema = [{idx:0, alt:cumAlt[0]}];
+  for(let i=1;i<cumAlt.length-1;i++){
+    const prev=cumAlt[i-1], cur=cumAlt[i], next=cumAlt[i+1];
+    const isPeak = cur>=prev && cur>=next;
+    const isVall = cur<=prev && cur<=next;
+    if(isPeak||isVall){
+      const last=extrema[extrema.length-1];
+      if(Math.abs(cur-last.alt)>=MIN_CHANGE){
+        extrema.push({idx:i, alt:cur});
       } else {
-        // Not significant enough — merge as flat
-        out.push({type:'flat',startKm:s.startKm,endKm:s.km,dplus:s.dplus,dminus:s.dminus,dist:s.dist,grade:s.grade});
-        i++;
+        // Extend in same direction (keep the more extreme value)
+        const isGoingUp = cur > last.alt;
+        if(isGoingUp && cur > last.alt) extrema[extrema.length-1] = {idx:i, alt:cur};
+        else if(!isGoingUp && cur < last.alt) extrema[extrema.length-1] = {idx:i, alt:cur};
       }
-    } else if(s.gradeSmooth<-6){
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth<-3)j++;
-      const seg=smoothed.slice(i,j);
-      const dm=seg.reduce((a,k)=>a+k.dminus,0);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      const avgG=distM>0?-dm/distM*100:0;
-      if(dm>80){
-        out.push({type:'down',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dminus:Math.round(dm),dplus:Math.round(dp),dist:distM,grade:+avgG.toFixed(1)});
-        i=j;
-      } else {
-        out.push({type:'flat',startKm:s.startKm,endKm:s.km,dplus:s.dplus,dminus:s.dminus,dist:s.dist,grade:s.grade});
-        i++;
-      }
-    } else {
-      // Flat — merge consecutive flat sections
-      let j=i;
-      while(j<smoothed.length&&smoothed[j].gradeSmooth>=-6&&smoothed[j].gradeSmooth<=6)j++;
-      const seg=smoothed.slice(i,j);
-      const dp=seg.reduce((a,k)=>a+k.dplus,0);
-      const dm=seg.reduce((a,k)=>a+k.dminus,0);
-      const distM=seg.reduce((a,k)=>a+k.dist,0);
-      out.push({type:'flat',startKm:smoothed[i].startKm,endKm:smoothed[Math.min(j,smoothed.length)-1].km,dplus:Math.round(dp),dminus:Math.round(dm),dist:distM,grade:0});
-      i=j;
     }
   }
-  return out;
+  extrema.push({idx:cumAlt.length-1, alt:cumAlt[cumAlt.length-1]});
+
+  // Pass 2: merge extrema that are too close in altitude (< MIN_CHANGE)
+  const filtered=[extrema[0]];
+  for(let i=1;i<extrema.length;i++){
+    const last=filtered[filtered.length-1];
+    const diff=extrema[i].alt-last.alt;
+    if(Math.abs(diff)>=MIN_CHANGE){
+      filtered.push(extrema[i]);
+    } else {
+      // Replace with whichever is more extreme relative to the point before last
+      const prev2=filtered.length>=2?filtered[filtered.length-2]:null;
+      if(!prev2){filtered[filtered.length-1]=extrema[i];}
+      else if(extrema[i].alt>last.alt) filtered[filtered.length-1]={idx:extrema[i].idx,alt:Math.max(last.alt,extrema[i].alt)};
+      else filtered[filtered.length-1]={idx:extrema[i].idx,alt:Math.min(last.alt,extrema[i].alt)};
+    }
+  }
+
+  const out=[];
+  for(let i=0;i<filtered.length-1;i++){
+    const from=filtered[i], to=filtered[i+1];
+    const fromIdx=Math.max(0,Math.min(from.idx,kmSecs.length-1));
+    const toIdx=Math.max(0,Math.min(to.idx,kmSecs.length));
+    const segs=kmSecs.slice(fromIdx,toIdx);
+    if(!segs.length) continue;
+    const dp=segs.reduce((a,s)=>a+s.dplus,0);
+    const dm=segs.reduce((a,s)=>a+(s.dminus||0),0);
+    const dist=segs.reduce((a,s)=>a+s.dist,0);
+    const netAlt=to.alt-from.alt;
+    const avgGrade=dist>0?netAlt/dist*100:0;
+    const type=netAlt>=MIN_CHANGE?'up':netAlt<=-MIN_CHANGE?'down':'flat';
+    const startKm=segs[0].startKm;
+    const endKm=endOf(segs[segs.length-1]);
+    out.push({type,startKm,endKm,dplus:Math.round(dp),dminus:Math.round(dm),dist,grade:+avgGrade.toFixed(1)});
+  }
+
+  // Merge consecutive flat sections
+  const merged=[];
+  for(const s of out){
+    const last=merged[merged.length-1];
+    if(last&&last.type==='flat'&&s.type==='flat'){
+      last.endKm=s.endKm; last.dplus+=s.dplus; last.dminus+=s.dminus;
+      last.dist+=s.dist; last.grade=last.dist>0?(last.dplus-last.dminus)/last.dist*100:0;
+    } else merged.push({...s});
+  }
+
+  if(!merged.length){
+    const dp=kmSecs.reduce((a,s)=>a+s.dplus,0);
+    const dm=kmSecs.reduce((a,s)=>a+(s.dminus||0),0);
+    const dist=kmSecs.reduce((a,s)=>a+s.dist,0);
+    return [{type:'flat',startKm:kmSecs[0].startKm,endKm:endOf(kmSecs[kmSecs.length-1]),dplus:Math.round(dp),dminus:Math.round(dm),dist,grade:0}];
+  }
+  return merged;
 }
 
 function isTrailRace() {
@@ -2689,10 +3301,7 @@ function genNutrition(distM, estTimeS){
   const hasProducts = userGels.length>0 || userBoissons.length>0;
   const rows = [];
 
-  // Avant course — commun
-  rows.push(`<tr><td class="mono">Départ −3h</td><td>Repas solide (pâtes, riz)</td><td>~80g</td><td>Charge glycogénique endogène · Burke et al., 2011</td></tr>`);
-  rows.push(`<tr><td class="mono">Départ −30min</td><td>Banane ou barre céréales</td><td>~30g</td><td>Dernier solide sans risque digestif</td></tr>`);
-  rows.push(`<tr><td class="mono">Départ −15min</td><td>Eau uniquement 150ml</td><td>0g</td><td>Éviter pic insulinique · Costill & Hargreaves, 1992</td></tr>`);
+  // No pre-race food — chacun fait ce qui marche pour lui
 
   if(dh < 1.5){
     // < 1h30 : hydratation simple selon température
@@ -2906,10 +3515,23 @@ function resetStrategy(){
   if(window._gpxChart){window._gpxChart.destroy();window._gpxChart=null;}
 }
 
+function linkGpxToRaceById(raceId) {
+  if(!raceId) return;
+  const race = races.find(r=>String(r.id)===String(raceId));
+  if(!race) return;
+  currentRaceContext = race;
+  saveGpxToRace();
+}
+
 function populateRaceSelector(){
   const container=document.getElementById('raceSelectorList');
-  if(!races.length){document.getElementById('raceSelector').style.display='none';return;}
-  document.getElementById('raceSelector').style.display='block';
+  // raceSelector block is hidden in event view (the analyzeGPX output handles association)
+  const sel=document.getElementById('raceSelector');
+  if(!container||!sel) return;
+  if(!races.length){sel.style.display='none';return;}
+  // Only show if not in event view
+  if(document.getElementById('eventView')?.style.display!=='none') return;
+  sel.style.display='block';
   container.innerHTML=races.filter(r=>new Date(r.date)>=new Date()).map(r=>`<button class="race-sel-btn" onclick="selectRaceForStrategy(${JSON.stringify(r).replace(/"/g,'&quot;')})">${r.name} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</button>`).join('');
 }
 
@@ -3110,25 +3732,26 @@ function switchRenfoMode(mode,btn){
   document.getElementById('mode-progression').style.display=mode==='progression'?'block':'none';
 }
 
-function ankleContent(){return{blessures:[{name:'Entorse latérale',desc:'Lésion ligaments péronéo-astragaliens. Très fréquente en descente trail sur terrain irrégulier. Risque accru si historique d\'entorse ou ligaments affaiblis.'},{name:'Tendinopathie des péroniers',desc:'Surmenage des tendons stabilisateurs latéraux. Apparaît sur terrains dévers ou en surentraînement.'},{name:'Instabilité chronique',desc:'Séquelles d\'entorses répétées. Sensation d\'insécurité en terrain technique. Se compense par le renforcement musculaire.'}],exercices:[{title:'Équilibre unipodal',meta:'3×30s par jambe · 3×/semaine',desc:'Debout sur une jambe, maintenir 30s. Progresser : yeux fermés, surface instable. Compense les ligaments déficients par la proprioception.',ref:'Bahr et al., 1997 · Am J Sports Med',yt:'BH4Z04j5c1E'},{title:'Renfo péroniers — élastique',meta:'3×15 reps · 3×/semaine',desc:'Assis, élastique autour de l\'avant-pied. Tourner vers l\'extérieur contre résistance. Renforce les stabilisateurs latéraux.',ref:'Mafi et al., 2001 · BJSM',yt:'XyEaFQG5Hxc'},{title:'Step down excentrique',meta:'3×10 reps lent · 3×/semaine',desc:'Debout sur une marche, descendre lentement sur une jambe. Renforce le contrôle neuromusculaire en descente.',ref:'Heiderscheit et al., 2011',yt:'nspDpk90RWE'}]};}
-function kneeContent(){return{blessures:[{name:'Syndrome de l\'essuie-glace (ITB)',desc:'Friction bandelette ilio-tibiale sur condyle fémoral. Douleur latérale genou surtout en descente. Très fréquent en trail.'},{name:'Syndrome fémoro-patellaire',desc:'Douleur sous/autour rotule. Aggravé montée/descente. Lié à déséquilibre quadriceps/fessiers.'},{name:'Tendinopathie rotulienne',desc:'Douleur au tendon rotulien. Apparaît en surcharge brutale ou terrain dur répété.'}],exercices:[{title:'Clamshell — fessier moyen',meta:'3×20 reps · 3×/semaine',desc:'Allongé sur le côté, ouvrir le genou supérieur. Active le fessier moyen, stabilisateur clé du genou.',ref:'Fredericson et al., 2000 · Clin J Sport Med',yt:'3djM-j3-WMo'},{title:'Squat sumo avec élastique',meta:'3×15 reps · 3×/semaine',desc:'Élastique au-dessus des genoux, descente large. Renforce fessiers et stabilisateurs du genou.',ref:'Noehren et al., 2011 · JOSPT',yt:'aclHkVaku9U'},{title:'Foam roller ITB',meta:'2×60s · post-effort',desc:'Roller face externe de la cuisse. Libère les tensions de la bandelette. Ne pas rouler sur la douleur aiguë.',ref:'Cheatham et al., 2015 · IJSPT',yt:'7p2hLdGGFXE'}]};}
-function calfContent(){return{blessures:[{name:'Périostite tibiale',desc:'Inflammation périoste du tibia. Douleur diffuse face interne. Fréquente en reprise ou augmentation brutale de volume.'},{name:'Tendinopathie d\'Achille',desc:'Dégénérescence progressive du tendon. Raideur matinale, douleur 2-6cm au-dessus de l\'insertion.'},{name:'Claquage mollet',desc:'Déchirure partielle gastrocnémien ou soléaire. Douleur brutale en effort, impossibilité de continuer.'}],exercices:[{title:'Heel drop excentrique — protocole Alfredson',meta:'3×15 reps lent · 2×/jour · 12 semaines',desc:'Sur une marche, monter sur 2 pieds, descendre lentement sur 1. Protocole validé cliniquement pour tendinopathie d\'Achille.',ref:'Alfredson et al., 1998 · Am J Sports Med',yt:'4Dl0zAzsxBQ'},{title:'Renfo soléaire assis',meta:'3×20 reps · 3×/semaine',desc:'Assis, genoux à 90°, monter sur les pointes avec charge sur les cuisses. Cible le soléaire (endurance).',ref:'Silbernagel et al., 2007 · BJSM',yt:'3R4GKGP3pg4'}]};}
-function quadContent(){return{blessures:[{name:'Syndrome ischio-jambiers',desc:'Tendinopathie proximale ou distale. Douleur arrière cuisse, aggravée en montée trail.'},{name:'Contracture quadriceps',desc:'Surmenage en descente technique répétée. Travail excentrique sur km de D-.'},{name:'Syndrome du piriforme',desc:'Contraction excessive, peut comprimer le sciatique. Douleur fessière irradiante.'}],exercices:[{title:'Nordic curl',meta:'3×6-8 reps · 2×/semaine',desc:'Agenouillé pieds bloqués, descendre lentement vers l\'avant. Le plus efficace pour prévenir claquages ischio-jambiers.',ref:'Petersen et al., 2011 · Am J Sports Med',yt:'6SCEAWcuF0Y'},{title:'Squat bulgare',meta:'3×8 reps · 2×/semaine',desc:'Pied arrière surélevé, descente contrôlée. Quadriceps et fessiers unilatéral, corrige asymétries.',ref:'Speirs et al., 2016 · J Strength Cond',yt:'2C-uNgKwPLE'}]};}
-function hipContent(){return{blessures:[{name:'Tendinopathie trochantérienne',desc:'Douleur latérale hanche. Aggravée montée et surfaces déversées. Très fréquent en trail.'},{name:'Contracture du psoas',desc:'Fléchisseur suractivé. Raccourcissement progressif, bascule bassin, douleur lombaire.'}],exercices:[{title:'Hip thrust',meta:'3×12 reps · 3×/semaine',desc:'Dos contre banc, barre sur hanches, pousser bassin vers le haut. Exercice roi du grand fessier. Fondamental pour traileurs.',ref:'Contreras et al., 2015 · J Strength Cond',yt:'Zp26q4BY5HE'},{title:'Étirement psoas — fente basse',meta:'2×60s par côté · quotidien',desc:'Fente basse genou arrière au sol, basculer bassin en rétroversion. Libère le psoas, améliore l\'amplitude en montée.',ref:'Page, 2012 · Int J Sports Phys Ther',yt:'OPYTe3BZMPI'}]};}
-function backContent(){return{blessures:[{name:'Lombalgie du coureur',desc:'Core insuffisant + répétition impacts. Aggravée longues sorties.'},{name:'Hyperlordose compensatrice',desc:'Psoas court + fessiers faibles. Très fréquent chez traileurs.'}],exercices:[{title:'McGill Big 3 — planche + latérale + bird-dog',meta:'3×30s · quotidien',desc:'Les 3 exercices de Stuart McGill pour stabiliser la colonne sans la comprimer. Fondation de tout programme core running.',ref:'McGill, 2010 · J Strength Cond Res',yt:'ASdvHqQX7dw'},{title:'Dead bug',meta:'3×10 reps · 3×/semaine',desc:'Allongé sur le dos, abaisser alternativement bras et jambe opposée en gardant bas du dos plaqué.',ref:'Akuthota & Nadler, 2004',yt:'4XLEnwUr1d8'}]};}
-function footContent(){return{blessures:[{name:'Fasciite plantaire',desc:'Inflammation aponévrose plantaire. Douleur au talon le matin. Fréquente en trail avec D+ important.'},{name:'Métatarsalgie',desc:'Douleur sous avant-pied. Surcharge têtes métatarsiennes, souvent liée à attaque talon.'}],exercices:[{title:'Serviette avec les orteils',meta:'3×30s · quotidien',desc:'Ramasser une serviette avec les orteils. Renforce muscles intrinsèques du pied, améliore contrôle voûte plantaire.',ref:'Mulligan & Cook, 2013',yt:'1FIyPYAc5mI'},{title:'Short foot exercise',meta:'3×10s maintenu · 3×/semaine',desc:'Rapprocher la tête des métatarses vers le talon sans recroqueviller les orteils. Active le court fléchisseur.',ref:'Jung et al., 2011 · Man Ther',yt:'LWtXEAIBhyg'}]};}
+function ankleContent(){return{blessures:[{name:'Entorse latérale',desc:'Lésion ligaments péronéo-astragaliens. Très fréquente en descente trail sur terrain irrégulier. Risque accru si historique d\'entorse ou ligaments affaiblis.'},{name:'Tendinopathie des péroniers',desc:'Surmenage des tendons stabilisateurs latéraux. Apparaît sur terrains dévers ou en surentraînement.'},{name:'Instabilité chronique',desc:'Séquelles d\'entorses répétées. Sensation d\'insécurité en terrain technique. Se compense par le renforcement musculaire.'}],exercices:[{title:'Équilibre unipodal',meta:'3×30s par jambe · 3×/semaine',desc:'Debout sur une jambe, maintenir 30s. Progresser : yeux fermés, surface instable. Compense les ligaments déficients par la proprioception.',ref:'Bahr et al., 1997 · Am J Sports Med',yt:'équilibre unipodal proprioception cheville running'},{title:'Renfo péroniers — élastique',meta:'3×15 reps · 3×/semaine',desc:'Assis, élastique autour de l\'avant-pied. Tourner vers l\'extérieur contre résistance. Renforce les stabilisateurs latéraux.',ref:'Mafi et al., 2001 · BJSM',yt:'renforcement péroniers élastique cheville running'},{title:'Step down excentrique',meta:'3×10 reps lent · 3×/semaine',desc:'Debout sur une marche, descendre lentement sur une jambe. Renforce le contrôle neuromusculaire en descente.',ref:'Heiderscheit et al., 2011',yt:'step down excentrique genou contrôle neuromusculaire'}]};}
+function kneeContent(){return{blessures:[{name:'Syndrome de l\'essuie-glace (ITB)',desc:'Friction bandelette ilio-tibiale sur condyle fémoral. Douleur latérale genou surtout en descente. Très fréquent en trail.'},{name:'Syndrome fémoro-patellaire',desc:'Douleur sous/autour rotule. Aggravé montée/descente. Lié à déséquilibre quadriceps/fessiers.'},{name:'Tendinopathie rotulienne',desc:'Douleur au tendon rotulien. Apparaît en surcharge brutale ou terrain dur répété.'}],exercices:[{title:'Clamshell — fessier moyen',meta:'3×20 reps · 3×/semaine',desc:'Allongé sur le côté, ouvrir le genou supérieur. Active le fessier moyen, stabilisateur clé du genou.',ref:'Fredericson et al., 2000 · Clin J Sport Med',yt:'clamshell fessier moyen exercice running'},{title:'Squat sumo avec élastique',meta:'3×15 reps · 3×/semaine',desc:'Élastique au-dessus des genoux, descente large. Renforce fessiers et stabilisateurs du genou.',ref:'Noehren et al., 2011 · JOSPT',yt:'squat sumo élastique genou fessiers'},{title:'Foam roller ITB',meta:'2×60s · post-effort',desc:'Roller face externe de la cuisse. Libère les tensions de la bandelette. Ne pas rouler sur la douleur aiguë.',ref:'Cheatham et al., 2015 · IJSPT',yt:'foam roller ITB bandelette ilio-tibiale trail'}]};}
+function calfContent(){return{blessures:[{name:'Périostite tibiale',desc:'Inflammation périoste du tibia. Douleur diffuse face interne. Fréquente en reprise ou augmentation brutale de volume.'},{name:'Tendinopathie d\'Achille',desc:'Dégénérescence progressive du tendon. Raideur matinale, douleur 2-6cm au-dessus de l\'insertion.'},{name:'Claquage mollet',desc:'Déchirure partielle gastrocnémien ou soléaire. Douleur brutale en effort, impossibilité de continuer.'}],exercices:[{title:'Heel drop excentrique — protocole Alfredson',meta:'3×15 reps lent · 2×/jour · 12 semaines',desc:'Sur une marche, monter sur 2 pieds, descendre lentement sur 1. Protocole validé cliniquement pour tendinopathie d\'Achille.',ref:'Alfredson et al., 1998 · Am J Sports Med',yt:'heel drop excentrique Alfredson tendinite Achille'},{title:'Renfo soléaire assis',meta:'3×20 reps · 3×/semaine',desc:'Assis, genoux à 90°, monter sur les pointes avec charge sur les cuisses. Cible le soléaire (endurance).',ref:'Silbernagel et al., 2007 · BJSM',yt:'renforcement soléaire assis mollet running'}]};}
+function quadContent(){return{blessures:[{name:'Syndrome ischio-jambiers',desc:'Tendinopathie proximale ou distale. Douleur arrière cuisse, aggravée en montée trail.'},{name:'Contracture quadriceps',desc:'Surmenage en descente technique répétée. Travail excentrique sur km de D-.'},{name:'Syndrome du piriforme',desc:'Contraction excessive, peut comprimer le sciatique. Douleur fessière irradiante.'}],exercices:[{title:'Nordic curl',meta:'3×6-8 reps · 2×/semaine',desc:'Agenouillé pieds bloqués, descendre lentement vers l\'avant. Le plus efficace pour prévenir claquages ischio-jambiers.',ref:'Petersen et al., 2011 · Am J Sports Med',yt:'nordic curl ischio-jambiers prévention claquage'},{title:'Squat bulgare',meta:'3×8 reps · 2×/semaine',desc:'Pied arrière surélevé, descente contrôlée. Quadriceps et fessiers unilatéral, corrige asymétries.',ref:'Speirs et al., 2016 · J Strength Cond',yt:'squat bulgare quadriceps fessiers unilatéral'}]};}
+function hipContent(){return{blessures:[{name:'Tendinopathie trochantérienne',desc:'Douleur latérale hanche. Aggravée montée et surfaces déversées. Très fréquent en trail.'},{name:'Contracture du psoas',desc:'Fléchisseur suractivé. Raccourcissement progressif, bascule bassin, douleur lombaire.'}],exercices:[{title:'Hip thrust',meta:'3×12 reps · 3×/semaine',desc:'Dos contre banc, barre sur hanches, pousser bassin vers le haut. Exercice roi du grand fessier. Fondamental pour traileurs.',ref:'Contreras et al., 2015 · J Strength Cond',yt:'hip thrust grand fessier trail running force'},{title:'Étirement psoas — fente basse',meta:'2×60s par côté · quotidien',desc:'Fente basse genou arrière au sol, basculer bassin en rétroversion. Libère le psoas, améliore l\'amplitude en montée.',ref:'Page, 2012 · Int J Sports Phys Ther',yt:'étirement psoas fente basse trail running'}]};}
+function backContent(){return{blessures:[{name:'Lombalgie du coureur',desc:'Core insuffisant + répétition impacts. Aggravée longues sorties.'},{name:'Hyperlordose compensatrice',desc:'Psoas court + fessiers faibles. Très fréquent chez traileurs.'}],exercices:[{title:'McGill Big 3 — planche + latérale + bird-dog',meta:'3×30s · quotidien',desc:'Les 3 exercices de Stuart McGill pour stabiliser la colonne sans la comprimer. Fondation de tout programme core running.',ref:'McGill, 2010 · J Strength Cond Res',yt:'McGill big 3 core stabilité lombaire running'},{title:'Dead bug',meta:'3×10 reps · 3×/semaine',desc:'Allongé sur le dos, abaisser alternativement bras et jambe opposée en gardant bas du dos plaqué.',ref:'Akuthota & Nadler, 2004',yt:'dead bug exercice core stabilité lombaire'}]};}
+function footContent(){return{blessures:[{name:'Fasciite plantaire',desc:'Inflammation aponévrose plantaire. Douleur au talon le matin. Fréquente en trail avec D+ important.'},{name:'Métatarsalgie',desc:'Douleur sous avant-pied. Surcharge têtes métatarsiennes, souvent liée à attaque talon.'}],exercices:[{title:'Serviette avec les orteils',meta:'3×30s · quotidien',desc:'Ramasser une serviette avec les orteils. Renforce muscles intrinsèques du pied, améliore contrôle voûte plantaire.',ref:'Mulligan & Cook, 2013',yt:'renforcement pieds orteils voûte plantaire running'},{title:'Short foot exercise',meta:'3×10s maintenu · 3×/semaine',desc:'Rapprocher la tête des métatarses vers le talon sans recroqueviller les orteils. Active le court fléchisseur.',ref:'Jung et al., 2011 · Man Ther',yt:'short foot exercise voûte plantaire fascia'}]};}
 
 function headContent(){return{blessures:[{name:'Stress & anxiété pré-compétition',desc:'Activation du système sympathique avant une course. Pensées négatives, doute, tension musculaire. Très fréquent chez les coureurs ambitieux.'},{name:'Mur mental en course',desc:'Effondrement de la motivation en milieu de course. Dialogue intérieur négatif. Souvent déclenché par la douleur ou l\'inconfort.'},{name:'Burn-out du coureur',desc:'Épuisement psychologique lié à un entraînement trop rigide ou à des attentes irréalistes. Perte de plaisir, motivation zéro.'}],exercices:[{title:'Visualisation pré-course',meta:'10min la veille de la course',desc:'Ferme les yeux, visualise le parcours section par section. Imagine ta foulée sur les montées, ta FC qui redescend dans les descentes, ta respiration au ravito. Le cerveau ne distingue pas bien le réel du mental — il s\'entraîne aussi.',ref:'Guillot & Collet, 2008 · J Sport Sci',yt:''},{title:'Cohérence cardiaque 5min',meta:'Matin et soir · avant chaque sortie difficile',desc:'6 respirations par minute : 5s inspire par le nez, 5s expire par la bouche. 5 minutes. Réduit le cortisol, améliore la HRV, renforce le système nerveux parasympathique. L\'outil le plus puissant et le plus sous-estimé.',ref:'McCraty et al., 2009 · J Altern Complement Med',yt:''},{title:'Reformulation du dialogue intérieur',meta:'Technique à appliquer en course',desc:'Dès qu\'une pensée négative apparaît ("je vais abandonner", "trop dur"), remplace-la immédiatement par une affirmation concrète et factuelle : "ma foulée est efficace", "je respire bien", "je contrôle mon allure". Focalise sur le processus, pas le résultat.',ref:'Hardy et al., 1996 · J Sport Exerc Psychol',yt:''},{title:'Segmentation du parcours',meta:'Stratégie mentale en course',desc:'Ne pense jamais à la distance totale restante. Découpe la course en micro-objectifs : atteindre le prochain arbre, finir cette montée, rejoindre le prochain ravito. Chaque segment gagné renforce la confiance.',ref:'Tenenbaum, 2001 · J Sport Sci',yt:''}]};}
-const ZONE_FN={head:headContent,ankle_l:ankleContent,ankle_r:ankleContent,knee_l:kneeContent,knee_r:kneeContent,calf_l:calfContent,calf_r:calfContent,quad_l:quadContent,quad_r:quadContent,hip:hipContent,back:backContent,foot_l:footContent,foot_r:footContent};
-const ZONE_INFO={head:{name:'Mental & Préparation psychologique',color:'var(--purple)'},ankle_l:{name:'Cheville gauche',color:'var(--orange)'},ankle_r:{name:'Cheville droite',color:'var(--orange)'},knee_l:{name:'Genou gauche',color:'var(--yellow)'},knee_r:{name:'Genou droit',color:'var(--yellow)'},calf_l:{name:'Mollet / Tibia gauche',color:'var(--cyan)'},calf_r:{name:'Mollet / Tibia droit',color:'var(--cyan)'},quad_l:{name:'Quadriceps gauche',color:'var(--purple)'},quad_r:{name:'Quadriceps droit',color:'var(--purple)'},hip:{name:'Hanche / ITB',color:'var(--red)'},back:{name:'Dos / Core',color:'var(--green)'},foot_l:{name:'Pied gauche',color:'var(--orange)'},foot_r:{name:'Pied droit',color:'var(--orange)'}};
+const ZONE_FN={head:headContent,ankle_l:ankleContent,ankle_r:ankleContent,knee_l:kneeContent,knee_r:kneeContent,calf_l:calfContent,calf_r:calfContent,quad_l:quadContent,quad_r:quadContent,hip:hipContent,back:backContent,foot_l:footContent,foot_r:footContent,hamstring_l:quadContent,hamstring_r:quadContent,glute:hipContent,achilles_l:ankleContent,achilles_r:ankleContent,plantar_l:footContent,plantar_r:footContent};
+const ZONE_INFO={head:{name:'Mental & Préparation psychologique',color:'var(--purple)'},ankle_l:{name:'Cheville gauche',color:'var(--orange)'},ankle_r:{name:'Cheville droite',color:'var(--orange)'},knee_l:{name:'Genou gauche',color:'var(--yellow)'},knee_r:{name:'Genou droit',color:'var(--yellow)'},calf_l:{name:'Mollet / Tibia gauche',color:'var(--cyan)'},calf_r:{name:'Mollet / Tibia droit',color:'var(--cyan)'},quad_l:{name:'Quadriceps gauche',color:'var(--purple)'},quad_r:{name:'Quadriceps droit',color:'var(--purple)'},hip:{name:'Hanche / ITB',color:'var(--red)'},back:{name:'Dos / Core',color:'var(--green)'},foot_l:{name:'Pied gauche',color:'var(--orange)'},foot_r:{name:'Pied droit',color:'var(--orange)'},hamstring_l:{name:'Ischio-jambiers gauche',color:'var(--purple)'},hamstring_r:{name:'Ischio-jambiers droit',color:'var(--purple)'},glute:{name:'Fessiers / ITB',color:'var(--red)'},achilles_l:{name:'Tendon d\'Achille gauche',color:'var(--orange)'},achilles_r:{name:'Tendon d\'Achille droit',color:'var(--orange)'},plantar_l:{name:'Fascia plantaire gauche',color:'var(--orange)'},plantar_r:{name:'Fascia plantaire droit',color:'var(--orange)'}};
 
 function initBodySvg(){
-  document.querySelectorAll('.bz').forEach(el=>{
+  document.querySelectorAll('.bz,.bzb').forEach(el=>{
     el.addEventListener('click',()=>{
       const zone=el.dataset.zone;
       if(!ZONE_INFO[zone])return;
-      document.querySelectorAll('.bz').forEach(z=>z.classList.remove('selected'));
-      el.classList.add('selected');
+      document.querySelectorAll('.bz,.bzb').forEach(z=>z.classList.remove('selected'));
+      // highlight same zone on both SVGs
+      document.querySelectorAll(`[data-zone="${zone}"]`).forEach(z=>z.classList.add('selected'));
       renderZoneContent(zone);
     });
   });
@@ -3145,7 +3768,7 @@ function renderZoneContent(zone){
       <div class="clabel" style="margin-bottom:.5rem">Blessures fréquentes en trail/running</div>
       ${c.blessures.map(b=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:7px"><div style="font-weight:600;font-size:.82rem;color:var(--orange);margin-bottom:3px">⚠️ ${b.name}</div><div style="font-size:.76rem;color:var(--text2);line-height:1.5">${b.desc}</div></div>`).join('')}
       <div class="clabel" style="margin-bottom:.5rem;margin-top:1rem">Exercices de prévention</div>
-      ${c.exercices.map(e=>`<div class="exercise-card"><div class="exercise-title">${e.title}</div><div class="exercise-meta">${e.meta}</div><div class="exercise-desc">${e.desc}</div>${e.ref?`<div class="exercise-ref">📖 ${e.ref}</div>`:''} ${e.yt?`<a href="https://www.youtube.com/watch?v=${e.yt}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:.6rem;color:#ff4444;text-decoration:none;">▶ Voir l'exercice sur YouTube</a>`:''}</div>`).join('')}
+      ${c.exercices.map(e=>`<div class="exercise-card"><div class="exercise-title">${e.title}</div><div class="exercise-meta">${e.meta}</div><div class="exercise-desc">${e.desc}</div>${e.ref?`<div class="exercise-ref">📖 ${e.ref}</div>`:''} ${e.yt?`<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.yt)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:.6rem;color:#ff4444;text-decoration:none;">▶ Rechercher sur YouTube</a>`:''}</div>`).join('')}
     </div>`;
 }
 
