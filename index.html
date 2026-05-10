@@ -365,6 +365,7 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
   <div style="display:flex;align-items:center;gap:8px">
     <div class="strava-pill"><div class="dot dot-off" id="statusDot"></div><span id="statusText">Strava</span></div>
     <button class="hbtn strava" id="btnStrava" onclick="connectStrava()">Connecter Strava</button>
+    <button class="hbtn" id="btnSync" style="display:none" onclick="manualSync()" title="Synchroniser les activités Strava">⟳</button>
     <button class="hbtn" onclick="toggleTheme()">◐</button>
     <button class="hbtn" onclick="logout()">Déconnexion</button>
   </div>
@@ -1202,6 +1203,24 @@ function setStravaConnected(name) {
   document.getElementById('statusDot').className = 'dot dot-on';
   document.getElementById('statusText').textContent = name || 'Connecté';
   document.getElementById('btnStrava').style.display = 'none';
+  const s = document.getElementById('btnSync'); if(s) s.style.display = 'inline-flex';
+}
+
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if(btn) { btn.textContent = '⟳'; btn.style.animation = 'spin 1s linear infinite'; btn.disabled = true; }
+  showToast('Synchronisation Strava en cours…', 'info', 3000);
+  try {
+    await refreshActivitiesFromServer();
+    await new Promise(r => setTimeout(r, 3000)); // laisse le temps à l'edge function
+    await loadActivities();
+    renderDashboard();
+    showToast('Synchronisation terminée ✓', 'success');
+  } catch(e) {
+    showToast('Erreur de synchronisation', 'error');
+  } finally {
+    if(btn) { btn.textContent = '⟳'; btn.style.animation = ''; btn.disabled = false; }
+  }
 }
 
 async function checkStravaConnection() {
