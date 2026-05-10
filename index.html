@@ -38,7 +38,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 .fi:focus{border-color:var(--cyan);}
 .fi::placeholder{color:var(--text3);}
 select.fi{cursor:pointer;}
-input[type="date"],input[type="time"]{color-scheme:dark;}
+input[type="date"],input[type="time"]{color-scheme:dark;-webkit-appearance:none;appearance:none;}
+[data-light] input[type="date"],[data-light] input[type="time"]{color-scheme:light;}
 .btn-primary{width:100%;background:var(--cyan);color:#000;border:none;border-radius:8px;padding:11px;font-family:var(--body);font-weight:700;font-size:.88rem;cursor:pointer;transition:opacity .2s;}
 .btn-primary:hover{opacity:.88;}
 .auth-msg{font-family:var(--mono);font-size:.65rem;text-align:center;margin-top:.75rem;min-height:1rem;}
@@ -50,6 +51,9 @@ input[type="date"],input[type="time"]{color-scheme:dark;}
 /* ── HEADER ── */
 header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;background:rgba(6,8,16,.92);backdrop-filter:blur(20px);}
 [data-light] header{background:rgba(240,244,248,.92);}
+[data-light] .overlay{background:rgba(180,200,225,.92);}
+[data-light] .ai-analysis{background:rgba(0,100,160,.06);border-color:rgba(0,100,160,.2);}
+[data-light] .dl{stroke:rgba(0,0,0,.15);}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:17px;color:#000;}
 .logo-name{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
@@ -579,27 +583,59 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
           <!-- FRONT -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg id="bodySvg" viewBox="0 0 200 390" style="width:115px;cursor:pointer">
+            <svg id="bodySvg" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
               <defs>
                 <style>
-                  .bz{fill:rgba(30,58,105,.01);stroke:rgba(100,160,255,.35);stroke-width:1;transition:all .2s;cursor:pointer;}
+                  .sg{fill:#1e3a69;stroke:#1e3a69;stroke-width:3;stroke-linejoin:round;}
+                  .bz{fill:rgba(0,0,0,0);stroke:rgba(100,160,255,.28);stroke-width:1;transition:all .2s;cursor:pointer;}
                   .bz:hover{fill:rgba(0,212,255,.22);stroke:#00d4ff;stroke-width:1.5;}
                   .bz.selected{fill:rgba(255,107,53,.28);stroke:#ff6b35;stroke-width:2;}
-                  .bzb{fill:rgba(30,58,105,.01);stroke:rgba(100,160,255,.35);stroke-width:1;transition:all .2s;cursor:pointer;}
+                  .bzb{fill:rgba(0,0,0,0);stroke:rgba(100,160,255,.28);stroke-width:1;transition:all .2s;cursor:pointer;}
                   .bzb:hover{fill:rgba(0,212,255,.22);stroke:#00d4ff;stroke-width:1.5;}
                   .bzb.selected{fill:rgba(255,107,53,.28);stroke:#ff6b35;stroke-width:2;}
                   .dl{stroke:rgba(255,255,255,.22);stroke-width:.8;fill:none;pointer-events:none;}
                 </style>
               </defs>
-              <!-- UNIFIED BODY SILHOUETTE — single path, no seams -->
-              <path fill="#1d3d6e" stroke="#3060a8" stroke-width="1" stroke-linejoin="round"
-                d="M100,2 C123,2 126,46 110,57 C118,60 140,64 158,76 C168,87 176,115 175,145 L172,167 C170,178 162,183 157,174 C161,151 162,117 152,88 C147,79 140,73 128,71 C134,84 140,120 140,157 C142,171 150,184 138,192 C153,206 157,236 155,270 C153,284 147,294 147,298 C149,323 149,346 148,358 C154,369 161,380 150,386 C140,390 122,389 110,385 C103,382 100,376 100,376 C100,376 97,382 90,385 C78,389 60,390 50,386 C39,380 46,369 52,358 C51,346 51,323 53,298 C53,294 47,284 45,270 C43,236 47,206 62,192 C50,184 58,171 60,157 C60,120 66,84 72,71 C60,73 53,79 48,88 C38,117 39,151 43,174 C38,183 30,178 28,167 L25,145 C24,115 32,87 42,76 C60,64 82,60 90,57 C74,46 77,2 100,2 Z"/>
-              <!-- FRONT anatomy lines: sternum, pec crease, quad line -->
-              <line class="dl" x1="100" y1="60" x2="100" y2="96"/>
-              <path class="dl" d="M92,63 C87,67 81,71 75,79"/>
-              <path class="dl" d="M108,63 C113,67 119,71 125,79"/>
-              <line class="dl" x1="68" y1="197" x2="68" y2="269"/>
-              <line class="dl" x1="132" y1="197" x2="132" y2="269"/>
+              <!-- HEAD -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <!-- NECK -->
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z"/>
+              <!-- TORSO -->
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <!-- LEFT ARM -->
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <!-- RIGHT ARM -->
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <!-- PELVIS -->
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <!-- LEFT THIGH -->
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <!-- RIGHT THIGH -->
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <!-- LEFT KNEE -->
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <!-- RIGHT KNEE -->
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <!-- LEFT CALF -->
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <!-- RIGHT CALF -->
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <!-- LEFT ANKLE -->
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <!-- RIGHT ANKLE -->
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <!-- LEFT FOOT -->
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <!-- RIGHT FOOT -->
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- FRONT definition lines -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="95"/>
+              <path class="dl" d="M91,62 C86,66 80,70 74,78"/>
+              <path class="dl" d="M109,62 C114,66 120,70 126,78"/>
+              <line class="dl" x1="67" y1="196" x2="67" y2="268"/>
+              <line class="dl" x1="133" y1="196" x2="133" y2="268"/>
               <!-- CLICKABLE ZONES (transparent overlays) -->
               <ellipse class="bz" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
               <path class="bz" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
@@ -620,15 +656,31 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
           <!-- BACK -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg id="bodySvgBack" viewBox="0 0 200 390" style="width:115px;cursor:pointer">
-              <!-- UNIFIED BODY SILHOUETTE — back view -->
-              <path fill="#1d3d6e" stroke="#3060a8" stroke-width="1" stroke-linejoin="round"
-                d="M100,2 C123,2 126,46 110,57 C118,60 140,64 158,76 C168,87 176,115 175,145 L172,167 C170,178 162,183 157,174 C161,151 162,117 152,88 C147,79 140,73 128,71 C134,84 140,120 140,157 C142,171 150,184 138,192 C153,206 157,236 155,270 C153,284 147,294 147,298 C149,323 149,346 148,358 C154,369 161,380 150,386 C140,390 122,389 110,385 C103,382 100,376 100,376 C100,376 97,382 90,385 C78,389 60,390 50,386 C39,380 46,369 52,358 C51,346 51,323 53,298 C53,294 47,284 45,270 C43,236 47,206 62,192 C50,184 58,171 60,157 C60,120 66,84 72,71 C60,73 53,79 48,88 C38,117 39,151 43,174 C38,183 30,178 28,167 L25,145 C24,115 32,87 42,76 C60,64 82,60 90,57 C74,46 77,2 100,2 Z"/>
-              <!-- BACK anatomy lines: spine, shoulder blades, glute crease -->
-              <line class="dl" x1="100" y1="60" x2="100" y2="185"/>
-              <path class="dl" d="M85,73 C81,85 81,102 85,116"/>
-              <path class="dl" d="M115,73 C119,85 119,102 115,116"/>
-              <line class="dl" x1="100" y1="185" x2="100" y2="208"/>
+            <svg id="bodySvgBack" viewBox="0 0 200 385" style="width:115px;cursor:pointer">
+              <!-- BACK — same anatomy, different detail lines -->
+              <ellipse class="sg" cx="100" cy="24" rx="20" ry="23"/>
+              <path class="sg" d="M91,45 C89,50 89,56 91,59 L109,59 C111,56 111,50 109,45 Z"/>
+              <path class="sg" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 C138,164 136,174 134,178 L66,178 C64,174 62,164 59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
+              <path class="sg" d="M43,77 C34,86 27,104 25,122 C23,138 25,156 27,168 L39,166 C38,154 37,138 39,122 C41,104 48,88 57,80 Z"/>
+              <ellipse class="sg" cx="33" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M157,77 C166,86 173,104 175,122 C177,138 175,156 173,168 L161,166 C162,154 163,138 161,122 C159,104 152,88 143,80 Z"/>
+              <ellipse class="sg" cx="167" cy="171" rx="7" ry="9"/>
+              <path class="sg" d="M57,155 C54,166 56,176 64,182 L136,182 C144,176 146,166 143,155 L118,152 Q100,154 82,152 Z"/>
+              <path class="sg" d="M64,180 C55,187 48,206 46,232 L46,260 C48,272 60,279 76,277 C85,275 88,267 88,258 L88,230 C88,206 92,187 100,183 C86,179 64,178 64,180 Z"/>
+              <path class="sg" d="M136,180 C145,187 152,206 154,232 L154,260 C152,272 140,279 124,277 C115,275 112,267 112,258 L112,230 C112,206 108,187 100,183 C114,179 136,178 136,180 Z"/>
+              <ellipse class="sg" cx="67" cy="280" rx="17" ry="13"/>
+              <ellipse class="sg" cx="133" cy="280" rx="17" ry="13"/>
+              <path class="sg" d="M55,290 C48,304 48,318 52,330 C55,337 61,341 67,341 L77,341 C83,341 88,337 91,330 C95,318 94,304 88,290 C84,285 76,282 72,282 C68,282 59,285 55,290 Z"/>
+              <path class="sg" d="M145,290 C152,304 152,318 148,330 C145,337 139,341 133,341 L123,341 C117,341 112,337 109,330 C105,318 106,304 112,290 C116,285 124,282 128,282 C132,282 141,285 145,290 Z"/>
+              <ellipse class="sg" cx="67" cy="344" rx="12" ry="8"/>
+              <ellipse class="sg" cx="133" cy="344" rx="12" ry="8"/>
+              <path class="sg" d="M56,350 C50,355 48,361 50,366 C52,370 58,372 68,372 L84,372 C88,370 88,366 86,360 L82,351 Z"/>
+              <path class="sg" d="M144,350 C150,355 152,361 150,366 C148,370 142,372 132,372 L116,372 C112,370 112,366 114,360 L118,351 Z"/>
+              <!-- BACK definition lines: spine, shoulder blades, glute -->
+              <line class="dl" x1="100" y1="60" x2="100" y2="182"/>
+              <path class="dl" d="M84,72 C80,84 80,100 84,114"/>
+              <path class="dl" d="M116,72 C120,84 120,100 116,114"/>
+              <line class="dl" x1="100" y1="182" x2="100" y2="206"/>
               <!-- BACK CLICKABLE ZONES -->
               <ellipse class="bzb" data-zone="head" cx="100" cy="24" rx="21" ry="24"/>
               <path class="bzb" data-zone="back" d="M91,58 C107,56 109,58 109,58 C126,58 150,65 157,77 C163,88 162,110 157,126 C152,140 145,148 141,155 L59,155 C55,148 48,140 43,126 C38,110 37,88 43,77 C50,65 74,58 91,58 Z"/>
@@ -999,6 +1051,12 @@ async function initApp(user) {
   initBodySvg();
   await checkStravaToken();
   await loadHistoryFromDB();
+  // Force native date picker to open on tap (needed on some iOS versions)
+  document.addEventListener('click', e => {
+    if(e.target.type === 'date' || e.target.type === 'time') {
+      try { e.target.showPicker(); } catch(_) {}
+    }
+  }, true);
   // Restore panel from URL hash
   const initHash = window.location.hash.slice(1) || 'dashboard';
   showPanel(initHash);
