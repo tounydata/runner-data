@@ -456,7 +456,12 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 <!-- ACTIVITÉS -->
 <div class="mt3">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div class="clabel" style="margin:0">Dernières activités running</div>
+    <div>
+  <div class="clabel" style="margin:0">Dernières activités running</div>
+  <div class="mono t3" style="font-size:.55rem;margin-top:4px">
+    Powered by Strava
+  </div>
+</div>
     <div class="mono t3" id="actsInfo"></div>
   </div>
   <div class="acts-grid" id="actsGrid"></div>
@@ -2257,53 +2262,51 @@ async function renderRaceComparison(act, streams, race, targetId) {
     sb.from('profiles').upsert({id:currentUser.id,coeff_uphill:userProfile.coeff_uphill}).then(()=>{});
   }
 
-  // AI analysis — enriched with weather, calories, section losses
-  if(validDiffs.length >= 2) {
-    const aiBox=document.createElement('div');
-    aiBox.className='ai-analysis mt2';
-    aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse Bilan de course</div></div><div class="ai-loading"><div class="spinner"></div><div>Analyse en cours...</div></div>`;
-    section.appendChild(aiBox);
+ // Local race summary — no external AI
+if(validDiffs.length >= 2) {
+  const aiBox = document.createElement('div');
+  aiBox.className = 'ai-analysis mt2';
 
-    const avgDiff=validDiffs.length?Math.round(validDiffs.reduce((a,b)=>a+b,0)/validDiffs.length):0;
-    const weatherCtx=weather?`CONDITIONS MÉTÉO LE JOUR J: ${[weather.temp!=null?Math.round(weather.temp)+'°C':'',weather.wind!=null?'vent '+Math.round(weather.wind)+'km/h':'',weather.precip!=null?'précip '+weather.precip+'mm':'',weather.precip_recent!=null&&weather.precip_recent>0?'cumul 6h avant: '+weather.precip_recent.toFixed(1)+'mm':''].filter(Boolean).join(' · ')}`:' (météo non disponible)';
-    const calCtx=actCal?`ÉNERGIE: prévu ${predCal} kcal · Strava ${actCal} kcal (écart ${calDiff>0?'+':''}${calDiff}%)`:' (calories Strava non disponibles)';
+  const avgDiff = validDiffs.length
+    ? Math.round(validDiffs.reduce((a, b) => a + b, 0) / validDiffs.length)
+    : 0;
 
-    const compPrompt=`Tu es un coach running expert. Voici le bilan complet d'une course. Analyse-le de manière structurée et directement actionnable. 6-8 phrases. Commence sans formule d'introduction.
+  const worstSection = sections
+    .map((s, i) => {
+      const p = predicted[i];
+      const r = actual[i];
+      if (!p || !r) return null;
+      const diff = Math.round((r - p) / p * 100);
+      return { section: s, index: i, diff };
+    })
+    .filter(Boolean)
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0];
 
-COURSE: ${race.name} · ${(totalDist/1000).toFixed(1)}km · D+${totalDplus}m · D-${totalDminus}m · Type: ${sportType}
-ATHLÈTE: ${weight}kg · FC max ${userProfile.fc_max||200} bpm · VO2max ${userProfile.vo2max||50}
-${weatherCtx}
-${calCtx}
+  const upText = avgUpDiff !== null ? `Montées : ${avgUpDiff > 0 ? '+' : ''}${avgUpDiff}% vs prévision.` : '';
+  const downText = avgDownDiff !== null ? `Descentes : ${avgDownDiff > 0 ? '+' : ''}${avgDownDiff}% vs prévision.` : '';
+  const flatText = avgFlatDiff !== null ? `Plat : ${avgFlatDiff > 0 ? '+' : ''}${avgFlatDiff}% vs prévision.` : '';
 
-PERTES DE TEMPS PAR SECTION (type · km · dénivelé · revêtement · prévu → réel · écart · FC moy):
-${sections.map((s,i)=>{
-  const p=predicted[i],r=actual[i];
-  const d=r&&p?Math.round((r-p)/p*100):null;
-  const sk=window._gpxSectionSurfaces?.[i];
-  const surfStr=sk?` · revêtement:${sk}`:'';
-  const slipStr=sk?slipRisk(sk,weather,s.grade||0):'';
-  return `  ${icons[s.type]} km${s.startKm.toFixed(1)}→${s.endKm.toFixed(1)} (${s.type==='up'?'+'+s.dplus+'m D+':s.type==='down'?'-'+s.dminus+'m D-':'plat'}${surfStr}${slipStr?' · '+slipStr:''}) : ${fmtT(p)} → ${r?fmtT(r):'—'}${d!==null?' | '+(d>0?'+':'')+d+'%':''}${sectionHR[i]?' | FC '+sectionHR[i]+'bpm':''}`;
-}).join('\n')}
-${act.description?`\nDESCRIPTION STRAVA DE L'ATHLÈTE: "${act.description}"`:''}${race.notes?`\nNOTES COURSE: "${race.notes}"`:''}
+  const worstText = worstSection
+    ? `Plus gros écart : section ${worstSection.index + 1}, ${worstSection.diff > 0 ? '+' : ''}${worstSection.diff}% vs prévision.`
+    : `Aucune section dominante détectée.`;
 
+  aiBox.innerHTML = `
+    <div class="ai-header">
+      <div class="ai-icon">📊</div>
+      <div class="ai-title">Analyse locale — Bilan de course</div>
+    </div>
+    <div class="ai-text">
+      Écart global : ${avgDiff > 0 ? '+' : ''}${avgDiff}% vs algorithme.<br>
+      ${upText ? upText + '<br>' : ''}
+      ${downText ? downText + '<br>' : ''}
+      ${flatText ? flatText + '<br>' : ''}
+      ${worstText}<br>
+      Analyse générée localement dans Vorcelab, sans transmission à Groq ni à aucun service d'intelligence artificielle externe.
+    </div>
+  `;
 
-CALIBRATION RÉSULTANTE:${avgUpDiff!==null?' montées '+(avgUpDiff>0?'+':'')+avgUpDiff+'%':''}${avgDownDiff!==null?' · descentes '+(avgDownDiff>0?'+':'')+avgDownDiff+'%':''}${avgFlatDiff!==null?' · plat '+(avgFlatDiff>0?'+':'')+avgFlatDiff+'%':''}
-ÉCART GLOBAL: ${avgDiff>0?'+':''}${avgDiff}% vs algorithme
-
-Points à traiter: 1) Où et pourquoi les plus grosses pertes de temps (fatigue tardive, technique, météo, nutrition, sous-estimation du parcours) 2) Ce que la FC révèle sur la gestion de l'effort section par section 3) Impact météo si conditions difficiles 4) Ajustements stratégiques pour la prochaine course similaire. Si la chaleur/froid/vent/pluie était significatif, intègre-le dans l'analyse des écarts.`;
-
-    try {
-      const {data:{session}}=await sb.auth.getSession();
-      const resp=await fetch('https://wanzrkdgqmcctwvnbmuv.supabase.co/functions/v1/smooth-processor',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${session?.access_token||SUPA_KEY}`},
-        body:JSON.stringify({prompt:compPrompt})
-      });
-      const data=resp.ok?await resp.json():null;
-      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse — Bilan de course</div></div><div class="ai-text">${data?.text||'Analyse non disponible.'}</div>`;
-    } catch {
-      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse — Bilan de course</div></div><div class="ai-text">Analyse IA non disponible.</div>`;
-    }
+  section.appendChild(aiBox);
+}
   }
 }
 
@@ -4112,7 +4115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 <div class="onb-step" id="onb-4">
   <div class="onb-icon">✅</div>
   <div class="onb-title">C'est parti !</div>
-  <div class="onb-desc">Runner OS apprend de tes sorties au fil du temps — plus tu l'utilises, plus les projections sont précises.</div>
+  <div class="onb-desc">Runner OS affine ses projections à partir de ton historique personnel d’activités, de ton profil physiologique et des caractéristiques de course, sans communiquer de data à une IA.</div>
   <div class="mono t3" style="font-size:.6rem;margin-top:.5rem">En utilisant cette app tu acceptes les <a onclick="openCGU()" style="color:var(--cyan);cursor:pointer">CGU et la politique de confidentialité</a>.</div>
 </div>
 
