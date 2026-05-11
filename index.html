@@ -4194,27 +4194,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   <div class="clabel" style="margin-bottom:.5rem">2. Données personnelles</div>
   <p style="margin-bottom:.5rem">Runner OS collecte et traite les données suivantes :</p>
   <ul style="margin-left:1.5rem;margin-bottom:1rem">
-    <li>Données de compte : email (via Supabase Auth)</li>
-    <li>Données physiologiques : FC max, poids, taille, seuil lactique (saisies volontairement)</li>
-    <li>Données d'activité : activités Strava via l'API officielle Strava</li>
-    <li>Données de course : GPX, temps, stratégies (stockées en Supabase)</li>
+    <li>Données de compte : email via Supabase Auth</li>
+    <li>Données physiologiques : FC max, poids, taille, seuil lactique, saisies volontairement par l'utilisateur</li>
+    <li>Données d'activité : activités importées depuis Strava via l'API officielle Strava, après autorisation explicite de l'utilisateur</li>
+    <li>Données de course : GPX, temps, stratégies et objectifs, stockés dans Supabase</li>
   </ul>
-  <p style="margin-bottom:1rem">Ces données sont stockées dans Supabase (infrastructure européenne). Chaque utilisateur n'a accès qu'à ses propres données.</p>
+  <p style="margin-bottom:1rem">Ces données sont stockées dans Supabase. Chaque utilisateur n'a accès qu'à ses propres données. Les données d'un utilisateur ne sont pas affichées à d'autres utilisateurs.</p>
 
   <div class="clabel" style="margin-bottom:.5rem">3. Données Strava</div>
-  <p style="margin-bottom:1rem">L'accès aux données Strava est effectué via l'API officielle Strava conformément aux <a href="https://www.strava.com/legal/api" target="_blank" style="color:var(--cyan)">conditions d'utilisation de l'API Strava</a>. Les tokens d'accès sont stockés localement. Aucune donnée Strava n'est partagée avec des tiers.</p>
+  <p style="margin-bottom:1rem">
+    L'accès aux données Strava est effectué via l'API officielle Strava, conformément aux <a href="https://www.strava.com/legal/api" target="_blank" style="color:var(--cyan)">conditions d'utilisation de l'API Strava</a>, uniquement après autorisation explicite de l'utilisateur.
+    Les tokens d'accès Strava sont stockés côté serveur dans Supabase et ne sont pas exposés dans le navigateur.
+    Les données Strava sont utilisées uniquement pour importer, afficher et analyser les activités personnelles de l'utilisateur connecté.
+    Elles ne sont pas vendues, ne sont pas partagées publiquement et ne sont pas affichées à d'autres utilisateurs.
+  </p>
 
-  <div class="clabel" style="margin-bottom:.5rem">4. Analyse IA</div>
-  <p style="margin-bottom:1rem">Les analyses de sortie utilisent l'API Groq (modèle llama). Les données d'activité sont transmises à Groq pour générer l'analyse. Aucune donnée d'identification personnelle (nom, email) n'est transmise.</p>
+  <div class="clabel" style="margin-bottom:.5rem">4. Analyse automatique</div>
+  <p style="margin-bottom:1rem">
+    Les analyses sont générées à partir des données personnelles de l'utilisateur connecté.
+    Les données Strava ne sont pas utilisées pour entraîner, affiner ou améliorer un modèle d'intelligence artificielle ou de machine learning.
+  </p>
 
   <div class="clabel" style="margin-bottom:.5rem">5. Suppression des données</div>
-  <p style="margin-bottom:1rem">Tu peux supprimer ton compte et toutes tes données à tout moment en contactant l'administrateur de l'application. La déconnexion de Strava révoque l'accès immédiatement.</p>
+  <p style="margin-bottom:1rem">
+    L'utilisateur peut demander la suppression de son compte et de ses données à tout moment en contactant l'administrateur de l'application.
+    Si l'utilisateur révoque l'accès Strava ou déconnecte son compte Strava, les données Strava associées sont supprimées de l'application.
+    Les activités supprimées sur Strava sont retirées de l'application dans un délai maximum de 48 heures.
+  </p>
 
   <div class="clabel" style="margin-bottom:.5rem">6. Responsabilité</div>
-  <p style="margin-bottom:1rem">Les conseils de stratégie, nutrition et FC fournis par Runner OS sont indicatifs. Ils ne remplacent pas l'avis d'un médecin ou d'un entraîneur professionnel. L'utilisateur reste seul responsable de ses choix d'entraînement.</p>
+  <p style="margin-bottom:1rem">Les conseils de stratégie, nutrition, fréquence cardiaque et entraînement fournis par Runner OS sont indicatifs. Ils ne remplacent pas l'avis d'un médecin, d'un professionnel de santé ou d'un entraîneur qualifié. L'utilisateur reste seul responsable de ses choix d'entraînement et de santé.</p>
 
   <div class="clabel" style="margin-bottom:.5rem">7. Contact</div>
-  <p>Pour toute question : <a href="mailto:tony.bollecker@hotmail.fr" style="color:var(--cyan)">tony.bollecker@hotmail.fr</a></p>
+  <p>Pour toute question ou demande de suppression des données : <a href="mailto:tony.bollecker@hotmail.fr" style="color:var(--cyan)">tony.bollecker@hotmail.fr</a></p>
 </div>
 
   </div>
