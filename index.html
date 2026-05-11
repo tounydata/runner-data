@@ -1836,7 +1836,7 @@ async function generateAIAnalysis(act, streams, paf) {
   }
 
   return [
-    ` : ${distKm.toFixed(2)} km en ${fmtD(act.moving_time)}, D+ ${act.total_elevation_gain || 0} m, allure moyenne ${fmtP(act.average_speed)}/km.`,
+    `${distKm.toFixed(2)} km en ${fmtD(act.moving_time)}, D+ ${act.total_elevation_gain || 0} m, allure moyenne ${fmtP(act.average_speed)}/km.`,
     `Fréquence cardiaque : moyenne ${act.average_heartrate || '?'} bpm, max ${act.max_heartrate || '?'} bpm, verdict ${intensityVerdict}.`,
     `Répartition cardio : Z1 ${zones[0]}%, Z2 ${zones[1]}%, Z3 ${zones[2]}%, Z4 ${zones[3]}%, Z5 ${zones[4]}%, soit ${z45}% en zones hautes Z4-Z5.`,
     `Contexte récent : ${recentRuns.length} sorties sur 28 jours, ${km28} km, D+ ${dp28} m ; sur 7 jours : ${last7Runs.length} sortie(s), ${km7} km.`,
@@ -1975,7 +1975,7 @@ async function openAnalyse(act) {
   const aiText = await generateAIAnalysis(act, streams, paf);
   const aiBox = document.getElementById('aiBox');
   if (aiBox) {
-    aiBox.innerHTML = `<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Coach Runner</div></div><div class="ai-text">${aiText}</div>`;
+    aiBox.innerHTML = `<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">résumé Statistiques</div></div><div class="ai-text">${aiText}</div>`;
   }
 }
 
@@ -2261,7 +2261,7 @@ async function renderRaceComparison(act, streams, race, targetId) {
   if(validDiffs.length >= 2) {
     const aiBox=document.createElement('div');
     aiBox.className='ai-analysis mt2';
-    aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-loading"><div class="spinner"></div><div>Analyse en cours...</div></div>`;
+    aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse Bilan de course</div></div><div class="ai-loading"><div class="spinner"></div><div>Analyse en cours...</div></div>`;
     section.appendChild(aiBox);
 
     const avgDiff=validDiffs.length?Math.round(validDiffs.reduce((a,b)=>a+b,0)/validDiffs.length):0;
@@ -2300,9 +2300,9 @@ Points à traiter: 1) Où et pourquoi les plus grosses pertes de temps (fatigue 
         body:JSON.stringify({prompt:compPrompt})
       });
       const data=resp.ok?await resp.json():null;
-      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-text">${data?.text||'Analyse non disponible.'}</div>`;
+      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse — Bilan de course</div></div><div class="ai-text">${data?.text||'Analyse non disponible.'}</div>`;
     } catch {
-      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">🤖</div><div class="ai-title">Analyse IA — Bilan de course</div></div><div class="ai-text">Analyse IA non disponible.</div>`;
+      aiBox.innerHTML=`<div class="ai-header"><div class="ai-icon">📊</div><div class="ai-title">Analyse — Bilan de course</div></div><div class="ai-text">Analyse IA non disponible.</div>`;
     }
   }
 }
