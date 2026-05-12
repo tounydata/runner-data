@@ -17,14 +17,16 @@
       "package": "com.vorcelab.app"
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static"
     },
     "plugins": [
       "expo-router",
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/Vorcelab"
     }
   }
 }

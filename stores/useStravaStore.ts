@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { Platform } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as AuthSession from 'expo-auth-session'
 import { supabase } from '../lib/supabase'
@@ -99,12 +100,11 @@ export const useStravaStore = create<StravaState>((set, get) => ({
       return
     }
 
-    const redirectUri = AuthSession.makeRedirectUri({
-      scheme: 'vorcelab',
-      path: 'auth/strava/callback',
-    })
+    const redirectUri =
+      Platform.OS === 'web'
+        ? `${typeof window !== 'undefined' ? window.location.origin : 'https://tounydata.github.io'}/Vorcelab/oauth`
+        : AuthSession.makeRedirectUri({ scheme: 'vorcelab', path: 'auth/strava/callback' })
 
-    // Log so the user can register the URI with Strava
     console.log('[Strava OAuth] redirect_uri =', redirectUri)
 
     const state = Math.random().toString(36).slice(2, 18)
