@@ -1,13 +1,11 @@
+import { Text } from 'react-native'
 import { Tabs, Redirect } from 'expo-router'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { colors } from '../../lib/colors'
 
-function TabIcon({ symbol, color }: { symbol: string; color: string }) {
-  return <></>  // placeholder — icons via tabBarIcon below
-  void symbol
-  void color
+function TabIcon({ label, color }: { label: string; color: string }) {
+  return <Text style={{ fontSize: 18, color }}>{label}</Text>
 }
-void TabIcon
 
 export default function TabLayout() {
   const { session, initialised } = useAuthStore()
@@ -35,43 +33,30 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon label="⊞" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon label="⊞" color={color} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: 'Calendrier',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon label="◎" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon label="◎" color={color} />,
         }}
       />
       <Tabs.Screen
         name="activities"
         options={{
           title: 'Activités',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon label="↗" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon label="↗" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profil"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon label="◉" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon label="◉" color={color} />,
         }}
       />
     </Tabs>
   )
-}
-
-function TabBarIcon({ label, color }: { label: string; color: string }) {
-  const { Text } = require('react-native') as typeof import('react-native')
-  return <Text style={{ fontSize: 18, color }}>{label}</Text>
 }
