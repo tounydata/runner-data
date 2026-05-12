@@ -9,5 +9,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+# .env est committé intentionnellement (valeurs publiques)
+# seul .env.local est ignoré (pour surcharges locales)
 .env.local
-.env
+.env.production
