@@ -52,7 +52,7 @@ trap cleanup INT TERM
 # ─── Démarrage Expo ──────────────────────────────────────────────────────────
 echo ""
 echo "🚀 Démarrage d'Expo (port 8081)..."
-npx expo start --port 8081 --no-dev-client 2>&1 &
+npx expo start --port 8081 --go 2>&1 &
 EXPO_PID=$!
 echo "$EXPO_PID" > "$EXPO_PID_FILE"
 
@@ -136,7 +136,7 @@ while true; do
 
   if ! kill -0 "$EXPO_PID" 2>/dev/null; then
     echo "⚠️  Expo tombé — redémarrage..."
-    npx expo start --port 8081 --no-dev-client 2>&1 &
+    npx expo start --port 8081 --go 2>&1 &
     EXPO_PID=$!
   fi
 
