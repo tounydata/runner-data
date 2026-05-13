@@ -8,7 +8,9 @@ function AuthLogo() {
       <img
         src="/logo.png"
         alt="Vorcelab"
-        onError={() => { setErr(true) }}
+        onError={() => {
+          setErr(true)
+        }}
         style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8 }}
       />
     )
