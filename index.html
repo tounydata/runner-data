@@ -460,13 +460,8 @@ main{padding:1.5rem 2rem;max-width:1200px;}
 .vl-strat-dstat .lbl{font-family:var(--vl-mono);font-size:10px;color:var(--vl-text-3);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;font-weight:600;}
 
 /* ── STRATEGY — map ── */
-<<<<<<< claude/fix-silhouette-map-trail
 #raceMap{height:260px;overflow:hidden;margin:0;background:var(--vl-bg);}
 .gpx-chart-row{position:relative;z-index:2;background:var(--vl-surf);}
-=======
-#raceMap{height:260px;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);overflow:hidden;margin:0;clip-path:inset(0 0 0 0 round 0 0 var(--vl-r-sm) var(--vl-r-sm));isolation:isolate;}
-.gpx-chart-row{position:relative;z-index:2;}
->>>>>>> main
 
 </style>
 
@@ -2244,11 +2239,7 @@ function renderActivities() {
         </div>`;
       return card;
     };
-<<<<< claude/fix-silhouette-map-trail
     if (grid && idx < 3) grid.appendChild(makeCard());
-=======
-    if (grid && idx < 20) grid.appendChild(makeCard());
->>>>>>> main
     if (gridFull) gridFull.appendChild(makeCard());
   });
 }
