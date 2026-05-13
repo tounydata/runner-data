@@ -383,6 +383,39 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
 @media print{header,nav,.no-print{display:none!important;}body{background:#fff;color:#000;}.print-only{display:block!important;}}
 .print-only{display:none;}
+
+/* ── STRATEGY — section cards ── */
+.vl-section-card{background:var(--vl-surf);border:1px solid var(--vl-line);border-left:3px solid var(--vl-text-3);border-radius:0 var(--vl-r-sm) var(--vl-r-sm) 0;padding:12px 14px;margin-bottom:7px;cursor:pointer;transition:all .18s;}
+.vl-section-card:hover{background:var(--vl-surf-2);border-color:var(--vl-line-2);transform:translateX(2px);}
+.vl-section-card.active{background:var(--vl-surf-2);transform:translateX(3px);box-shadow:none;}
+.vl-sc-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.vl-sc-km{font-family:var(--vl-mono);font-size:10px;color:var(--vl-text-3);letter-spacing:0.1em;font-weight:600;}
+.vl-sc-tag{font-family:var(--vl-mono);font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;letter-spacing:0.06em;}
+.vl-sc-name{font-family:var(--vl-display);font-size:1.15rem;letter-spacing:0.02em;line-height:0.95;text-transform:uppercase;margin-bottom:4px;}
+.vl-sc-body{font-size:.74rem;color:var(--vl-text-2);line-height:1.55;}
+.vl-sc-meta{font-family:var(--vl-mono);font-size:10px;color:var(--vl-text-3);font-style:italic;margin-bottom:5px;}
+
+/* ── STRATEGY — projection card ── */
+.vl-proj-card{background:var(--vl-surf);border:1px solid var(--vl-line);border-radius:var(--vl-r-lg);padding:16px 18px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.vl-proj-time{font-family:var(--vl-display);font-size:2.6rem;line-height:1;color:var(--vl-growth);letter-spacing:0.01em;}
+.vl-proj-obj{text-align:right;}
+.vl-proj-obj-time{font-family:var(--vl-display);font-size:1.8rem;line-height:1;color:var(--vl-text);}
+.vl-proj-margin{font-family:var(--vl-mono);font-size:10.5px;font-weight:600;margin-top:3px;}
+
+/* ── STRATEGY — sections summary (details) ── */
+.vl-details-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:12px 16px;background:var(--vl-surf);border:1px solid var(--vl-line);border-radius:var(--vl-r-sm);user-select:none;margin-top:16px;}
+.vl-details-summary:hover{background:var(--vl-surf-2);}
+.vl-details-title{font-family:var(--vl-display);font-size:1.05rem;letter-spacing:0.04em;text-transform:uppercase;}
+.vl-sections-scroll{border:1px solid var(--vl-line);border-top:none;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);padding:8px 4px;scroll-behavior:smooth;max-height:480px;overflow-y:auto;}
+
+/* ── STRATEGY — stats row ── */
+.vl-strat-dstat{text-align:center;padding:10px 6px;}
+.vl-strat-dstat .val{font-family:var(--vl-display);font-size:1.6rem;line-height:1;}
+.vl-strat-dstat .lbl{font-family:var(--vl-mono);font-size:10px;color:var(--vl-text-3);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;font-weight:600;}
+
+/* ── STRATEGY — map ── */
+#raceMap{height:260px;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);overflow:hidden;margin:0;}
+
 </style>
 
 </head>
@@ -603,22 +636,25 @@ main{padding:1.5rem 2rem;max-width:1440px;margin:0 auto;}
 
   <!-- EVENT DETAIL VIEW (hidden by default) -->
   <div id="eventView" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
-      <button class="hbtn" onclick="backToCalendar()">← Calendrier</button>
-      <div id="eventViewTitle" style="flex:1;font-family:var(--display);font-size:1.3rem;letter-spacing:.03em;min-width:0;overflow:hidden;text-overflow:ellipsis"></div>
+    <!-- Header bar -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
+      <button class="hbtn" onclick="backToCalendar()">← Retour</button>
+      <div id="eventViewSubtitle" class="mlabel" style="flex:1;color:var(--vl-text-3)"></div>
       <div style="position:relative;flex-shrink:0" id="raceMenuWrap">
-        <button class="hbtn" onclick="toggleRaceMenu(event)" style="font-size:1rem;padding:6px 10px">⚙️</button>
-        <div id="raceMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:200;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
-          <button class="race-menu-item" onclick="toggleEditRaceForm();toggleRaceMenu()">✏️ Modifier</button>
-          <button class="race-menu-item" onclick="raceMenuChangeGpx()">🗺️ Changer de GPX</button>
-          <button class="race-menu-item" id="raceMenuSaveGpx" style="display:none" onclick="saveGpxToRace();toggleRaceMenu()">💾 Enregistrer GPX</button>
-          <button class="race-menu-item" onclick="raceMenuLinkActivity();toggleRaceMenu()">🔗 Lier à une activité</button>
-          <button class="race-menu-item" onclick="window.print();toggleRaceMenu()">🖨️ Imprimer</button>
-          <div style="border-top:1px solid var(--border);margin:4px 2px"></div>
-          <button class="race-menu-item" id="btnDeleteRace" style="color:var(--red)">🗑️ Supprimer</button>
+        <button class="hbtn" onclick="toggleRaceMenu(event)" style="letter-spacing:.2em">···</button>
+        <div id="raceMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--vl-surf);border:1px solid var(--vl-line-2);border-radius:var(--vl-r-sm);padding:6px;z-index:200;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+          <button class="race-menu-item" onclick="toggleEditRaceForm();toggleRaceMenu()">Modifier</button>
+          <button class="race-menu-item" onclick="raceMenuChangeGpx()">Changer de GPX</button>
+          <button class="race-menu-item" id="raceMenuSaveGpx" style="display:none" onclick="saveGpxToRace();toggleRaceMenu()">Enregistrer GPX</button>
+          <button class="race-menu-item" onclick="raceMenuLinkActivity();toggleRaceMenu()">Lier à une activité</button>
+          <button class="race-menu-item" onclick="window.print();toggleRaceMenu()">Imprimer</button>
+          <div style="border-top:1px solid var(--vl-line);margin:4px 2px"></div>
+          <button class="race-menu-item" id="btnDeleteRace" style="color:var(--vl-ember)">Supprimer</button>
         </div>
       </div>
     </div>
+    <!-- Race name (big display) -->
+    <div id="eventViewTitle" style="font-family:var(--vl-display);font-size:clamp(2rem,5vw,2.8rem);letter-spacing:0.02em;line-height:0.9;font-weight:800;text-transform:uppercase;margin-bottom:1.25rem"></div>
     <div id="editRaceForm" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 16px;margin-bottom:1rem;grid-template-columns:1fr 1fr;gap:10px">
       <div style="grid-column:1/-1;font-family:var(--display);font-size:.9rem;letter-spacing:.03em;margin-bottom:2px">Modifier l'événement</div>
       <div><label class="fl">Nom de la course</label><input class="fi" id="editRaceName" type="text" placeholder="Nom"></div>
@@ -1548,7 +1584,13 @@ function openEventView(raceId) {
   document.getElementById('calView').style.display = 'none';
   document.getElementById('eventView').style.display = 'block';
   const titleEl = document.getElementById('eventViewTitle');
-  if(titleEl) titleEl.textContent = `${race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃'} ${race.name} — ${new Date(race.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
+  if(titleEl) titleEl.textContent = race.name.toUpperCase();
+  const subEl = document.getElementById('eventViewSubtitle');
+  if(subEl) {
+    const typeLabel = race.type==='Trail'?'Trail':race.type==='Ultra'?'Ultra Trail':'Route';
+    const dateStr = new Date(race.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+    subEl.textContent = `${typeLabel} · ${dateStr}`;
+  }
   const delBtn = document.getElementById('btnDeleteRace');
   if(delBtn) delBtn.onclick = ()=>deleteRace(raceId);
   const compSec = document.getElementById('eventComparisonSection');
@@ -3039,67 +3081,116 @@ async function analyzeGPX(points, fname) {
   const saveGpxItem = document.getElementById('raceMenuSaveGpx');
   if(saveGpxItem) saveGpxItem.style.display = currentRaceContext?.id ? 'block' : 'none';
 
+  // ── Calcul marge vs objectif ──
+  let marginStr = '', marginColor = 'var(--vl-text-3)';
+  if(currentRaceContext?.goal_time) {
+    const gParts = currentRaceContext.goal_time.match(/(\d+)[hH](\d*)/);
+    if(gParts) {
+      const goalSec = parseInt(gParts[1])*3600 + (parseInt(gParts[2])||0)*60;
+      const diff = goalSec - Math.round(estTimeS);
+      const absDiff = Math.abs(diff);
+      const mh = Math.floor(absDiff/3600), mm = Math.floor(absDiff%3600/60), ms = absDiff%60;
+      const sign = diff >= 0 ? '+' : '−';
+      marginStr = `${sign} ${mh>0?mh+'h':''}${mm>0?String(mm).padStart(mh>0?2:1,'0')+'min':''}${ms>0&&mh===0?String(ms).padStart(mm>0?2:1,'0')+'s':''} sur objectif`;
+      marginColor = diff >= 0 ? 'var(--vl-growth)' : 'var(--vl-ember)';
+    }
+  }
+
   res.innerHTML=`
-    ${!currentRaceContext?`<div style="font-family:var(--display);font-size:1.6rem;letter-spacing:.03em;margin-bottom:.25rem">${raceName}</div><div class="mono t2" style="margin-bottom:1rem">${raceDate}</div>`:''}
+    ${!currentRaceContext?`<div style="font-family:var(--vl-display);font-size:2rem;letter-spacing:0.02em;line-height:0.9;text-transform:uppercase;margin-bottom:.25rem">${raceName}</div><div class="mlabel" style="color:var(--vl-text-3);margin-bottom:1.25rem">${raceDate}</div>`:''}
 
-    <div class="s-stats">
-      <div class="s-stat"><div class="s-sv tc">${distKm.toFixed(2)} km</div><div class="s-sl">Distance</div></div>
-      <div class="s-stat"><div class="s-sv to">+${Math.round(dplus)} m</div><div class="s-sl">D+</div></div>
-      <div class="s-stat"><div class="s-sv">-${Math.round(dminus)} m</div><div class="s-sl">D-</div></div>
-      <div class="s-stat"><div class="s-sv">${altMin}m</div><div class="s-sl">Alt. min</div></div>
-      <div class="s-stat"><div class="s-sv">${altMax}m</div><div class="s-sl">Alt. max</div></div>
-      ${weather?.temp!=null?`<div class="s-stat"><div class="s-sv ${weather.temp>25?'tr':weather.temp<5?'tc':'tg'}">${Math.round(weather.temp)}°C</div><div class="s-sl">Météo prévue</div></div>`:''}
-      ${weather?.wind!=null?`<div class="s-stat"><div class="s-sv">${Math.round(weather.wind)} km/h</div><div class="s-sl">Vent</div></div>`:''}
-      ${weather?.precip_prob!=null?`<div class="s-stat"><div class="s-sv ${weather.precip_prob>50?'tr':'tg'}">${weather.precip_prob}%</div><div class="s-sl">Prob. pluie</div></div>`:''}
+    <!-- Stats strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1px;background:var(--vl-line);border:1px solid var(--vl-line);border-radius:var(--vl-r-sm);overflow:hidden;margin-bottom:1rem">
+      <div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val" style="color:var(--vl-ember)">${distKm.toFixed(1)} km</div><div class="lbl">Distance</div></div>
+      <div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val" style="color:var(--vl-amber)">+${Math.round(dplus)} m</div><div class="lbl">D+</div></div>
+      <div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val" style="color:var(--vl-text-2)">−${Math.round(dminus)} m</div><div class="lbl">D−</div></div>
+      <div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val">${altMin} m</div><div class="lbl">Alt. min</div></div>
+      <div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val">${altMax} m</div><div class="lbl">Alt. max</div></div>
+      ${weather?.temp!=null?`<div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val" style="color:${weather.temp>25?'var(--vl-ember)':weather.temp<5?'var(--vl-amber)':'var(--vl-growth)'}">${Math.round(weather.temp)}°C</div><div class="lbl">Météo</div></div>`:''}
+      ${weather?.precip_prob!=null?`<div class="vl-strat-dstat" style="background:var(--vl-surf)"><div class="val" style="color:${weather.precip_prob>50?'var(--vl-ember)':'var(--vl-growth)'}">${weather.precip_prob}%</div><div class="lbl">Pluie</div></div>`:''}
     </div>
 
-    <div class="card mt2 no-print"><div class="clabel">Tracé du parcours — OpenStreetMap</div><div id="raceMap" style="height:300px;border-radius:9px;overflow:hidden"></div></div>
-
-    <div class="card mt2"><div class="clabel">Profil altimétrique</div><div class="chart-wrap" style="height:240px"><canvas id="gpxChart"></canvas></div></div>
-
-    <div class="card mt2">
-      <div class="clabel">Projections de temps${userProfile.prs?' — calibré sur tes PR':' — allure estimée 5:20/km trail'}</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-        <div class="s-stat" style="text-align:center"><div class="s-sv t2">${fmtT(estTimeS*1.1)}</div><div class="s-sl">Conservateur</div></div>
-        <div class="s-stat" style="text-align:center;border:1px solid var(--cyan)"><div class="s-sv tc">${fmtT(estTimeS)}</div><div class="s-sl">→ Cible</div></div>
-        <div class="s-stat" style="text-align:center"><div class="s-sv t2">${fmtT(estTimeS*.92)}</div><div class="s-sl">Agressif</div></div>
+    <!-- Map + altimetry (fused card) -->
+    <div class="card no-print" style="padding:0;overflow:hidden">
+      <div style="padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between">
+        <span class="clabel" style="margin:0">Tracé GPX + profil</span>
+        <span class="mlabel" style="color:var(--vl-text-3)">${distKm.toFixed(2)} km</span>
       </div>
-      <div class="mono t3" style="font-size:.56rem;margin-top:8px">Minetti et al., 2002 · ${currentRaceContext?.goal_time?`Calibré sur objectif ${currentRaceContext.goal_time}`:userProfile.prs?.semi?`PR semi ${userProfile.prs.semi.time}`:'Renseigne tes PR ou objectif temps dans le calendrier'}</div>
+      <div id="raceMap"></div>
+      <div style="padding:0 14px 0;border-top:1px solid var(--vl-line)">
+        <div class="chart-wrap" style="height:100px"><canvas id="gpxChart"></canvas></div>
+      </div>
+      ${isTrail?`<div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--vl-line)">
+        <div class="vl-strat-dstat" style="background:var(--vl-surf-2)"><div class="val" style="font-size:1.3rem;color:var(--vl-amber)">+${Math.round(dplus)} m</div><div class="lbl">D+</div></div>
+        <div class="vl-strat-dstat" style="background:var(--vl-surf-2)"><div class="val" style="font-size:1.3rem">${distKm.toFixed(1)} km</div><div class="lbl">Distance</div></div>
+        <div class="vl-strat-dstat" style="background:var(--vl-surf-2)"><div class="val" style="font-size:1.3rem;color:var(--vl-text-2)">−${Math.round(dminus)} m</div><div class="lbl">D−</div></div>
+      </div>`:''}
     </div>
 
-    <details open style="margin-top:1.5rem">
-      <summary style="list-style:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--display);font-size:1.1rem;letter-spacing:.04em;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);user-select:none">
-        <span>📍 Plan de course — sections</span>
-        <span style="display:flex;align-items:center;gap:8px"><span class="mono t3" style="font-size:.62rem">${sections.length} section${sections.length>1?'s':''}</span><span class="mono t2" style="font-size:.9rem">▾</span></span>
+    <!-- Projection -->
+    <div class="vl-proj-card">
+      <div>
+        <div class="mlabel" style="margin-bottom:6px">Projection</div>
+        <div class="vl-proj-time">${fmtT(estTimeS)}</div>
+        ${marginStr?`<div class="vl-proj-margin" style="color:${marginColor};margin-top:4px">${marginStr}</div>`:''}
+        <div class="mlabel" style="color:var(--vl-text-3);margin-top:6px">${currentRaceContext?.goal_time?`Calibré sur objectif ${currentRaceContext.goal_time}`:userProfile.prs?.semi?`D'après PR semi ${userProfile.prs.semi.time}`:'Minetti 2002 · allure estimée'}</div>
+      </div>
+      ${currentRaceContext?.goal_time?`
+      <div class="vl-proj-obj">
+        <div class="mlabel" style="margin-bottom:6px">Objectif</div>
+        <div class="vl-proj-obj-time">${currentRaceContext.goal_time}</div>
+      </div>`:`
+      <div style="text-align:right">
+        <div class="mlabel" style="margin-bottom:8px">Scénarios</div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <div><span class="mlabel" style="color:var(--vl-text-3)">Conservateur</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text-2)">${fmtT(estTimeS*1.1)}</span></div>
+          <div><span class="mlabel" style="color:var(--vl-growth)">Agressif</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text)">${fmtT(estTimeS*.92)}</span></div>
+        </div>
+      </div>`}
+    </div>
+
+    <!-- Sections -->
+    <details open>
+      <summary class="vl-details-summary">
+        <span class="vl-details-title">Plan de course</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span class="mlabel">${sections.length} section${sections.length>1?'s':''}</span>
+          <span style="font-family:var(--vl-mono);font-size:14px;color:var(--vl-text-3)">▾</span>
+        </span>
       </summary>
-      <div id="sectionsScroll" style="max-height:460px;overflow-y:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:4px 0;scroll-behavior:smooth">
+      <div id="sectionsScroll" class="vl-sections-scroll">
         ${sections.map((s,i)=>renderDetailedSection(s,sectionTimes[i],i)).join('')}
       </div>
     </details>
 
-    <details style="margin-top:.75rem">
-      <summary style="list-style:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--display);font-size:1.1rem;letter-spacing:.04em;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);user-select:none">
-        <span>🍌 Plan nutrition</span>
-        <span style="display:flex;align-items:center;gap:8px"><span class="mono t3" style="font-size:.62rem">${dh<1.25?'< 75min':dh<2.5?'75–150min':'> 150min'}</span><span class="mono t2" style="font-size:.9rem">▾</span></span>
+    <!-- Nutrition -->
+    <details style="margin-top:8px">
+      <summary class="vl-details-summary">
+        <span class="vl-details-title">Plan nutrition</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span class="mlabel">${dh<1.25?'< 75 min':dh<2.5?'75–150 min':'> 150 min'}</span>
+          <span style="font-family:var(--vl-mono);font-size:14px;color:var(--vl-text-3)">▾</span>
+        </span>
       </summary>
-      <div style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:14px">
+      <div style="border:1px solid var(--vl-line);border-top:none;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);padding:14px">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:1rem">
           <div class="s-stat"><div class="s-sv tc">${dh<1.25?'Eau only':dh<2.5?Math.round(30*(dh-0.5))+'g':Math.round(60*(dh-0.5))+'g'}</div><div class="s-sl">Glucides cibles</div></div>
           <div class="s-stat"><div class="s-sv tg">${Math.round(dh*400)} ml</div><div class="s-sl">Eau estimée</div></div>
           <div class="s-stat"><div class="s-sv ${dh<1.25?'tg':dh<2.5?'ty':'to'}">${dh<1.25?'< 75min':dh<2.5?'75–150min':'> 150min'}</div><div class="s-sl">Protocole</div></div>
         </div>
-        ${dh<1.25?`<div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.25);border-radius:8px;padding:10px 14px;font-size:.8rem;margin-bottom:.75rem"><strong class="tg">Effort &lt; 75 min — eau uniquement pendant la course.</strong><br><span class="mono t3" style="font-size:.62rem">Réserves glycogéniques endogènes suffisantes. Burke et al., 2011</span></div>`:''}
+        ${dh<1.25?`<div style="background:color-mix(in oklab, var(--vl-growth) 8%, transparent);border:1px solid color-mix(in oklab, var(--vl-growth) 25%, transparent);border-radius:var(--vl-r-sm);padding:10px 14px;font-size:.8rem;margin-bottom:.75rem"><strong style="color:var(--vl-growth)">Effort &lt; 75 min — eau uniquement pendant la course.</strong><br><span class="mlabel" style="color:var(--vl-text-3)">Réserves glycogéniques endogènes suffisantes. Burke et al., 2011</span></div>`:''}
         <table class="nutr-table"><thead><tr><th>Moment</th><th>Action</th><th>Glucides</th><th>Justification</th></tr></thead><tbody>${genNutrition(totalDist,estTimeS)}</tbody></table>
-        <div class="mono t3" style="margin-top:8px;font-size:.56rem;font-style:italic">📖 Burke 2011 · Jeukendrup 2004 · Currell & Jeukendrup 2008 · Ivy 1998</div>
+        <div class="mlabel" style="margin-top:10px;color:var(--vl-text-3)">Burke 2011 · Jeukendrup 2004 · Currell &amp; Jeukendrup 2008 · Ivy 1998</div>
       </div>
     </details>
 
-    <details style="margin-top:.75rem">
-      <summary style="list-style:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--display);font-size:1.1rem;letter-spacing:.04em;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);user-select:none">
-        <span>📊 Splits km par km</span>
-        <span class="mono t2" style="font-size:.9rem">▾</span>
+    <!-- Splits -->
+    <details style="margin-top:8px">
+      <summary class="vl-details-summary">
+        <span class="vl-details-title">Splits km par km</span>
+        <span style="font-family:var(--vl-mono);font-size:14px;color:var(--vl-text-3)">▾</span>
       </summary>
-      <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:10px">
+      <div style="overflow-x:auto;border:1px solid var(--vl-line);border-top:none;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);padding:10px">
         <table class="splits-table"><thead><tr><th>Km</th><th>Type</th><th>Pente</th><th>D+</th><th>D-</th><th>Alt</th><th>Durée sect.</th><th>Temps cumulé</th><th>Conseil FC</th></tr></thead><tbody>${splits}</tbody></table>
       </div>
     </details>`;
@@ -3115,22 +3206,22 @@ async function analyzeGPX(points, fname) {
   window._sectionPolylines = [];
   window._hoverMarker = null;
 
-  // OSM Map
+  // Dark map
   setTimeout(()=>{
     if(leafletMap){leafletMap.remove();leafletMap=null;}
     leafletMap=L.map('raceMap',{zoomControl:true,scrollWheelZoom:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(leafletMap);
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png',{attribution:'© Stadia Maps',maxZoom:20}).addTo(leafletMap);
 
-    // Tracé de fond grisé
+    // Tracé de fond sombre
     const allLL=points.filter((_,i)=>i%3===0).map(p=>[p.lat,p.lon]);
-    L.polyline(allLL,{color:'#1c2738',weight:5,opacity:1}).addTo(leafletMap);
+    L.polyline(allLL,{color:'rgba(243,239,228,.08)',weight:5,opacity:1}).addTo(leafletMap);
 
     // Polylines colorées par section + interactivité
     window._sectionPolylines = sections.map((s,idx)=>{
       const si=Math.round((s.startKm/distKm)*points.length);
       const ei=Math.min(Math.round((s.endKm/distKm)*points.length),points.length-1);
       const ll=points.slice(si,ei+1).filter((_,i)=>i%3===0).map(p=>[p.lat,p.lon]);
-      const col={up:'#ff6b35',down:'#a78bfa',flat:'#00d4ff'}[s.type];
+      const col={up:'#E5562A',down:'#E8A23A',flat:'#10B981'}[s.type];
       const poly=L.polyline(ll,{color:col,weight:4,opacity:.85}).addTo(leafletMap);
       poly.on('click',()=>highlightSection(idx));
       poly.on('mouseover',()=>{if(window._activeSection!==idx)poly.setStyle({weight:6,opacity:1});});
@@ -3139,7 +3230,7 @@ async function analyzeGPX(points, fname) {
     });
 
     // Marqueur survol carte → profil alti
-    window._hoverMarker = L.circleMarker([points[0].lat,points[0].lon],{radius:6,fillColor:'#fff',color:'#00d4ff',weight:2,fillOpacity:1}).addTo(leafletMap);
+    window._hoverMarker = L.circleMarker([points[0].lat,points[0].lon],{radius:6,fillColor:'#E5562A',color:'#F3EFE4',weight:2,fillOpacity:1}).addTo(leafletMap);
     window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
 
     leafletMap.on('mousemove',e=>{
@@ -3157,7 +3248,7 @@ async function analyzeGPX(points, fname) {
       if(window._gpxChart){
         const si=samples.findIndex(s=>s.d>=km-0.05&&s.d<=km+0.15);
         if(si>=0){
-          window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===si?samples[i].alt:null),borderColor:'#fff',backgroundColor:'#fff',pointRadius:samples.map((_,i)=>i===si?6:0),pointBackgroundColor:'#fff',fill:false,tension:0,showLine:false};
+          window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===si?samples[i].alt:null),borderColor:'#E5562A',backgroundColor:'#E5562A',pointRadius:samples.map((_,i)=>i===si?6:0),pointBackgroundColor:'#E5562A',fill:false,tension:0,showLine:false};
           window._gpxChart.update('none');
         }
       }
@@ -3168,8 +3259,8 @@ async function analyzeGPX(points, fname) {
     });
 
     // Marqueurs départ / arrivée
-    L.circleMarker([points[0].lat,points[0].lon],{radius:9,fillColor:'#2ecc71',color:'#fff',weight:2.5,fillOpacity:1}).bindPopup('<b>🟢 Départ</b>').addTo(leafletMap);
-    L.circleMarker([points[points.length-1].lat,points[points.length-1].lon],{radius:9,fillColor:'#f43f5e',color:'#fff',weight:2.5,fillOpacity:1}).bindPopup('<b>🔴 Arrivée</b>').addTo(leafletMap);
+    L.circleMarker([points[0].lat,points[0].lon],{radius:9,fillColor:'#10B981',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Départ</b>').addTo(leafletMap);
+    L.circleMarker([points[points.length-1].lat,points[points.length-1].lon],{radius:9,fillColor:'#F3EFE4',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Arrivée</b>').addTo(leafletMap);
 
     // Fit bounds
     const polyAll=L.polyline(allLL);
@@ -3184,8 +3275,8 @@ async function analyzeGPX(points, fname) {
   const sectionColors=samples.map(s=>{
     const km=s.d;
     const sec=sections.find(sec=>km>=sec.startKm&&km<=sec.endKm);
-    if(!sec)return 'rgba(0,212,255,.15)';
-    return {up:'rgba(255,107,53,.2)',down:'rgba(167,139,250,.2)',flat:'rgba(0,212,255,.15)'}[sec.type];
+    if(!sec)return 'rgba(229,86,42,.08)';
+    return {up:'rgba(229,86,42,.18)',down:'rgba(232,162,58,.18)',flat:'rgba(16,185,129,.14)'}[sec.type];
   });
 
   function syncMapFromChartIdx(idx){
@@ -3205,8 +3296,8 @@ async function analyzeGPX(points, fname) {
     data:{
       labels:samples.map(s=>s.d.toFixed(1)),
       datasets:[
-        {label:'Alt',data:samples.map(s=>s.alt),borderColor:'#00d4ff',backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(0,212,255,.3)');g.addColorStop(1,'rgba(0,212,255,0)');return g;},fill:true,tension:.4,pointRadius:0,borderWidth:2,pointHoverRadius:0},
-        {label:'Pos',data:samples.map(()=>null),borderColor:'#fff',backgroundColor:'#fff',pointRadius:0,pointBackgroundColor:'#fff',fill:false,tension:0,showLine:false}
+        {label:'Alt',data:samples.map(s=>s.alt),borderColor:'#E5562A',backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(229,86,42,.3)');g.addColorStop(1,'rgba(229,86,42,0)');return g;},fill:true,tension:.4,pointRadius:0,borderWidth:2,pointHoverRadius:0},
+        {label:'Pos',data:samples.map(()=>null),borderColor:'#E5562A',backgroundColor:'#E5562A',pointRadius:0,pointBackgroundColor:'#E5562A',fill:false,tension:0,showLine:false}
       ]
     },
     options:{
@@ -3239,8 +3330,8 @@ async function analyzeGPX(points, fname) {
         }
       },
       scales:{
-        x:{ticks:{maxTicksLimit:15,font:{size:9},callback:(v,i)=>Number.isInteger(parseFloat(samples[i]?.d))?samples[i].d+'km':''},grid:{color:'rgba(255,255,255,.05)'}},
-        y:{min:Math.max(0,altMin-30),max:altMax+30,ticks:{callback:v=>v+'m',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}}
+        x:{ticks:{maxTicksLimit:15,font:{size:9},callback:(v,i)=>Number.isInteger(parseFloat(samples[i]?.d))?samples[i].d+'km':''},grid:{color:'rgba(243,239,228,.04)'}},
+        y:{min:Math.max(0,altMin-30),max:altMax+30,ticks:{callback:v=>v+'m',font:{size:9}},grid:{color:'rgba(243,239,228,.04)'}}
       }
     }
   });
@@ -3259,7 +3350,7 @@ async function analyzeGPX(points, fname) {
     const idx=Math.round(ratio*(samples.length-1));
     syncMapFromChartIdx(idx);
     if(window._gpxChart){
-      window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===idx?samples[i].alt:null),borderColor:'#fff',backgroundColor:'#fff',pointRadius:samples.map((_,i)=>i===idx?6:0),pointBackgroundColor:'#fff',fill:false,tension:0,showLine:false};
+      window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map((_,i)=>i===idx?samples[i].alt:null),borderColor:'#E5562A',backgroundColor:'#E5562A',pointRadius:samples.map((_,i)=>i===idx?6:0),pointBackgroundColor:'#E5562A',fill:false,tension:0,showLine:false};
       window._gpxChart.update('none');
     }
   },{passive:false});
@@ -3516,8 +3607,8 @@ function renderDetailedSection(s, secTimeS, idx=0){
   const z3top = userProfile.fc_z3_top || Math.round(fcMax*.80);
   const z4top = lthr;
 
-  const cols={up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'};
-  const icons={up:'⛰️',down:'🎿',flat:'➡️'};
+  const cols={up:'var(--vl-ember)',down:'var(--vl-amber)',flat:'var(--vl-growth)'};
+  const icons={up:'↑',down:'↓',flat:'→'};
   const names={up:'Montée',down:'Descente',flat:'Plat / Liaison'};
   const distKm=(s.dist/1000).toFixed(2);
   const surfKey=window._gpxSectionSurfaces?.[idx]||null;
@@ -3531,13 +3622,13 @@ function renderDetailedSection(s, secTimeS, idx=0){
 
     if(trail){
       const rpe=steep?7:6;
-      rpeBadge=`<span class="strat-tag" style="border-color:var(--orange)40;color:var(--orange);font-weight:700">RPE ${rpe}/10</span>`;
+      rpeBadge=`<span class="strat-tag" style="border-color:var(--vl-ember)40;color:var(--vl-ember);font-weight:700">RPE ${rpe}/10</span>`;
       tags=[
-        {l:`${distKm} km`,c:'var(--orange)'},
-        {l:`+${s.dplus}m D+`,c:'var(--orange)'},
-        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
-        {l:steep?'RPE 7 max — marche si > 8':'RPE 6-7 max',c:'var(--cyan)'},
-        {l:steep?'Marche active recommandée':'Courir régulier',c:'var(--green)'}
+        {l:`${distKm} km`,c:'var(--vl-ember)'},
+        {l:`+${s.dplus}m D+`,c:'var(--vl-ember)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--vl-amber)'},
+        {l:steep?'RPE 7 max — marche si > 8':'RPE 6-7 max',c:'var(--vl-text-2)'},
+        {l:steep?'Marche active recommandée':'Courir régulier',c:'var(--vl-growth)'}
       ];
       if(surf) tags.push({l:`${surf.emoji} ${surf.fr}${slip?' · '+slip:''}`,c:surf.col});
       advice=steep
@@ -3547,10 +3638,10 @@ function renderDetailedSection(s, secTimeS, idx=0){
       // Route — basé sur FC structurée
       const fcCible=steep?Math.round(z4top*.96):Math.round(z4top*.92);
       tags=[
-        {l:`${distKm} km`,c:'var(--orange)'},
-        {l:`+${s.dplus}m D+`,c:'var(--orange)'},
-        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
-        {l:`FC < ${fcCible} bpm`,c:'var(--cyan)'},
+        {l:`${distKm} km`,c:'var(--vl-ember)'},
+        {l:`+${s.dplus}m D+`,c:'var(--vl-ember)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--vl-amber)'},
+        {l:`FC < ${fcCible} bpm`,c:'var(--vl-text-2)'},
       ];
       advice=`<strong>Côte (${Math.abs(s.grade).toFixed(1)}%)</strong> — maintenir FC sous <strong>${fcCible} bpm</strong> (${steep?'96':'92'}% LTHR). Raccourcir la foulée, ne pas chercher à maintenir l'allure — la FC est ton gouverneur ici.`;
     }
@@ -3560,23 +3651,23 @@ function renderDetailedSection(s, secTimeS, idx=0){
     const highRiskTerrain=surf&&(surf.risk==='high'||surf.risk==='medium');
     if(trail){
       tags=[
-        {l:`${distKm} km`,c:'var(--purple)'},
-        {l:`-${s.dminus}m D-`,c:'var(--purple)'},
-        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--yellow)'},
-        {l:'RPE 3-4',c:'var(--cyan)'},
-        {l:'Récupération active',c:'var(--green)'}
+        {l:`${distKm} km`,c:'var(--vl-amber)'},
+        {l:`-${s.dminus}m D-`,c:'var(--vl-amber)'},
+        {l:`${Math.abs(s.grade).toFixed(1)}% pente`,c:'var(--vl-text-2)'},
+        {l:'RPE 3-4',c:'var(--vl-text-2)'},
+        {l:'Récupération active',c:'var(--vl-growth)'}
       ];
       if(surf) tags.push({l:`${surf.emoji} ${surf.fr}${slip?' · '+slip:''}`,c:surf.col});
-      const terrainNote=slip?`<br><span class="mono t3" style="font-size:.6rem;color:var(--red)">⚠️ Sol ${slip} — réduis l'amplitude, priorise la sécurité sur le chrono.</span>`
+      const terrainNote=slip?`<br><span class="mono t3" style="font-size:.6rem;color:var(--vl-ember)">⚠️ Sol ${slip} — réduis l'amplitude, priorise la sécurité sur le chrono.</span>`
         :(surf&&surf.risk!=='none'?`<br><span class="mono t3" style="font-size:.6rem">Revêtement : ${surf.fr} — adapte l'amplitude à l'adhérence.</span>`:'');
       advice=(technical||highRiskTerrain)
         ? `<strong>Descente technique (${Math.abs(s.grade).toFixed(1)}%${surf?` · ${surf.fr}`:''})</strong> — foulées très courtes et rapides, regard 2-3m devant, léger penché avant. Ne jamais freiner avec les talons (impact 3-4× ton poids). RPE 4 max.${terrainNote}<br><span class="mono t3" style="font-size:.6rem">FC : elle va naturellement redescendre ici, profite-en.</span>`
         : `<strong>Descente douce (${Math.abs(s.grade).toFixed(1)}%)</strong> — foulées courtes et rapides, laisse la FC descendre sous Z3 (${z2top}-${z3top} bpm). C'est ta fenêtre de récupération. RPE 3-4.${terrainNote}`;
     } else {
       tags=[
-        {l:`${distKm} km`,c:'var(--purple)'},
-        {l:`-${s.dminus}m D-`,c:'var(--purple)'},
-        {l:'Récupération',c:'var(--green)'},
+        {l:`${distKm} km`,c:'var(--vl-amber)'},
+        {l:`-${s.dminus}m D-`,c:'var(--vl-amber)'},
+        {l:'Récupération',c:'var(--vl-growth)'},
       ];
       advice=`<strong>Descente</strong> — allure légèrement accélérée, contrôlée. FC qui redescend sous ${z3top} bpm. Profite pour récupérer avant la prochaine côte.`;
     }
@@ -3584,27 +3675,27 @@ function renderDetailedSection(s, secTimeS, idx=0){
   } else {
     if(trail){
       tags=[
-        {l:`${distKm} km`,c:'var(--cyan)'},
-        {l:'RPE 4-5',c:'var(--green)'},
-        {l:'Récupération active',c:'var(--cyan)'}
+        {l:`${distKm} km`,c:'var(--vl-growth)'},
+        {l:'RPE 4-5',c:'var(--vl-growth)'},
+        {l:'Récupération active',c:'var(--vl-text-2)'}
       ];
       if(surf) tags.push({l:`${surf.emoji} ${surf.fr}${slip?' · '+slip:''}`,c:surf.col});
       advice=`<strong>Section plate / liaison</strong> — laisse la FC redescendre, reprends la respiration. RPE 4-5 : tu dois pouvoir parler en phrases courtes. Si tu as un ravito, c'est ici qu'on mange et qu'on boit.`;
     } else {
       tags=[
-        {l:`${distKm} km`,c:'var(--cyan)'},
-        {l:`FC cible ${Math.round(z4top*.9)}-${Math.round(z4top*.95)} bpm`,c:'var(--green)'},
+        {l:`${distKm} km`,c:'var(--vl-growth)'},
+        {l:`FC cible ${Math.round(z4top*.9)}-${Math.round(z4top*.95)} bpm`,c:'var(--vl-growth)'},
       ];
       advice=`<strong>Section plate</strong> — allure cible, FC maintenue entre ${Math.round(z4top*.9)} et ${Math.round(z4top*.95)} bpm (90-95% LTHR). C'est ton allure de croisière sur route.`;
     }
   }
 
-  return `<div class="section-block" style="border-left-color:${cols[s.type]}" onclick="highlightSection(${idx})" data-idx="${idx}">
+  return `<div class="vl-section-card" style="border-left-color:${cols[s.type]}" onclick="highlightSection(${idx})" data-idx="${idx}">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:.3rem">
       <div class="strat-km">km ${s.startKm.toFixed(1)} → ${s.endKm.toFixed(1)}</div>
-      <div class="mono t2" style="font-size:.6rem">⏱ ${fmtT(secTimeS)} estimé</div>
+      <div class="mono t2" style="font-size:.6rem">${fmtT(secTimeS)} estimé</div>
     </div>
-    <div class="strat-name">${icons[s.type]} ${names[s.type]}</div>
+    <div class="strat-name" style="color:${cols[s.type]}">${icons[s.type]} ${names[s.type]}</div>
     <div class="strat-tags">${tags.map(t=>`<span class="strat-tag" style="border-color:${t.c}40;color:${t.c}">${t.l}</span>`).join('')}</div>
     <div class="strat-body">${advice}</div>
   </div>`;
@@ -3751,8 +3842,7 @@ let sectionAltiChartInst = null;
 
 function highlightSection(idx) {
   window._activeSection = idx;
-  // Highlight section blocks in text
-  document.querySelectorAll('.section-block').forEach((el,i)=>{
+  document.querySelectorAll('.vl-section-card').forEach((el,i)=>{
     el.classList.toggle('active',i===idx);
   });
   // Open popup
@@ -3770,8 +3860,8 @@ function openSectionPopup(idx) {
   const total = sections.length;
   const fcMax = userProfile.fc_max||205;
   const pct88=Math.round(fcMax*.88),pct84=Math.round(fcMax*.84),pct79=Math.round(fcMax*.79);
-  const cols={up:'var(--orange)',down:'var(--purple)',flat:'var(--cyan)'};
-  const icons={up:'⛰️',down:'🎿',flat:'➡️'};
+  const cols={up:'var(--vl-ember)',down:'var(--vl-amber)',flat:'var(--vl-growth)'};
+  const icons={up:'↑',down:'↓',flat:'→'};
   const names={up:'Montée',down:'Descente',flat:'Plat'};
   const distKmSec=(s.dist/1000).toFixed(2);
 
@@ -3786,9 +3876,9 @@ function openSectionPopup(idx) {
   // Stats
   const statData = [
     {v:`${distKmSec} km`,l:'Distance'},
-    s.type==='up'?{v:`+${s.dplus}m`,l:'D+',c:'var(--orange)'}:null,
-    s.type==='down'?{v:`-${s.dminus}m`,l:'D-',c:'var(--purple)'}:null,
-    {v:`${s.grade>0?'+':''}${s.grade.toFixed(1)}%`,l:'Pente moy',c:s.type==='up'?'var(--orange)':s.type==='down'?'var(--purple)':'var(--cyan)'},
+    s.type==='up'?{v:`+${s.dplus}m`,l:'D+',c:'var(--vl-ember)'}:null,
+    s.type==='down'?{v:`-${s.dminus}m`,l:'D-',c:'var(--vl-amber)'}:null,
+    {v:`${s.grade>0?'+':''}${s.grade.toFixed(1)}%`,l:'Pente moy',c:s.type==='up'?'var(--vl-ember)':s.type==='down'?'var(--vl-amber)':'var(--vl-growth)'},
     {v:`FC ${s.type==='up'?(Math.abs(s.grade)>10?`<${pct84}`:`<${pct88}`):s.type==='down'?'Libre':`<${pct79}`} bpm`,l:'FC cible'},
   ].filter(Boolean);
   document.getElementById('sectionPopupStats').innerHTML=statData.map(d=>`<div class="s-stat"><div class="s-sv" style="${d.c?`color:${d.c}`:''}">${d.v}</div><div class="s-sl">${d.l}</div></div>`).join('');
@@ -3840,12 +3930,12 @@ function openSectionPopup(idx) {
   setTimeout(()=>{
     if(sectionMapInst){sectionMapInst.remove();sectionMapInst=null;}
     sectionMapInst=L.map('sectionMap',{zoomControl:false,scrollWheelZoom:false,dragging:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(sectionMapInst);
-    const col={up:'#ff6b35',down:'#a78bfa',flat:'#00d4ff'}[s.type];
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png',{attribution:'© Stadia Maps',maxZoom:20}).addTo(sectionMapInst);
+    const col={up:'#E5562A',down:'#E8A23A',flat:'#10B981'}[s.type];
     const ll=segPts.filter((_,i)=>i%3===0).map(p=>[p.lat,p.lon]);
     const poly=L.polyline(ll,{color:col,weight:5,opacity:1}).addTo(sectionMapInst);
-    L.circleMarker([segPts[0].lat,segPts[0].lon],{radius:8,fillColor:'#2ecc71',color:'#fff',weight:2,fillOpacity:1}).addTo(sectionMapInst);
-    L.circleMarker([segPts[segPts.length-1].lat,segPts[segPts.length-1].lon],{radius:8,fillColor:'#f43f5e',color:'#fff',weight:2,fillOpacity:1}).addTo(sectionMapInst);
+    L.circleMarker([segPts[0].lat,segPts[0].lon],{radius:8,fillColor:'#10B981',color:'#0E0D0A',weight:2,fillOpacity:1}).addTo(sectionMapInst);
+    L.circleMarker([segPts[segPts.length-1].lat,segPts[segPts.length-1].lon],{radius:8,fillColor:'#F3EFE4',color:'#0E0D0A',weight:2,fillOpacity:1}).addTo(sectionMapInst);
     sectionMapInst.fitBounds(poly.getBounds(),{padding:[20,20]});
   },100);
 
@@ -3853,11 +3943,11 @@ function openSectionPopup(idx) {
   if(sectionAltiChartInst){sectionAltiChartInst.destroy();sectionAltiChartInst=null;}
   const secSamples=samples.filter(s2=>s2.d>=s.startKm&&s2.d<=s.endKm+0.1);
   if(secSamples.length>1){
-    const col={up:'#ff6b35',down:'#a78bfa',flat:'#00d4ff'}[s.type];
+    const col={up:'#E5562A',down:'#E8A23A',flat:'#10B981'}[s.type];
     sectionAltiChartInst=new Chart(document.getElementById('sectionAltiChart'),{
       type:'line',
-      data:{labels:secSamples.map(s=>s.d.toFixed(1)),datasets:[{data:secSamples.map(s=>s.alt),borderColor:col,backgroundColor:col.replace(')',',0.2)').replace('rgb','rgba'),fill:true,tension:.4,pointRadius:0,borderWidth:2}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>`km ${i[0].label}`,label:c=>`${Math.round(c.parsed.y)}m`}}},scales:{x:{ticks:{font:{size:8},maxTicksLimit:6,callback:(v,i)=>secSamples[i]?.d+'km'},grid:{display:false}},y:{ticks:{font:{size:8},callback:v=>v+'m'},grid:{color:'rgba(255,255,255,.05)'}}}}
+      data:{labels:secSamples.map(s=>s.d.toFixed(1)),datasets:[{data:secSamples.map(s=>s.alt),borderColor:col,backgroundColor:col+'28',fill:true,tension:.4,pointRadius:0,borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>`km ${i[0].label}`,label:c=>`${Math.round(c.parsed.y)}m`}}},scales:{x:{ticks:{font:{size:8},maxTicksLimit:6,callback:(v,i)=>secSamples[i]?.d+'km'},grid:{display:false}},y:{ticks:{font:{size:8},callback:v=>v+'m'},grid:{color:'rgba(243,239,228,.04)'}}}}
     });
   }
 }
@@ -3867,8 +3957,7 @@ function navigateSection(dir) {
   const next=window._activeSection+dir;
   if(next>=0&&next<sections.length){
     window._activeSection=next;
-    // Update text highlights
-    document.querySelectorAll('.section-block').forEach((el,i)=>el.classList.toggle('active',i===next));
+    document.querySelectorAll('.vl-section-card').forEach((el,i)=>el.classList.toggle('active',i===next));
     openSectionPopup(next);
   }
 }
@@ -3879,7 +3968,7 @@ function closeSectionPopup() {
   if(sectionMapInst){sectionMapInst.remove();sectionMapInst=null;}
   if(sectionAltiChartInst){sectionAltiChartInst.destroy();sectionAltiChartInst=null;}
   window._activeSection=-1;
-  document.querySelectorAll('.section-block').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.vl-section-card').forEach(el=>el.classList.remove('active'));
 }
 
 function resetStrategy(){
