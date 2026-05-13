@@ -1684,11 +1684,15 @@ async function checkStravaToken() {
 function mapDbActivity(row) {
   // Convert Supabase strava_activities row to the format used throughout the app
   const raw = row.raw_data || {};
+  const rawType = row.type || 'Run';
+  const sportType = row.sport_type || '';
+  // Strava sends sport_type='TrailRun' even when type='Run' — check both
+  const normalizedType = /trail/i.test(rawType) || /trail/i.test(sportType) ? 'TrailRun' : rawType;
   return {
     id: Number(row.strava_activity_id),
     name: row.name || '',
-    type: row.type || 'Run',
-    sport_type: row.sport_type || '',
+    type: normalizedType,
+    sport_type: sportType,
     start_date: row.start_date || '',
     start_date_local: row.start_date_local || '',
     distance: Number(row.distance || 0),
@@ -2851,26 +2855,25 @@ function renderRaces() {
   const next=upcoming[0];
   if(next && nextWidget){
     const diff=Math.ceil((new Date(next.date)-now)/86400000);
-    const hasGpx=!!next.gpx_data;
+    // gpx_data is stored as JSON array of {lat,lon,ele} — check it has actual points
+    let gpxPts=null;
+    try{ if(next.gpx_data){ const p=JSON.parse(next.gpx_data); if(Array.isArray(p)&&p.length>0) gpxPts=p; } }catch{}
+    const hasGpx=!!gpxPts;
     const phase=diff<=7?{label:'SEMAINE DE COURSE',c:'var(--vl-ember)'}:diff<=21?{label:'AFFÛTAGE',c:'var(--vl-amber)'}:diff<=42?{label:'PRÉPARATION SPÉCIFIQUE',c:'var(--vl-growth)'}:{label:'CONSTRUCTION DE BASE',c:'var(--vl-text-2)'};
     const totalWeeks=Math.ceil(diff/7);
     const progressPct=Math.max(2,Math.min(98,100-(diff/84)*100));
     const raceDate=new Date(next.date).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-    // Mini altimetry SVG from GPX
+    // Mini altimetry SVG — parse from JSON points (gpx_data is [{lat,lon,ele}])
     let miniAlti='';
-    if(hasGpx){
+    if(gpxPts&&gpxPts.length>4){
       try{
-        const doc=new DOMParser().parseFromString(next.gpx_data,'application/xml');
-        const eles=[...doc.querySelectorAll('trkpt ele')].map(e=>parseFloat(e.textContent)).filter(v=>!isNaN(v));
-        if(eles.length>4){
-          const step=Math.max(1,Math.floor(eles.length/80));
-          const pts=eles.filter((_,i)=>i%step===0);
-          const mn=Math.min(...pts),mx=Math.max(...pts),range=mx-mn||1;
-          const W=100,H=36;
-          const coords=pts.map((v,i)=>`${((i/(pts.length-1))*W).toFixed(1)},${(H-2-((v-mn)/range)*(H-6)).toFixed(1)}`);
-          const pathD=`M${coords.join(' L')}`;
-          miniAlti=`<svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" width="100%" height="44" style="display:block"><defs><linearGradient id="maG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--vl-ember)" stop-opacity="0.35"/><stop offset="1" stop-color="var(--vl-ember)" stop-opacity="0"/></linearGradient></defs><path d="${pathD} L${W},${H} L0,${H} Z" fill="url(#maG)"/><path d="${pathD}" fill="none" stroke="var(--vl-ember)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>`;
-        }
+        const step=Math.max(1,Math.floor(gpxPts.length/80));
+        const eles=gpxPts.filter((_,i)=>i%step===0).map(p=>p.ele||0);
+        const mn=Math.min(...eles),mx=Math.max(...eles),range=mx-mn||1;
+        const W=100,H=36;
+        const coords=eles.map((v,i)=>`${((i/(eles.length-1))*W).toFixed(1)},${(H-2-((v-mn)/range)*(H-6)).toFixed(1)}`);
+        const pathD=`M${coords.join(' L')}`;
+        miniAlti=`<svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" width="100%" height="44" style="display:block"><defs><linearGradient id="maG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--vl-ember)" stop-opacity="0.35"/><stop offset="1" stop-color="var(--vl-ember)" stop-opacity="0"/></linearGradient></defs><path d="${pathD} L${W},${H} L0,${H} Z" fill="url(#maG)"/><path d="${pathD}" fill="none" stroke="var(--vl-ember)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>`;
       }catch(e){}
     }
     nextWidget.innerHTML=`
@@ -2911,7 +2914,7 @@ function renderRaces() {
   list.innerHTML=races.map(r=>{
     const d=new Date(r.date),diff=Math.ceil((d-now)/86400000),past=diff<0;
     const color=past?'var(--text3)':diff<7?'var(--orange)':diff<30?'var(--yellow)':'var(--cyan)';
-    const hasGpx=!!r.gpx_data;
+    let hasGpx=false;try{if(r.gpx_data){const _p=JSON.parse(r.gpx_data);hasGpx=Array.isArray(_p)&&_p.length>0;}}catch{}
     const hasActivity=!!r.strava_activity_id;
     const rJson=JSON.stringify(r).replace(/'/g,"\\'");
 
@@ -3513,7 +3516,7 @@ async function analyzeGPX(points, fname) {
   setTimeout(()=>{
     if(leafletMap){leafletMap.remove();leafletMap=null;}
     leafletMap=L.map('raceMap',{zoomControl:true,scrollWheelZoom:false});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap contributors © CARTO',maxZoom:20,subdomains:'abcd'}).addTo(leafletMap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap contributors © CARTO',maxZoom:20,subdomains:'abcd',crossOrigin:true}).addTo(leafletMap);
 
     // Tracé de fond sombre
     const allLL=points.filter((_,i)=>i%3===0).map(p=>[p.lat,p.lon]);
@@ -3573,6 +3576,8 @@ async function analyzeGPX(points, fname) {
     // Fit bounds
     const polyAll=L.polyline(allLL);
     leafletMap.fitBounds(polyAll.getBounds(),{padding:[20,20]});
+    leafletMap.invalidateSize();
+    setTimeout(()=>leafletMap&&leafletMap.invalidateSize(),150);
   },300);
 
   // Alti chart avec interactivité
