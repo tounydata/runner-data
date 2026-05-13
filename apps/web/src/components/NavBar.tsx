@@ -1,11 +1,56 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/useAuthStore'
 import { useStravaStore } from '@/features/activities/useStravaStore'
+import { useThemeStore, type Theme } from '@/lib/useThemeStore'
+
+function NavLogo() {
+  const [err, setErr] = useState(false)
+  if (!err) {
+    return (
+      <img
+        src="/logo.png"
+        alt="Vorcelab"
+        onError={() => {
+          setErr(true)
+        }}
+        style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 8 }}
+      />
+    )
+  }
+  return (
+    <div
+      style={{
+        width: 34,
+        height: 34,
+        borderRadius: 8,
+        background: 'linear-gradient(135deg,var(--cyan),var(--purple))',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'var(--display)',
+        fontSize: 17,
+        color: '#000',
+      }}
+    >
+      V
+    </div>
+  )
+}
+
+const THEME_LABELS: Record<Theme, string> = { dark: '🌙', light: '☀️', auto: 'auto' }
+const THEME_CYCLE: Theme[] = ['dark', 'light', 'auto']
 
 export function NavBar() {
   const navigate = useNavigate()
   const { signOut } = useAuthStore()
   const { connected, athleteName } = useStravaStore()
+  const { theme, setTheme } = useThemeStore()
+
+  function cycleTheme() {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length]
+    setTheme(next)
+  }
 
   return (
     <header
@@ -20,7 +65,7 @@ export function NavBar() {
         left: 0,
         right: 0,
         zIndex: 200,
-        background: 'rgba(6,8,16,.85)',
+        background: 'var(--navbar-bg)',
         backdropFilter: 'blur(20px)',
       }}
     >
@@ -37,22 +82,7 @@ export function NavBar() {
           gap: 10,
         }}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
-            background: 'linear-gradient(135deg,var(--cyan),var(--purple))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--display)',
-            fontSize: 17,
-            color: '#000',
-          }}
-        >
-          AO
-        </div>
+        <NavLogo />
         <div style={{ textAlign: 'left' }}>
           <div
             style={{
@@ -104,6 +134,25 @@ export function NavBar() {
           />
           Strava
         </div>
+
+        <button
+          onClick={cycleTheme}
+          title={`Thème : ${theme} — cliquer pour changer`}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 7,
+            border: '1px solid var(--border2)',
+            background: 'var(--bg3)',
+            color: 'var(--text2)',
+            cursor: 'pointer',
+            fontFamily: 'var(--mono)',
+            fontSize: '.72rem',
+            minWidth: 36,
+          }}
+        >
+          {THEME_LABELS[theme]}
+        </button>
+
         <button
           onClick={() => {
             void signOut()
