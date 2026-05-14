@@ -2034,17 +2034,16 @@ function renderDashboard() {
   document.getElementById('s-runs-month').textContent = runsM;
   document.getElementById('s-runs-week').textContent = runsW;
 
-  // Sparklines — last 7 months (allActivities only, project current partial month)
+  // Sparklines — daily cumulative within current month
   const sparkKmData=[], sparkDpData=[];
-  const daysInMonth=(yr,mn)=>new Date(yr,mn+1,0).getDate();
-  for(let i=6;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const mn=d.getMonth(),yr=d.getFullYear();
-    const mo=allActivities.filter(a=>{const ad=new Date(a.start_date);return ad.getMonth()===mn&&ad.getFullYear()===yr&&isRun(a.type);});
-    const kmVal=mo.reduce((s,a)=>s+a.distance/1000,0);
-    const dpVal=mo.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
-    sparkKmData.push(kmVal);
-    sparkDpData.push(dpVal);
+  let cumKm=0, cumDp=0;
+  const today=now.getDate();
+  for(let day=1;day<=today;day++){
+    const dayActs=thisMonth.filter(a=>new Date(a.start_date).getDate()===day);
+    cumKm+=dayActs.reduce((s,a)=>s+a.distance/1000,0);
+    cumDp+=dayActs.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
+    sparkKmData.push(cumKm);
+    sparkDpData.push(cumDp);
   }
   renderSparkline('spark-km',sparkKmData,'#10B981');
   renderSparkline('spark-dp',sparkDpData,'#E5562A');
