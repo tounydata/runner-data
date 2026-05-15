@@ -895,11 +895,13 @@ function setAnnualMode(mode) {
   annualChartMode = mode;
   const btnKm = document.getElementById('annualBtnKm');
   const btnDp = document.getElementById('annualBtnDp');
-  if (btnKm && btnDp) {
-    const on = 'background:var(--vl-ember);color:var(--vl-ink)';
-    const off = 'background:transparent;color:var(--vl-text-3)';
-    btnKm.style.cssText = btnKm.style.cssText.replace(/background:[^;]+;color:[^;]+/, mode==='km' ? on : off);
-    btnDp.style.cssText = btnDp.style.cssText.replace(/background:[^;]+;color:[^;]+/, mode==='dp' ? on : off);
+  if (btnKm) {
+    btnKm.style.background = mode === 'km' ? 'var(--vl-ember)' : 'transparent';
+    btnKm.style.color = mode === 'km' ? 'var(--vl-ink)' : 'var(--vl-text-3)';
+  }
+  if (btnDp) {
+    btnDp.style.background = mode === 'dp' ? 'var(--vl-ember)' : 'transparent';
+    btnDp.style.color = mode === 'dp' ? 'var(--vl-ink)' : 'var(--vl-text-3)';
   }
   renderAnnualChart();
 }
@@ -936,15 +938,7 @@ function renderAnnualChart() {
   const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
-
-  const totalsEl = document.getElementById('annualTotals');
-  if (totalsEl) {
-    totalsEl.innerHTML = sortedYears.map((y, i) => {
-      const total = years[y].reduce((s,v)=>s+v, 0);
-      const label = isDp ? Math.round(total).toLocaleString('fr-FR')+' m D+' : Math.round(total)+' km';
-      return `<span style="font-family:var(--vl-mono);font-size:9px;font-weight:600;color:${colors[i%colors.length]};letter-spacing:.05em">${y} · ${label}</span>`;
-    }).join('');
-  }
+  const yUnit = isDp ? 'm' : 'km';
 
   const datasets = sortedYears.map((y,i) => {
     let cum = 0;
@@ -965,10 +959,19 @@ function renderAnnualChart() {
     };
   });
 
-  const yUnit = isDp ? 'm' : 'km';
   annualChartInst = new Chart(document.getElementById('annualChart'), {
     type:'line', data:{labels:months,datasets},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9,family:'JetBrains Mono, monospace'},color:'#5E5B52'},grid:{color:'rgba(243,239,228,.04)'}},y:{ticks:{font:{size:9,family:'JetBrains Mono, monospace'},color:'#5E5B52',callback:v=>v+yUnit},grid:{color:'rgba(243,239,228,.04)'}}}}
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{boxWidth:8,font:{size:9,family:'JetBrains Mono, monospace'},color:'#9B978A',padding:10}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label} · ${ctx.parsed.y}${yUnit}`}}
+      },
+      scales:{
+        x:{ticks:{font:{size:9,family:'JetBrains Mono, monospace'},color:'#5E5B52'},grid:{color:'rgba(243,239,228,.04)'}},
+        y:{ticks:{font:{size:9,family:'JetBrains Mono, monospace'},color:'#5E5B52',callback:v=>v+yUnit},grid:{color:'rgba(243,239,228,.04)'}}
+      }
+    }
   });
 }
 
