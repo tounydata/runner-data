@@ -594,7 +594,7 @@ function openEventView(raceId) {
   }
 }
 
-function showEventSplash(race, onDone) {
+function showEventSplash(race) {
   if (navigator.vibrate) navigator.vibrate(20);
   let traceSvg = '';
   if (race.gpx_data) {
@@ -629,12 +629,7 @@ function showEventSplash(race, onDone) {
   const dismiss = () => {
     if (!splash.parentNode) return;
     splash.style.animation = 'splashOut .25s ease forwards';
-    setTimeout(() => {
-      splash.remove();
-      const pg = document.getElementById('strategie');
-      if (pg) { pg.style.animation='slideUpPage .35s ease'; setTimeout(()=>pg.style.animation='',400); }
-      onDone();
-    }, 230);
+    setTimeout(() => splash.remove(), 240);
   };
   splash.addEventListener('click', dismiss);
   setTimeout(dismiss, 750);
@@ -642,8 +637,10 @@ function showEventSplash(race, onDone) {
 
 function goToEvent(raceId) {
   const race = (races||[]).find(r=>String(r.id)===String(raceId));
-  if (!race) { navigate('strategie'); openEventView(raceId); return; }
-  showEventSplash(race, () => { navigate('strategie'); openEventView(raceId); });
+  navigate('strategie');
+  if (race) showEventSplash(race);
+  // Refresh race data so GPX saved on another device is always picked up; splash covers the fetch
+  loadRaces().then(() => openEventView(raceId));
 }
 
 function backToCalendar() {
@@ -1722,7 +1719,7 @@ function renderRaces() {
         const W=100,H=36;
         const coords=eles.map((v,i)=>`${((i/(eles.length-1))*W).toFixed(1)},${(H-2-((v-mn)/range)*(H-6)).toFixed(1)}`);
         const pathD=`M${coords.join(' L')}`;
-        miniAlti=`<svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" width="100%" height="44" style="display:block"><defs><linearGradient id="maG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--vl-ember)" stop-opacity="0.35"/><stop offset="1" stop-color="var(--vl-ember)" stop-opacity="0"/></linearGradient></defs><path d="${pathD} L${W},${H} L0,${H} Z" fill="url(#maG)"/><path d="${pathD}" fill="none" stroke="var(--vl-ember)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>`;
+        miniAlti=`<svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" width="100%" height="44" style="display:block;pointer-events:none"><defs><linearGradient id="maG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--vl-ember)" stop-opacity="0.35"/><stop offset="1" stop-color="var(--vl-ember)" stop-opacity="0"/></linearGradient></defs><path d="${pathD} L${W},${H} L0,${H} Z" fill="url(#maG)"/><path d="${pathD}" fill="none" stroke="var(--vl-ember)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>`;
 
         // 2D route trace — fills the empty zone between stats and altimetry
         const trStep=Math.max(1,Math.floor(gpxPts.length/300));
@@ -1738,7 +1735,7 @@ function renderRaces() {
       }catch(e){}
     }
     nextWidget.innerHTML=`
-    <div onclick='goToEvent("${next.id}")' style="position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column;cursor:pointer">
+    <div onclick='goToEvent("${next.id}")' style="position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
       <div style="position:absolute;right:0;top:0;bottom:0;width:55%;background:linear-gradient(to left,rgba(229,86,42,.13) 0%,transparent 100%);pointer-events:none"></div>
       <div style="position:relative;padding:16px 16px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="flex:1;min-width:0">
