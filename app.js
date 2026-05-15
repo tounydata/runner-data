@@ -1691,15 +1691,15 @@ function renderRaces() {
       }catch(e){}
     }
     nextWidget.innerHTML=`
-    <div style="position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column">
+    <div onclick='goToEvent("${next.id}")' style="position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column;cursor:pointer">
       <div style="position:absolute;right:0;top:0;bottom:0;width:55%;background:linear-gradient(to left,rgba(229,86,42,.13) 0%,transparent 100%);pointer-events:none"></div>
       <div style="position:relative;padding:16px 16px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="flex:1;min-width:0">
           <div style="font-family:var(--vl-mono);font-size:9px;color:var(--vl-ember);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px">${next.type}</div>
-          <div style="font-family:var(--vl-display);font-size:clamp(2rem,3.5vw,2.8rem);font-weight:800;letter-spacing:.02em;text-transform:uppercase;line-height:.9;margin-bottom:6px">${next.name}</div>
+          <div style="font-family:var(--vl-display);font-size:clamp(2.4rem,4vw,3.2rem);font-weight:800;letter-spacing:.02em;text-transform:uppercase;line-height:.88;margin-bottom:8px">${next.name}</div>
           <div style="font-family:var(--vl-serif,'Fraunces'),serif;font-style:italic;font-size:.78rem;color:var(--vl-text-2);line-height:1.4">${raceDate}${next.distance?' · '+next.distance+' km':''}${next.elevation?' · D+ '+next.elevation+' m':''}</div>
         </div>
-        <button onclick='goToEvent("${next.id}")' style="flex-shrink:0;background:none;border:none;color:var(--vl-ember);font-family:var(--vl-mono);font-size:8.5px;font-weight:700;letter-spacing:.1em;cursor:pointer;padding:2px 0;white-space:nowrap;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(229,86,42,.4)">STRATÉGIE →</button>
+        <span style="flex-shrink:0;color:var(--vl-ember);font-family:var(--vl-mono);font-size:8.5px;font-weight:700;letter-spacing:.1em;padding:2px 0;white-space:nowrap;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(229,86,42,.4)">STRATÉGIE →</span>
       </div>
       <div style="position:relative;display:flex;align-items:flex-end;gap:14px;padding:10px 16px 12px">
         <div style="flex-shrink:0">
