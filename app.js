@@ -637,10 +637,10 @@ function showEventSplash(race) {
 
 function goToEvent(raceId) {
   const race = (races||[]).find(r=>String(r.id)===String(raceId));
-  // Navigate and load content immediately — splash covers while page renders
   navigate('strategie');
-  openEventView(raceId);
   if (race) showEventSplash(race);
+  // Refresh race data so GPX saved on another device is always picked up; splash covers the fetch
+  loadRaces().then(() => openEventView(raceId));
 }
 
 function backToCalendar() {
