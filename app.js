@@ -1721,7 +1721,7 @@ function renderRaces() {
           </div>
         </div>
       </div>
-      ${gpxTrace?`<div style="flex:1;overflow:hidden;min-height:80px">${gpxTrace}</div>`:''}
+      ${gpxTrace?`<div style="height:110px;overflow:hidden;flex-shrink:0">${gpxTrace}</div>`:''}
       ${miniAlti?`<div style="position:relative;overflow:hidden;flex-shrink:0"><div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(to top,var(--vl-surf),transparent);z-index:1;pointer-events:none"></div>${miniAlti}</div>`:''}
     </div>`;
   } else { if(nextWidget) nextWidget.innerHTML='<div class="mono t3">Toutes les courses sont passées</div>'; }
