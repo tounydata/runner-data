@@ -232,6 +232,68 @@ async function disconnectStrava() {
     showToast('Impossible de déconnecter Strava', 'error');
   }
 }
+async function deleteAccount() {
+  const firstConfirm = confirm(
+    'Supprimer définitivement ton compte Vorcelab ?\n\nToutes tes données seront supprimées : profil, activités, calendrier, renfo, connexion Strava.\n\nCette action est irréversible.'
+  );
+
+  if (!firstConfirm) return;
+
+  const secondConfirm = prompt(
+    'Pour confirmer, écris exactement : SUPPRIMER'
+  );
+
+  if (secondConfirm !== 'SUPPRIMER') {
+    showToast('Suppression annulée', 'error');
+    return;
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (!session?.access_token) {
+    showToast('Session expirée. Reconnecte-toi.', 'error');
+    return;
+  }
+
+  try {
+    showToast('Suppression du compte en cours...', 'success');
+
+    const r = await fetch(`${SUPA_URL}/functions/v1/delete-account`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+
+    const payload = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      throw new Error(payload.error || 'Erreur suppression compte');
+    }
+
+    await sb.auth.signOut();
+
+    currentUser = null;
+    userProfile = { pain_zones: [] };
+    allActivities = [];
+    historyActivities = [];
+    races = [];
+
+    document.querySelectorAll('.modal, .overlay, .drawer, .profile-modal').forEach(el => {
+      el.classList.remove('show', 'active', 'open');
+      el.style.display = 'none';
+    });
+
+    document.getElementById('appShell').classList.remove('show');
+    document.getElementById('authScreen').classList.add('show');
+
+    showToast('Compte supprimé', 'success');
+  } catch (e) {
+    showToast('Impossible de supprimer le compte', 'error');
+  }
+}
 async function logout() {
   await sb.auth.signOut();
 
