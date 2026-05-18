@@ -160,12 +160,28 @@ async function signup() {
   const email = document.getElementById('signupEmail').value;
   const pass = document.getElementById('signupPassword').value;
   const msg = document.getElementById('authMsg');
-  msg.textContent = 'Création...'; msg.style.color = 'var(--text2)';
+
+  if (pass.length < 8 || !/[A-Z]/.test(pass) || !/[0-9]/.test(pass)) {
+    msg.textContent = 'Mot de passe : 8 caractères minimum, avec au moins 1 majuscule et 1 chiffre.';
+    msg.style.color = 'var(--red)';
+    return;
+  }
+
+  msg.textContent = 'Création...';
+  msg.style.color = 'var(--text2)';
+
   const { data, error } = await sb.auth.signUp({ email, password: pass });
-  if (error) { msg.textContent = error.message; msg.style.color = 'var(--red)'; return; }
+
+  if (error) {
+    msg.textContent = error.message;
+    msg.style.color = 'var(--red)';
+    return;
+  }
+
   if (data.user) {
     await sb.from('profiles').upsert({ id: data.user.id, name });
-    msg.textContent = '✓ Compte créé ! Vérifie ton email si demandé.'; msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Compte créé ! Vérifie ton email si demandé.';
+    msg.style.color = 'var(--green)';
     setTimeout(() => initApp(data.user), 1500);
   }
 }
