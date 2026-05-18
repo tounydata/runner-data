@@ -60,8 +60,8 @@ const RENFO_EXERCISES = {
 
   rdl: {
     id: 'rdl',
-    name_fr: 'Soulevé jambes tendues',
-    name_tech: 'Romanian Deadlift',
+    name_fr: 'Soulevé roumain',
+    name_tech: 'Romanian Deadlift (RDL)',
     category: 'force_lourde',
     primary_muscles: ['ischio-jambiers', 'fessiers', 'bas du dos'],
     benefits: ['force_max', 'prevention_blessure', 'descente_trail'],
@@ -174,7 +174,7 @@ const RENFO_EXERCISES = {
 
   mollets_lourds: {
     id: 'mollets_lourds',
-    name_fr: 'Mollets lourds',
+    name_fr: 'Élévations de mollets lestées',
     name_tech: 'Calf raise (loaded)',
     category: 'force_lourde',
     primary_muscles: ['gastrocnémien', 'soléaire'],
@@ -229,7 +229,7 @@ const RENFO_EXERCISES = {
 
   pogo_jumps: {
     id: 'pogo_jumps',
-    name_fr: 'Sauts pogo',
+    name_fr: 'Rebonds pogo',
     name_tech: 'Pogo jumps',
     category: 'pliometrie',
     primary_muscles: ['mollets', 'tendons d\'Achille'],
@@ -299,7 +299,7 @@ const RENFO_EXERCISES = {
 
   drop_jumps: {
     id: 'drop_jumps',
-    name_fr: 'Drop jumps',
+    name_fr: 'Sauts en profondeur',
     name_tech: 'Drop jumps / Depth jumps',
     category: 'pliometrie',
     primary_muscles: ['quadriceps', 'fessiers', 'mollets'],
@@ -334,7 +334,7 @@ const RENFO_EXERCISES = {
 
   skips: {
     id: 'skips',
-    name_fr: 'Skips',
+    name_fr: 'Gammes de course',
     name_tech: 'A-skips / B-skips',
     category: 'pliometrie',
     primary_muscles: ['fléchisseurs de hanche', 'mollets'],
@@ -371,7 +371,7 @@ const RENFO_EXERCISES = {
 
   step_down: {
     id: 'step_down',
-    name_fr: 'Step down excentrique',
+    name_fr: 'Descente de marche excentrique',
     name_tech: 'Eccentric step down',
     category: 'excentrique',
     primary_muscles: ['quadriceps', 'genou'],
@@ -441,8 +441,8 @@ const RENFO_EXERCISES = {
 
   mollet_excentrique: {
     id: 'mollet_excentrique',
-    name_fr: 'Mollet excentrique',
-    name_tech: 'Eccentric calf raise (Alfredson)',
+    name_fr: 'Mollets excentriques (protocole Alfredson)',
+    name_tech: 'Eccentric calf raise',
     category: 'excentrique',
     primary_muscles: ['gastrocnémien', 'soléaire', 'tendon d\'Achille'],
     benefits: ['prevention_blessure', 'economie_course'],
@@ -485,7 +485,7 @@ const RENFO_EXERCISES = {
 
   single_leg_rdl: {
     id: 'single_leg_rdl',
-    name_fr: 'RDL unilatéral',
+    name_fr: 'Soulevé roumain unilatéral',
     name_tech: 'Single-leg RDL',
     category: 'excentrique',
     primary_muscles: ['ischio-jambiers', 'fessiers', 'stabilisateurs cheville'],
@@ -564,7 +564,7 @@ const RENFO_EXERCISES = {
 
   side_plank_hipdrop: {
     id: 'side_plank_hipdrop',
-    name_fr: 'Planche latérale hip drop',
+    name_fr: 'Planche latérale dynamique',
     name_tech: 'Side plank with hip drop',
     category: 'tronc',
     primary_muscles: ['obliques', 'abducteurs', 'fessier moyen'],
@@ -658,7 +658,7 @@ const RENFO_EXERCISES = {
 
   suitcase_carry: {
     id: 'suitcase_carry',
-    name_fr: 'Farmer carry unilatéral',
+    name_fr: 'Marche avec charge unilatérale',
     name_tech: 'Suitcase carry',
     category: 'tronc',
     primary_muscles: ['obliques', 'quadratus lumborum', 'trapèzes'],
@@ -815,7 +815,7 @@ const RENFO_EXERCISES = {
 
   ytw_prone: {
     id: 'ytw_prone',
-    name_fr: 'YTW allongé',
+    name_fr: 'Exercice YTW (omoplate)',
     name_tech: 'YTW prone (scapular)',
     category: 'haut_corps',
     primary_muscles: ['trapèzes inférieurs', 'rhomboïdes', 'deltoïdes postérieurs'],
@@ -851,7 +851,7 @@ const RENFO_EXERCISES = {
 
   hip_9090: {
     id: 'hip_9090',
-    name_fr: 'Hip 90/90',
+    name_fr: 'Rotation de hanche 90/90',
     name_tech: 'Hip 90/90 stretch',
     category: 'mobilite',
     primary_muscles: ['rotateurs de hanche', 'fléchisseurs de hanche'],
@@ -901,8 +901,8 @@ const RENFO_EXERCISES = {
 
   knee_to_wall: {
     id: 'knee_to_wall',
-    name_fr: 'Mobilité cheville (knee to wall)',
-    name_tech: 'Knee to wall / Wall ankle mobility',
+    name_fr: 'Mobilité cheville au mur',
+    name_tech: 'Knee to wall',
     category: 'mobilite',
     primary_muscles: ['cheville', 'mollet', 'tendon Achille'],
     benefits: ['prevention_blessure', 'economie_course'],
@@ -926,8 +926,8 @@ const RENFO_EXERCISES = {
 
   open_book: {
     id: 'open_book',
-    name_fr: 'Open book (rotation thoracique)',
-    name_tech: 'Open book thoracic rotation',
+    name_fr: 'Rotation thoracique',
+    name_tech: 'Open book',
     category: 'mobilite',
     primary_muscles: ['thoracique', 'pectoraux', 'épaules'],
     benefits: ['posture', 'prevention_blessure'],
@@ -951,8 +951,8 @@ const RENFO_EXERCISES = {
 
   monster_walk: {
     id: 'monster_walk',
-    name_fr: 'Monster walk',
-    name_tech: 'Monster walk (banded)',
+    name_fr: 'Marche résistée latérale',
+    name_tech: 'Monster walk',
     category: 'mobilite',
     primary_muscles: ['fessier moyen', 'abducteurs', 'stabilisateurs genou'],
     benefits: ['prevention_blessure', 'stabilite'],
@@ -1235,7 +1235,7 @@ function weeklyImpactZone(score, objectiveWeight) {
 let renfoProfile = null;
 let renfoProgram = null;
 let renfoSessionLogs = [];
-let _renfoOnboarding = {};
+let _renfoOnboarding = { equipment: {} };
 
 async function loadRenfoApp() {
   const el = document.getElementById('renfoApp');
@@ -1247,6 +1247,7 @@ async function loadRenfoApp() {
 
   if (!profile || !profile.onboarding_completed) {
     el.innerHTML = '';
+    _renfoOnboarding = { equipment: {} };
     renderOnboardingStep(1);
     return;
   }
@@ -1267,85 +1268,114 @@ function renderOnboardingStep(step) {
   const el = document.getElementById('renfoApp');
   if (!el) return;
 
-  const steps = [null,
-    {
-      title: 'Ton objectif principal',
-      sub: 'Le programme s\'adaptera à ta priorité.',
-      content: `<div style="display:flex;flex-direction:column;gap:10px">
-        ${[
-          [25,'Prévenir les blessures','Excentrique · Mobilité · Stabilité'],
-          [75,'Progresser en performance','Force lourde · Pliométrie · Économie de course'],
-          [50,'Les deux à parts égales','Programme équilibré']
-        ].map(([v,t,s])=>`<button class="vl-ob-btn" data-val="${v}" data-type="obj" onclick="renfoObSelect(this)" style="text-align:left;padding:16px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text);touch-action:manipulation;-webkit-tap-highlight-color:transparent">
-          <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">${t}</div>
-          <div style="font-size:.75rem;color:var(--vl-text-2)">${s}</div>
-        </button>`).join('')}
-      </div>`
-    },
-    {
-      title: 'Combien de séances par semaine ?',
-      sub: 'Sois réaliste — mieux vaut 2 séances tenues que 5 ratées.',
-      content: `<div style="display:flex;flex-direction:column;gap:10px">
-        ${[
-          [1,'1 séance','Minimum vital — uniquement force lourde'],
-          [3,'2–3 séances ⭐','Recommandé — Blagrove 2018 : +2 à 8% économie de course'],
-          [5,'4–5 séances','Intensif — inclut tronc, haut du corps, mobilité'],
-          [6,'Quotidien (format court)','6 séances max · 1 jour de repos obligatoire']
-        ].map(([v,t,s])=>`<button class="vl-ob-btn" data-val="${v}" data-type="spw" onclick="renfoObSelect(this)" style="text-align:left;padding:16px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text);touch-action:manipulation;-webkit-tap-highlight-color:transparent">
-          <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">${t}</div>
-          <div style="font-size:.75rem;color:var(--vl-text-2)">${s}</div>
-        </button>`).join('')}
-      </div>`
-    },
-    {
-      title: 'Ton matériel disponible',
-      sub: 'Le programme sélectionnera les variantes adaptées.',
-      content: `<div style="display:flex;flex-direction:column;gap:12px">
+  const obBtn = (v, type, title, sub) => `<button class="vl-ob-btn" data-val="${v}" data-type="${type}" onclick="renfoObSelect(this)"
+    style="text-align:left;padding:14px 16px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;width:100%">
+    <div style="font-family:var(--vl-display);font-size:1.05rem;font-weight:700;margin-bottom:3px">${title}</div>
+    <div style="font-size:.73rem;color:var(--vl-text-2)">${sub}</div>
+  </button>`;
+
+  const eqLabel = (k, l) => `<label style="display:flex;align-items:center;gap:8px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:10px;padding:10px 12px;cursor:pointer;touch-action:manipulation">
+    <input type="checkbox" onchange="renfoEquipSet('${k}',this.checked)" style="accent-color:var(--vl-ember);width:16px;height:16px;flex-shrink:0">
+    <span style="font-size:.78rem;color:var(--vl-text)">${l}</span>
+  </label>`;
+
+  const contents = [null,
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      ${obBtn(25,'obj','Prévenir les blessures','Excentrique · Mobilité · Stabilité')}
+      ${obBtn(75,'obj','Progresser en performance','Force lourde · Pliométrie · Économie de course')}
+      ${obBtn(50,'obj','Les deux à parts égales','Programme équilibré')}
+    </div>`,
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      ${obBtn(1,'spw','1 séance / semaine','~50 min · Force lourde uniquement')}
+      ${obBtn(3,'spw','2–3 séances / semaine ⭐','~35–50 min · Recommandé scientifique (Blagrove 2018)')}
+      ${obBtn(5,'spw','4–5 séances / semaine','~30–40 min · Force + pliométrie + tronc + haut du corps')}
+      ${obBtn(6,'spw','6 séances / semaine','~20–30 min · Format court quotidien')}
+    </div>`,
+    `<div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-family:var(--vl-mono);font-size:.6rem;letter-spacing:.08em;color:var(--vl-text-2);margin-bottom:8px">À DOMICILE — disponible tous les jours</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${[
-            ['barbell','Barre + disques'],['leg_press','Presse à cuisses'],
-            ['bench','Banc'],['pullup_bar','Barre de traction'],
-            ['step','Step / marche'],['anchor_point','Point d\'ancrage']
-          ].map(([k,l])=>`<label style="display:flex;align-items:center;gap:8px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:10px;padding:10px 12px;cursor:pointer;touch-action:manipulation">
-            <input type="checkbox" data-eq="${k}" onchange="_renfoOnboarding.equipment[this.dataset.eq]=this.checked" style="accent-color:var(--vl-ember);width:16px;height:16px;flex-shrink:0">
-            <span style="font-size:.78rem;color:var(--vl-text)">${l}</span>
-          </label>`).join('')}
+          ${eqLabel('pullup_bar','Barre de traction')}
+          ${eqLabel('step','Step / marche')}
+          ${eqLabel('anchor_point','Point d\'ancrage')}
         </div>
-        <label style="display:flex;align-items:center;gap:8px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:10px;padding:10px 12px;cursor:pointer;touch-action:manipulation">
-          <input type="checkbox" onchange="_renfoOnboarding.has_gym_access=this.checked" style="accent-color:var(--vl-ember);width:16px;height:16px;flex-shrink:0">
-          <span style="font-size:.78rem;color:var(--vl-text)">Accès à une salle régulièrement</span>
-        </label>
-        <div>
-          <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Haltères — charge max : <strong id="dbVal">0</strong> kg</div>
+        <div style="margin-top:8px">
+          <div style="font-size:.73rem;color:var(--vl-text-2);margin-bottom:5px">Haltères — charge max : <strong id="dbVal">0</strong> kg</div>
           <input type="range" min="0" max="50" step="2.5" value="0" oninput="document.getElementById('dbVal').textContent=this.value;_renfoOnboarding.equipment.dumbbells_max_kg=+this.value" style="width:100%;accent-color:var(--vl-ember)">
         </div>
-        <div>
-          <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Kettlebell — charge max : <strong id="kbVal">0</strong> kg</div>
+        <div style="margin-top:8px">
+          <div style="font-size:.73rem;color:var(--vl-text-2);margin-bottom:5px">Kettlebell — charge max : <strong id="kbVal">0</strong> kg</div>
           <input type="range" min="0" max="40" step="4" value="0" oninput="document.getElementById('kbVal').textContent=this.value;_renfoOnboarding.equipment.kettlebell_max_kg=+this.value" style="width:100%;accent-color:var(--vl-ember)">
         </div>
-        <div>
-          <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Élastiques disponibles</div>
+        <div style="margin-top:8px">
+          <div style="font-size:.73rem;color:var(--vl-text-2);margin-bottom:6px">Élastiques de résistance</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${['light','medium','heavy','extra-heavy'].map(b=>`<button onclick="renfoToggleBand(this,'${b}')" style="padding:7px 13px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:8px;cursor:pointer;font-size:.75rem;color:var(--vl-text);touch-action:manipulation;-webkit-tap-highlight-color:transparent">${b}</button>`).join('')}
+            ${['Léger','Moyen','Fort','Extra-fort'].map((b,i)=>{
+              const val = ['light','medium','heavy','extra-heavy'][i];
+              return `<button type="button" id="band-${val}" onclick="renfoToggleBand(this,'${val}')"
+                style="padding:7px 13px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:8px;cursor:pointer;font-size:.75rem;color:var(--vl-text);touch-action:manipulation;-webkit-tap-highlight-color:transparent">${b}</button>`;
+            }).join('')}
           </div>
         </div>
-      </div>`
-    }
+      </div>
+      <div>
+        <div style="font-family:var(--vl-mono);font-size:.6rem;letter-spacing:.08em;color:var(--vl-text-2);margin-bottom:8px">EN SALLE — si tu as accès à une salle</div>
+        <label style="display:flex;align-items:center;gap:10px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:10px;padding:12px;cursor:pointer;touch-action:manipulation;margin-bottom:8px">
+          <input type="checkbox" id="gymAccessCheck" onchange="renfoEquipSet('_gym',this.checked)" style="accent-color:var(--vl-ember);width:18px;height:18px;flex-shrink:0">
+          <div>
+            <div style="font-size:.82rem;color:var(--vl-text);font-weight:600">J'ai accès à une salle régulièrement</div>
+            <div style="font-size:.7rem;color:var(--vl-text-2)">Débloque les variantes avec barres et machines</div>
+          </div>
+        </label>
+        <div id="gymEquipSection" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${eqLabel('barbell','Barre + disques')}
+          ${eqLabel('leg_press','Presse à cuisses')}
+          ${eqLabel('bench','Banc')}
+        </div>
+      </div>
+    </div>`
   ];
 
-  const s = steps[step];
+  const titles = [null, 'Ton objectif', 'Ton rythme', 'Ton matériel'];
+  const subs   = [null,
+    'Le programme s\'adaptera à ta priorité.',
+    'Sois réaliste — 2 séances tenues valent mieux que 5 ratées.',
+    'Le programme choisit automatiquement les meilleures variantes.'
+  ];
+
   el.innerHTML = `<div style="padding:4px 0 24px">
     <div style="font-family:var(--vl-mono);font-size:.6rem;letter-spacing:.12em;color:var(--vl-ember);margin-bottom:8px">ÉTAPE ${step} / 3</div>
-    <div style="font-family:var(--vl-display);font-size:1.8rem;font-weight:800;line-height:1.1;margin-bottom:6px">${s.title}</div>
-    <div style="font-size:.8rem;color:var(--vl-text-2);margin-bottom:24px">${s.sub}</div>
-    ${s.content}
+    <div style="font-family:var(--vl-display);font-size:1.8rem;font-weight:800;line-height:1.1;margin-bottom:6px">${titles[step]}</div>
+    <div style="font-size:.8rem;color:var(--vl-text-2);margin-bottom:20px">${subs[step]}</div>
+    ${contents[step]}
     <div style="display:flex;gap:10px;margin-top:24px">
       ${step > 1 ? `<button onclick="renderOnboardingStep(${step-1})" style="flex:1;padding:14px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text);font-family:var(--vl-mono);touch-action:manipulation">← Retour</button>` : ''}
       ${step < 3
-        ? `<button onclick="renderOnboardingStep(${step+1})" style="flex:2;padding:14px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-mono);font-weight:700;touch-action:manipulation">Suivant →</button>`
+        ? `<button onclick="renfoNextStep(${step})" style="flex:2;padding:14px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-mono);font-weight:700;touch-action:manipulation">Suivant →</button>`
         : `<button onclick="finishRenfoOnboarding()" style="flex:2;padding:14px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-mono);font-weight:700;touch-action:manipulation">Générer mon programme →</button>`}
     </div>
   </div>`;
+}
+
+function renfoNextStep(current) {
+  if (current === 1 && _renfoOnboarding.objective_weight === undefined) {
+    showToast('Choisis un objectif pour continuer', 'info'); return;
+  }
+  if (current === 2 && _renfoOnboarding.sessions_per_week === undefined) {
+    showToast('Choisis un rythme de séances', 'info'); return;
+  }
+  renderOnboardingStep(current + 1);
+}
+
+function renfoEquipSet(key, val) {
+  if (!_renfoOnboarding.equipment) _renfoOnboarding.equipment = {};
+  if (key === '_gym') {
+    _renfoOnboarding.has_gym_access = val;
+    const sec = document.getElementById('gymEquipSection');
+    if (sec) sec.style.display = val ? 'grid' : 'none';
+  } else {
+    _renfoOnboarding.equipment[key] = val;
+  }
 }
 
 function renfoObSelect(btn) {
@@ -1362,6 +1392,7 @@ function renfoObSelect(btn) {
 }
 
 function renfoToggleBand(btn, band) {
+  if (!_renfoOnboarding.equipment) _renfoOnboarding.equipment = {};
   if (!_renfoOnboarding.equipment.bands) _renfoOnboarding.equipment.bands = [];
   const idx = _renfoOnboarding.equipment.bands.indexOf(band);
   if (idx === -1) {
@@ -1485,7 +1516,7 @@ function renderRenfoHome() {
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.25rem">
       <div>
         <div class="mlabel" style="margin-bottom:4px">Section 03</div>
-        <div style="font-family:var(--vl-display);font-size:2rem;font-weight:700;letter-spacing:0.01em;line-height:1">RENFO</div>
+        <div style="font-family:var(--vl-display);font-size:2rem;font-weight:700;letter-spacing:0.01em;line-height:1">RENFO MUSCULAIRE</div>
       </div>
       <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-size:1.3rem;padding:4px;touch-action:manipulation">⚙️</button>
     </div>
