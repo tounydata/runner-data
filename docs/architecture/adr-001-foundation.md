@@ -1,148 +1,108 @@
-# ADR-001 — Foundation Architecture
+# ADR-001 — Vorcelab Current Foundation
 
-**Status:** Accepted  
-**Date:** 2026-05-06  
+**Status:** Accepted / current baseline  
+**Date:** 2026-05-18  
 **Authors:** Engineering lead
 
 ---
 
 ## Context
 
-Runner OS started as a single-file monolith (`index.html`, ~3 400 lines of mixed HTML/CSS/JS). The app uses Supabase (Auth, Postgres, Edge Functions), Strava OAuth, and Claude AI. It is being opened to its first external users and needs to be maintainable, secure, and scalable.
+Vorcelab is a personal running and trail analytics application. The current production baseline is still a static frontend built around `index.html`, `app.js`, `style.css`, `renfo.js`, Supabase Auth/Postgres/Edge Functions, and Strava OAuth.
 
-Pain points identified in the monolith:
-
-- Tokens stored in `localStorage` (XSS exposure)
-- `innerHTML` with unsanitised AI responses (XSS vector)
-- `</body>` closed mid-file, DOM nodes appended after
-- No type safety, no tests, no CI
-- All business logic, UI, and API calls mixed in global scope
-- Secrets inlined (Supabase URL/key hard-coded)
+This document describes the current safe baseline after the multi-user and Strava security audit. It replaces older references to the temporary name “Runner OS”.
 
 ---
 
-## Decision: React + Vite (not Next.js)
-
-### Chosen: React 19 + Vite 6
-
-**Why not Next.js:**
-
-- The app is entirely behind authentication — SSR provides zero SEO value for user-specific dashboards
-- No public pages require server rendering or static generation
-- The deployment target is a static CDN (Cloudflare Pages / Vercel static) — no Node server needed
-- Next.js App Router would add significant complexity (RSC, streaming, layouts) without any benefit for this use case
-- Strava OAuth flow is handled by Supabase Edge Functions, not the Next.js server
-
-**Why React + Vite:**
-
-- Fast HMR, minimal config
-- Full TypeScript support out of the box
-- `@vitejs/plugin-react` with SWC for production builds
-- Dead-simple deployment as static files
-- Tree-shaking keeps bundle lean
-- Supabase JS client is designed for client-side usage
-
-**Trade-off:** If the product needs public marketing pages, SEO-optimised race results, or server-side personalisation in future, migrating to Next.js is a realistic Phase 3 option without rewriting business logic (features are already isolated).
-
----
-
-## Decision: Zustand (not Redux Toolkit)
-
-**Why Zustand:**
-
-- Minimal boilerplate — store definition is one function call
-- First-class TypeScript inference without extra setup
-- Atomic slices map directly to features (auth, activities, race-calendar, profile)
-- No `Provider` wrapper required
-- Devtools available via `zustand/middleware`
-
-**Why not Redux Toolkit:**
-
-- RTK Query solves server-cache problems that `@tanstack/react-query` solves more elegantly
-- Overkill for the current feature surface
-- Heavier bundle (~15 KB gzip vs ~1 KB for Zustand)
-
-**Trade-off:** If the team grows to 5+ engineers with complex shared server state, migrating hot paths to React Query + Zustand is the recommended path (not RTK).
-
----
-
-## Monorepo Structure
+## Current Architecture
 
 ```
-runner-os/
-├── apps/
-│   └── web/                  # React + Vite SPA
-├── packages/
-│   └── shared/               # Types, Zod schemas, pure utilities
-├── supabase/
-│   ├── functions/            # Edge Functions (Deno)
-│   └── migrations/           # SQL migrations (sequential)
-├── docs/
-│   ├── architecture/
-│   └── runbooks/
-└── .github/
-    └── workflows/
+Browser SPA
+  ├─ index.html / app.js / style.css / renfo.js
+  ├─ Supabase Auth for email/password login
+  ├─ Supabase Postgres with RLS on user-data tables
+  └─ Supabase Edge Functions for sensitive operations
+       ├─ strava-oauth        — OAuth code exchange, token storage, anti-duplicate Strava link
+       ├─ strava-refresh      — Strava sync / token refresh
+       ├─ strava-status       — connection status without exposing tokens
+       ├─ strava-disconnect   — revoke Strava and remove local token row
+       ├─ strava-webhook      — Strava webhook processing
+       └─ delete-account      — full user data and Auth account deletion
 ```
 
-**Why a monorepo:**
+---
 
-- `packages/shared` types are consumed by both the frontend and Edge Functions
-- A single `pnpm` workspace keeps dependency versions in sync
-- Turbo enables parallel builds and caching across packages
-- `supabase/` lives at root to align with Supabase CLI conventions
+## Security Decisions
+
+| Concern | Current decision |
+| --- | --- |
+| Strava tokens | Stored server-side in `strava_tokens`; never returned to the browser |
+| Multi-user isolation | RLS on user data + service-role Edge Functions scoped by authenticated user |
+| Duplicate Strava identity | `strava-oauth` rejects an already-linked `strava_athlete_id`; DB unique index also enforces it |
+| Strava disconnect | Dedicated `strava-disconnect` function; dashboard button disconnects Strava only |
+| Vorcelab logout | Profile logout only signs out from Vorcelab/Supabase |
+| Account deletion | `delete-account` removes user data, revokes Strava best effort, and deletes Supabase Auth user |
+| Password policy | Minimum 8 chars, lowercase, uppercase, digit. Leaked password protection unavailable on free Supabase plan |
+| External AI | Disabled. Vorcelab currently uses local deterministic activity analysis only |
+| CORS | Authenticated Edge Functions use an allowlist for production and local dev origins |
 
 ---
 
-## API Boundaries
+## Current Data Ownership Model
 
-```
-Browser (React)
-  │
-  ├─ Supabase JS client (@supabase/supabase-js)
-  │    ├─ Auth (email/password, session refresh)
-  │    └─ Postgres (RLS-protected queries)
-  │
-  └─ Supabase Edge Functions (via fetch / supabase.functions.invoke)
-       ├─ strava-oauth      — exchange code → tokens, store encrypted
-       ├─ strava-refresh    — refresh Strava token on expiry
-       └─ ai-analysis       — proxy Claude API (server-side key)
-```
+Each user can access only their own rows. User-scoped tables include:
 
-**No direct API calls from the browser to:**
+- `profiles`
+- `activities_history`
+- `race_calendar`
+- `strava_activities`
+- `strava_tokens`
+- `renfo_profile`
+- `renfo_program`
+- `renfo_session_log`
+- `renfo_exercise_log`
+- `renfo_max_lifts`
 
-- Strava API (tokens stay server-side in Edge Functions)
-- Anthropic API (key never exposed to client)
+`strava_tokens` and `strava_webhook_events` are server-managed tables. They are not intended to be queried directly by the frontend.
 
 ---
 
-## Security Model
+## Strava OAuth Baseline
 
-| Concern             | Decision                                                                                                 |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| Strava tokens       | Stored in `strava_tokens` table (server-side only, never sent to client); access via Edge Functions only |
-| Supabase session    | httpOnly cookies via `supabase.auth.setSession` + `storage: cookieStorage` in production                 |
-| AI output rendering | `textContent` or `marked` with strict sanitisation — never raw `innerHTML`                               |
-| RLS                 | Explicit policies on every table; `TO authenticated` minimum                                             |
-| Secrets             | All in `.env` / Supabase Vault; zero secrets in source                                                   |
-| CORS                | Edge Functions enforce `Access-Control-Allow-Origin` allowlist                                           |
+The Strava OAuth flow must respect these rules:
 
----
-
-## Data Contracts
-
-All TypeScript types are defined in `packages/shared/src/types/` and published as `@runner-os/shared`. Zod schemas in `packages/shared/src/schemas/` provide runtime validation at system boundaries (Edge Function ingress, AI response parsing).
+1. The browser never receives Strava access or refresh tokens.
+2. `approval_prompt` is forced in the frontend to avoid silent browser-session reuse during beta testing.
+3. `strava-oauth` checks whether the returned `strava_athlete_id` already belongs to another Vorcelab user.
+4. The database has a unique index on `strava_tokens(strava_athlete_id)` where not null.
+5. If a duplicate Strava athlete is attempted, the API returns HTTP 409 with a clear message.
 
 ---
 
-## Migration Steps
+## External AI Decision
 
-See [docs/architecture/migration-plan.md](./migration-plan.md) for the phased approach.
+Older experimental AI/Groq/Claude analysis work is no longer part of the current production behavior.
+
+Current rule:
+
+> Strava data must not be sent to an external AI provider. Activity summaries are generated locally/deterministically from the user’s own data.
+
+The legacy `ai-analysis` Edge Function is disabled and returns HTTP 410 if called.
 
 ---
 
-## Consequences
+## Near-Term Development Notes
 
-- Frontend is a static SPA — Cloudflare Pages or Vercel free tier will host it
-- Edge Functions handle all sensitive server logic
-- Shared types enforce a contract between frontend and backend at compile time
-- The monolith `index.html` is kept as-is during Phase A and removed in Phase C
+Before adding major new features such as the renfo module, keep this baseline stable:
+
+- Do not reintroduce Strava token exposure in the frontend.
+- Do not add direct frontend calls to Strava APIs.
+- Do not bypass the anti-duplicate Strava athlete check.
+- Do not re-enable external AI analysis without updating CGU, privacy policy, user consent, and Strava review wording.
+- Keep GitHub function sources aligned with deployed Supabase Edge Functions.
+
+---
+
+## Future Architecture Option
+
+A future migration to React + Vite remains possible, but it is not the current production baseline. Any migration should preserve the same security model and data ownership rules described above.
