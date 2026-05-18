@@ -369,16 +369,20 @@ async function manualSync() {
 }
 
 async function checkStravaConnection() {
-  // Check strava_tokens table for this user
-  const { data } = await sb.from('strava_tokens')
-    .select('athlete_firstname,athlete_lastname')
-    .eq('user_id', currentUser.id)
-    .maybeSingle();
-  if (data) {
-    const name = [data.athlete_firstname, data.athlete_lastname].filter(Boolean).join(' ');
-    setStravaConnected(name);
-    return true;
-  }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.access_token) return false;
+  try {
+    const r = await fetch(`${SUPA_URL}/functions/v1/strava-status`, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` }
+    });
+    if (!r.ok) return false;
+    const data = await r.json();
+    if (data.connected) {
+      const name = [data.athlete_firstname, data.athlete_lastname].filter(Boolean).join(' ');
+      setStravaConnected(name);
+      return true;
+    }
+  } catch {}
   return false;
 }
 
