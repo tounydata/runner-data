@@ -1,6 +1,4 @@
 const STATIC_ORIGINS = new Set([
-  'https://runner-os.com',
-  'https://www.runner-os.com',
   'https://tounydata.github.io',
   'http://localhost:5173',
   'http://localhost:4173',
