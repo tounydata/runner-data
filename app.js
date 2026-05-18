@@ -185,7 +185,53 @@ async function signup() {
     setTimeout(() => initApp(data.user), 1500);
   }
 }
+async function disconnectStrava() {
+  const ok = confirm('Déconnecter Strava de ce compte Vorcelab ? Les futures synchronisations seront arrêtées.');
+  if (!ok) return;
 
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (!session?.access_token) {
+    showToast('Session expirée. Reconnecte-toi.', 'error');
+    return;
+  }
+
+  try {
+    const r = await fetch(`${SUPA_URL}/functions/v1/strava-disconnect`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+
+    if (!r.ok) throw new Error('Erreur déconnexion Strava');
+
+    allActivities = [];
+
+    document.getElementById('statusDot').className = 'dot dot-off';
+    document.getElementById('statusText').textContent = 'Strava';
+    document.getElementById('btnStrava').style.display = 'flex';
+
+    const syncBtn = document.getElementById('btnSync');
+    if (syncBtn) syncBtn.style.display = 'none';
+
+    const dotM = document.getElementById('statusDotMobile');
+    if (dotM) dotM.className = 'dot dot-off';
+
+    const syncM = document.getElementById('btnSyncMobile');
+    if (syncM) syncM.style.display = 'none';
+
+    const stravaM = document.getElementById('btnStravaMobile');
+    if (stravaM) stravaM.style.display = 'inline-flex';
+
+    showToast('Strava déconnecté', 'success');
+    renderDashboard();
+  } catch (e) {
+    showToast('Impossible de déconnecter Strava', 'error');
+  }
+}
 async function logout() {
   await sb.auth.signOut();
   currentUser = null; userProfile = { pain_zones: [] }; allActivities = [];
