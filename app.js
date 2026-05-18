@@ -139,7 +139,22 @@ async function login() {
   if (error) { msg.textContent = error.message; msg.style.color = 'var(--red)'; return; }
   if (data?.user) { await initApp(data.user); }
 }
+function updatePasswordRules() {
+  const pass = document.getElementById('signupPassword')?.value || '';
 
+  const rules = [
+    { id: 'ruleLength', ok: pass.length >= 8, text: '8 caractères minimum' },
+    { id: 'ruleUpper', ok: /[A-Z]/.test(pass), text: '1 majuscule minimum' },
+    { id: 'ruleDigit', ok: /[0-9]/.test(pass), text: '1 chiffre minimum' },
+  ];
+
+  rules.forEach(rule => {
+    const el = document.getElementById(rule.id);
+    if (!el) return;
+    el.textContent = `${rule.ok ? '✓' : '○'} ${rule.text}`;
+    el.style.color = rule.ok ? 'var(--green)' : 'var(--vl-text-3)';
+  });
+}
 async function signup() {
   const name = document.getElementById('signupName').value;
   const email = document.getElementById('signupEmail').value;
