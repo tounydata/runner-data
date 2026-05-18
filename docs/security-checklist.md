@@ -81,8 +81,6 @@ User-scoped tables to keep protected:
 Allowed origins currently used by Edge Functions:
 
 - `https://tounydata.github.io`
-- `https://runner-os.com`
-- `https://www.runner-os.com`
 - `http://localhost:5173`
 - `http://localhost:4173`
 
@@ -90,7 +88,7 @@ Rules:
 
 - [x] No `Access-Control-Allow-Origin: *` on authenticated endpoints
 - [x] CORS issue fixed on `strava-disconnect`
-- [ ] Before final branding/domain release, remove unused old domains or keep only intentional redirects
+- [x] Old `runner-os.com` domains removed from the shared CORS source
 
 ---
 
@@ -145,5 +143,5 @@ Minimum checklist before inviting non-technical users:
 - [ ] XSS/innerHTML audit completed
 - [ ] CGU/privacy text updated for final brand and contact
 - [ ] Strava branding/Powered by Strava placement verified
-- [ ] Production domain chosen and old domains reviewed
+- [x] Old runner-os domains removed from active shared CORS source
 - [ ] Basic error messages localized and user-friendly
