@@ -73,14 +73,14 @@
       <button class="auth-tab" onclick="switchTab('signup',this)">Créer un compte</button>
     </div>
     <form id="loginForm" onsubmit="event.preventDefault();login()">
-      <input class="fi" type="email" id="loginEmail" placeholder="ton@email.com">
-      <input class="fi" type="password" id="loginPassword" placeholder="••••••••">
+     <input class="fi" type="email" id="loginEmail" placeholder="Adresse email" autocomplete="email">
+<input class="fi" type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
       <button class="btn-primary" type="submit">Se connecter</button>
     </form>
     <form id="signupForm" style="display:none" onsubmit="event.preventDefault();signup()">
-      <input class="fi" type="text" id="signupName" placeholder="">
-      <input class="fi" type="email" id="signupEmail" placeholder="ton@email.com">
-      <input class="fi" type="password" id="signupPassword" placeholder="">
+    <input class="fi" type="text" id="signupName" placeholder="Prénom ou pseudo" autocomplete="name">
+<input class="fi" type="email" id="signupEmail" placeholder="Adresse email" autocomplete="email">
+<input class="fi" type="password" id="signupPassword" placeholder="Mot de passe" autocomplete="new-password">
       <button class="btn-primary" type="submit">Créer mon compte</button>
     </form>
     <div class="auth-msg" id="authMsg"></div>
