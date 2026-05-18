@@ -131,13 +131,30 @@ function switchTab(tab, btn) {
 }
 
 async function login() {
-  const email = document.getElementById('loginEmail').value;
+  const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value;
   const msg = document.getElementById('authMsg');
-  msg.textContent = 'Connexion...'; msg.style.color = 'var(--text2)';
+
+  if (!email || !pass) {
+    msg.textContent = 'Entre ton email et ton mot de passe.';
+    msg.style.color = 'var(--red)';
+    return;
+  }
+
+  msg.textContent = 'Connexion...';
+  msg.style.color = 'var(--text2)';
+
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { msg.textContent = error.message; msg.style.color = 'var(--red)'; return; }
-  if (data?.user) { await initApp(data.user); }
+
+  if (error) {
+    msg.textContent = 'Email ou mot de passe incorrect.';
+    msg.style.color = 'var(--red)';
+    return;
+  }
+
+  if (data?.user) {
+    await initApp(data.user);
+  }
 }
 function updatePasswordRules() {
   const pass = document.getElementById('signupPassword')?.value || '';
