@@ -2340,6 +2340,38 @@ function minettiGradePenalty(grade) {
   }
 }
 
+// Terrain time penalty — multiplier on top of Minetti; 1.0 = asphalt baseline
+function terrainTimePenalty(surfaceKey, weather, grade) {
+  if(!surfaceKey) return 1.0;
+  const info=SURFACE_MAP[surfaceKey];
+  if(!info) return 1.0;
+  const prob=weather?.precip_prob??0;
+  const mm6h=weather?.precip_recent??weather?.precip??0;
+  const wet=prob>20||mm6h>0.3;
+  const vwet=prob>50||mm6h>2;
+  const descent=grade<-5;
+  const riskHigh=info.risk==='high';
+  const riskMed=info.risk==='medium';
+  let m=1.0;
+  switch(surfaceKey){
+    case 'asphalt':case 'paved':case 'concrete':m=1.00;break;
+    case 'compacted':case 'track':m=1.02;break;
+    case 'dirt':case 'ground':m=1.04;break;
+    case 'grass':case 'path':case 'footway':case 'bridleway':m=1.06;break;
+    case 'gravel':case 'fine_gravel':case 'pebblestone':m=1.07;break;
+    case 'cobblestone':m=1.09;break;
+    case 'rock':case 'rocks':m=1.12;break;
+    case 'scree':m=1.18;break;
+    case 'sand':m=1.15;break;
+    case 'mud':m=1.22;break;
+    default:m=1.05;
+  }
+  if(vwet) m*=1.08;
+  else if(wet) m*=1.04;
+  if(descent&&(riskHigh||riskMed)) m*=1.04;
+  return m;
+}
+
 async function analyzeGPX(points, fname) {
   let cumDist=[0],dplus=0,dminus=0;
   for(let i=1;i<points.length;i++){
@@ -2355,15 +2387,22 @@ async function analyzeGPX(points, fname) {
   for(let i=0;i<points.length;i++){if(cumDist[i]>=target){samples.push({d:+(cumDist[i]/1000).toFixed(2),alt:points[i].ele?Math.round(points[i].ele):null});target+=100;}}
   samples.push({d:+(totalDist/1000).toFixed(2),alt:eles[eles.length-1]?Math.round(eles[eles.length-1]):null});
 
-  // Weather — forecast : récupère aussi precipitation (mm) et fenêtre 6h
-  let weather=null;
-  try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${points[0].lat}&longitude=${points[0].lon}&hourly=temperature_2m,precipitation_probability,precipitation,windspeed_10m&timezone=Europe%2FParis&forecast_days=2`);
-    const d=await r.json();
-    const h=9;
-    const precip6h=(d.hourly?.precipitation||[]).slice(Math.max(0,h-6),h+1).reduce((a,v)=>a+(v||0),0);
-    weather={temp:d.hourly?.temperature_2m?.[h],precip_prob:d.hourly?.precipitation_probability?.[h]??0,precip:d.hourly?.precipitation?.[h]??0,precip_recent:precip6h,wind:d.hourly?.windspeed_10m?.[h]};
-  }catch{}
+  // Weather gate — only integrate forecast if race ≤ 10 days away
+  let weather=null, weatherNote=null;
+  const raceTs=currentRaceContext?.date?new Date(currentRaceContext.date).getTime():null;
+  const daysToRace=raceTs?Math.ceil((raceTs-Date.now())/86400000):null;
+  const weatherReliable=daysToRace===null||daysToRace<=10;
+  if(weatherReliable){
+    try{
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${points[0].lat}&longitude=${points[0].lon}&hourly=temperature_2m,precipitation_probability,precipitation,windspeed_10m&timezone=Europe%2FParis&forecast_days=2`);
+      const d=await r.json();
+      const h=9;
+      const precip6h=(d.hourly?.precipitation||[]).slice(Math.max(0,h-6),h+1).reduce((a,v)=>a+(v||0),0);
+      weather={temp:d.hourly?.temperature_2m?.[h],precip_prob:d.hourly?.precipitation_probability?.[h]??0,precip:d.hourly?.precipitation?.[h]??0,precip_recent:precip6h,wind:d.hourly?.windspeed_10m?.[h]};
+    }catch{}
+  } else {
+    weatherNote=`Météo non intégrée : prévision trop lointaine (J−${daysToRace})`;
+  }
 
   // 500m sections with detailed grade
   const kmSecs=[];let segTarget=500,prevIdx=0,segNum=0;
@@ -2409,77 +2448,112 @@ async function analyzeGPX(points, fname) {
   const progressionFactor = computeProgressionFactor(isTrail);
   const qualityCount = allActivities.filter(a=>isRun(a.type)&&a.average_heartrate>(userProfile.fc_max||205)*.80&&a.distance>3000).length;
 
-  // Base pace: goal time → trail activities → road PRs (with coeff) → default
-  let basePaceS=isTrail?420:320;
-  let projSource='';
-  if(currentRaceContext?.goal_time) {
-    const gt=currentRaceContext.goal_time;
-    const parts=gt.split(/[h:]/);
-    let goalS=0;
-    if(parts.length===2)goalS=parseInt(parts[0])*60+parseInt(parts[1]);
-    else if(parts.length===3)goalS=parseInt(parts[0])*3600+parseInt(parts[1])*60+(parseInt(parts[2])||0);
-    if(goalS>0){
-      const tf=sections.reduce((a,s)=>a+(1+minettiGradePenalty(s.grade/100))*s.dist/1000,0);
-      basePaceS=tf>0?goalS/tf:goalS/(totalDist/1000);
-      projSource=`🎯 Objectif ${currentRaceContext.goal_time}`;
+  // Base pace from real performance data — goal_time never influences pace calculation
+  function computeBasePace() {
+    const now=Date.now(), cutoff60=now-60*24*3600*1000;
+    const raceDpKm=dplus/(totalDist/1000);
+    if(isTrail) {
+      const trailRuns=allActivities
+        .filter(a=>(a.type==='TrailRun'||/trail/i.test(a.sport_type||''))&&a.distance>5000&&a.average_speed>0)
+        .sort((a,b)=>new Date(b.start_date)-new Date(a.start_date))
+        .slice(0,20);
+      if(trailRuns.length>=1) {
+        const top=trailRuns.slice(0,10);
+        const scored=top.map(a=>{
+          const aDpKm=(a.total_elevation_gain||0)/(a.distance/1000);
+          const similarity=1-Math.min(1,Math.abs(aDpKm-raceDpKm)/(raceDpKm+1));
+          const recency=new Date(a.start_date).getTime()>=cutoff60?2:1;
+          return {paceS:1000/a.average_speed,weight:(0.4+0.6*similarity)*recency};
+        });
+        const totalW=scored.reduce((s,x)=>s+x.weight,0);
+        const weightedPace=scored.reduce((s,x)=>s+x.paceS*x.weight,0)/totalW;
+        const paceS=weightedPace/progressionFactor;
+        const recentCount=trailRuns.filter(a=>new Date(a.start_date).getTime()>=cutoff60).length;
+        const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}%`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}%`:'stable';
+        const source=`⛰️ ${trailRuns.length} sortie${trailRuns.length>1?'s':''} trail · D+ pondéré · ×2 récent (${recentCount}/60j) · progression ${prog}`;
+        return {paceS,source,dataQuality:{trailCount:trailRuns.length,recentCount,hasHR:trailRuns.some(a=>a.average_heartrate)}};
+      }
+      return {paceS:420,source:'⚠️ Aucune sortie trail — sync tes activités trail Strava pour une projection fiable',dataQuality:{trailCount:0,recentCount:0,hasHR:false}};
     }
-  } else if(isTrail) {
-    // Trail races: use real trail activities, not road PRs
-    const trailRuns=allActivities
-      .filter(a=>(a.type==='TrailRun'||/trail/i.test(a.sport_type||''))&&a.distance>5000&&a.average_speed>0)
-      .sort((a,b)=>b.start_date_local-a.start_date_local||b.average_speed-a.average_speed)
-      .slice(0,10);
-    if(trailRuns.length>=1){
-      // Use median pace of top trail runs, weight by D+ density (VAM proxy)
-      const top=trailRuns.slice(0,Math.min(10,trailRuns.length));
-      // D+-weighted pace: prefer activities with similar D+/km profile to current race
-      const raceDpKm=dplus/(totalDist/1000);
-      const scored=top.map(a=>{
-        const aDpKm=(a.total_elevation_gain||0)/(a.distance/1000);
-        const similarity=1-Math.min(1,Math.abs(aDpKm-raceDpKm)/(raceDpKm+1));
-        return {paceS:1000/a.average_speed, weight:0.4+0.6*similarity};
-      });
-      const totalW=scored.reduce((s,x)=>s+x.weight,0);
-      const weightedPace=scored.reduce((s,x)=>s+x.paceS*x.weight,0)/totalW;
-      basePaceS=weightedPace/progressionFactor;
-      const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}%`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}%`:'stable';
-      projSource=`⛰️ ${trailRuns.length} sortie${trailRuns.length>1?'s':''} trail (10 dernières) · D+ pondéré · progression ${prog}`;
-    } else {
-      // No trail data — refuse to use road PRs for trail estimation
-      projSource='⚠️ Aucune sortie trail disponible — sync tes activités trail Strava pour une projection fiable';
+    if(userProfile.prs) {
+      const prs=userProfile.prs;
+      const candidates=['semi','10k','15k','marathon','5k'].filter(k=>prs[k]?.timeS&&prs[k]?.dist);
+      if(candidates.length) {
+        const pr=prs[candidates[0]];
+        const paceS=(pr.timeS/pr.dist*1000)/progressionFactor;
+        const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}%`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}%`:'stable';
+        const roadRuns=allActivities.filter(a=>isRun(a.type)&&a.distance>3000);
+        const recentCount=roadRuns.filter(a=>new Date(a.start_date).getTime()>=cutoff60).length;
+        return {paceS,source:`📊 PR ${candidates[0].toUpperCase()} · progression ${prog}`,dataQuality:{trailCount:0,recentCount,hasHR:roadRuns.some(a=>a.average_heartrate)}};
+      }
     }
-  } else if(userProfile.prs){
-    // Road race: use road PRs directly (no trail coefficient)
-    const prs=userProfile.prs;
-    const candidates=['semi','10k','15k','marathon','5k'].filter(k=>prs[k]?.timeS&&prs[k]?.dist);
-    if(candidates.length){
-      const pr=prs[candidates[0]];
-      basePaceS=(pr.timeS/pr.dist*1000)/progressionFactor;
-      const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}%`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}%`:'stable';
-      projSource=`📊 PR ${candidates[0].toUpperCase()} · progression ${prog}`;
-    }
+    return {paceS:isTrail?420:320,source:isTrail?'⚙️ Estimation défaut trail — sync Strava':'⚙️ Estimation par défaut — renseigne tes PR',dataQuality:{trailCount:0,recentCount:0,hasHR:false}};
   }
-  if(!projSource) projSource=isTrail?'⚠️ Aucune sortie trail — sync Strava pour une projection trail fiable':'⚙️ Estimation par défaut — renseigne tes PR';
+  const {paceS:basePaceS,source:projSource,dataQuality}=computeBasePace();
 
   // Build sections
   const sections=buildDetailedSections(kmSecs);
-  // Fetch terrain surfaces in parallel (OSM Overpass) while we compute times
+  // Fetch terrain surfaces — awaited before section time calc so terrain penalty is included
   const surfacePromise=fetchTerrainSurfaces(points, sections);
+  window._gpxSectionSurfaces = await surfacePromise;
+  window._gpxWeather = weather;
+
   const sectionTimes=[];
   let estTimeS=0;
-  sections.forEach(s=>{
-    const t=basePaceS*(1+minettiGradePenalty(s.grade/100))*s.dist/1000;
+  sections.forEach((s,i)=>{
+    const surfKey=window._gpxSectionSurfaces?.[i]??null;
+    const pentePenalty=1+minettiGradePenalty(s.grade/100);
+    const terPenalty=terrainTimePenalty(surfKey,weather,s.grade);
+    const t=basePaceS*pentePenalty*terPenalty*s.dist/1000;
     sectionTimes.push(Math.round(t));estTimeS+=t;
   });
+
+  // Confidence scoring
+  const terrainKnown=(window._gpxSectionSurfaces||[]).filter(s=>s!==null).length;
+  const terrainRatio=sections.length>0?terrainKnown/sections.length:0;
+  let confScore=0;
+  if(isTrail){if(dataQuality.trailCount>=5)confScore+=2;else if(dataQuality.trailCount>=2)confScore+=1;}
+  else{if(dataQuality.recentCount>=3)confScore+=2;else if(dataQuality.recentCount>=1)confScore+=1;}
+  if(dataQuality.recentCount>=3)confScore+=1;
+  if(dataQuality.hasHR)confScore+=1;
+  if(terrainRatio>=0.6)confScore+=1;
+  if(weatherReliable&&weather)confScore+=1;
+  if(totalDist>5000&&sections.length>=5)confScore+=1;
+  const confidence=confScore>=5?'good':confScore>=3?'medium':'low';
+  const confidenceLabel={good:'Fiable',medium:'Indicative',low:'Estimation'}[confidence];
+  const confidenceColor={good:'var(--vl-growth)',medium:'var(--vl-amber)',low:'var(--vl-ember)'}[confidence];
+  const confDots=[0,1,2,3,4].map(i=>i<(confidence==='good'?5:confidence==='medium'?3:1)?`<span style="color:${confidenceColor}">&#9679;</span>`:'<span style="color:var(--vl-text-3)">&#9675;</span>').join('');
+
+  // Range: prudent / probable / agressif
+  const rf=confidence==='good'?{min:0.94,max:1.08}:confidence==='medium'?{min:0.90,max:1.14}:{min:0.85,max:1.20};
+  const timeMin=estTimeS*rf.min;
+  const timeMax=estTimeS*rf.max;
+
+  // Goal comparison — display only, goal_time has zero effect on pace calc
+  let goalCompareStr='',goalCompareColor='var(--vl-text-3)',goalLabel='';
+  if(currentRaceContext?.goal_time){
+    const gParts=currentRaceContext.goal_time.match(/(\d+)[hH](\d*)/);
+    if(gParts){
+      const goalSec=parseInt(gParts[1])*3600+(parseInt(gParts[2])||0)*60;
+      const diff=goalSec-Math.round(estTimeS);
+      const absDiff=Math.abs(diff);
+      const gmh=Math.floor(absDiff/3600),gmm=Math.floor(absDiff%3600/60),gms=absDiff%60;
+      const sign=diff>=0?'+':'−';
+      goalCompareStr=`${sign} ${gmh>0?gmh+'h':''}${gmm>0?String(gmm).padStart(gmh>0?2:1,'0')+'min':''}${gms>0&&gmh===0?String(gms).padStart(gmm>0?2:1,'0')+'s':''} vs objectif`;
+      const ratio=Math.round(estTimeS)/goalSec;
+      if(ratio<0.90){goalLabel='Très conservateur';goalCompareColor='var(--vl-text-3)';}
+      else if(ratio<0.97){goalLabel='Conservateur';goalCompareColor='var(--vl-growth)';}
+      else if(ratio<=1.03){goalLabel='Réaliste';goalCompareColor='var(--vl-growth)';}
+      else if(ratio<=1.10){goalLabel='Ambitieux';goalCompareColor='var(--vl-amber)';}
+      else{goalLabel='Très ambitieux';goalCompareColor='var(--vl-ember)';}
+    }
+  }
+
   const dh=estTimeS/3600;
   const distKm=totalDist/1000;
   const raceName=currentRaceContext?.name||fname.replace('.gpx','')||'Course';
   const raceDate=currentRaceContext?.date?new Date(currentRaceContext.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):'';
   const splits=buildSplitsTable(kmSecs,basePaceS);
-
-  // Await terrain surfaces (fetched in parallel above)
-  window._gpxSectionSurfaces = await surfacePromise;
-  window._gpxWeather = weather;
 
   const res=document.getElementById('stratResult');
   res.style.display='block';
@@ -2489,20 +2563,6 @@ async function analyzeGPX(points, fname) {
   const saveGpxItem = document.getElementById('raceMenuSaveGpx');
   if(saveGpxItem) saveGpxItem.style.display = currentRaceContext?.id ? 'block' : 'none';
 
-  // ── Calcul marge vs objectif ──
-  let marginStr = '', marginColor = 'var(--vl-text-3)';
-  if(currentRaceContext?.goal_time) {
-    const gParts = currentRaceContext.goal_time.match(/(\d+)[hH](\d*)/);
-    if(gParts) {
-      const goalSec = parseInt(gParts[1])*3600 + (parseInt(gParts[2])||0)*60;
-      const diff = goalSec - Math.round(estTimeS);
-      const absDiff = Math.abs(diff);
-      const mh = Math.floor(absDiff/3600), mm = Math.floor(absDiff%3600/60), ms = absDiff%60;
-      const sign = diff >= 0 ? '+' : '−';
-      marginStr = `${sign} ${mh>0?mh+'h':''}${mm>0?String(mm).padStart(mh>0?2:1,'0')+'min':''}${ms>0&&mh===0?String(ms).padStart(mm>0?2:1,'0')+'s':''} sur objectif`;
-      marginColor = diff >= 0 ? 'var(--vl-growth)' : 'var(--vl-ember)';
-    }
-  }
 
   res.innerHTML=`
     ${!currentRaceContext?`<div style="font-family:var(--vl-display);font-size:2rem;letter-spacing:0.02em;line-height:0.9;text-transform:uppercase;margin-bottom:.25rem">${escapeHTML(raceName)}</div><div class="mlabel" style="color:var(--vl-text-3);margin-bottom:1.25rem">${raceDate}</div>`:''}
@@ -2530,24 +2590,31 @@ async function analyzeGPX(points, fname) {
       </div>
     </div>
 
-    <!-- Projection -->
+    <!-- Projection V2 -->
     <div class="vl-proj-card">
-      <div>
-        <div class="mlabel" style="margin-bottom:6px">Projection</div>
+      <div style="flex:1;min-width:0">
+        <div class="mlabel" style="margin-bottom:6px">Projection Vorcelab</div>
         <div class="vl-proj-time">${fmtT(estTimeS)}</div>
-        ${marginStr?`<div class="vl-proj-margin" style="color:${marginColor};margin-top:4px">${marginStr}</div>`:''}
-        <div class="mlabel" style="color:var(--vl-text-3);margin-top:6px">${projSource||'Minetti 2002 · allure estimée'}</div>
+        <div style="margin-top:5px;font-family:var(--vl-mono);font-size:11px;color:var(--vl-text-3)">${fmtT(timeMin)} – ${fmtT(timeMax)}</div>
+        ${weatherNote?`<div class="mlabel" style="color:var(--vl-amber);margin-top:4px">${escapeHTML(weatherNote)}</div>`:''}
+        <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;font-family:var(--vl-mono);letter-spacing:2px">${confDots}</span>
+          <span class="mlabel" style="color:${confidenceColor}">${confidenceLabel}</span>
+        </div>
+        <div class="mlabel" style="color:var(--vl-text-3);margin-top:4px">${projSource||'Minetti 2002 · allure estimée'}</div>
       </div>
       ${currentRaceContext?.goal_time?`
-      <div class="vl-proj-obj">
-        <div class="mlabel" style="margin-bottom:6px">Objectif</div>
-        <div class="vl-proj-obj-time">${currentRaceContext.goal_time}</div>
+      <div class="vl-proj-obj" style="text-align:right;flex-shrink:0">
+        <div class="mlabel" style="margin-bottom:4px">Objectif</div>
+        <div class="vl-proj-obj-time">${escapeHTML(currentRaceContext.goal_time)}</div>
+        ${goalLabel?`<div class="mlabel" style="color:${goalCompareColor};margin-top:4px">${escapeHTML(goalLabel)}</div>`:''}
+        ${goalCompareStr?`<div class="mlabel" style="color:var(--vl-text-3);margin-top:2px">${goalCompareStr}</div>`:''}
       </div>`:`
-      <div style="text-align:right">
-        <div class="mlabel" style="margin-bottom:8px">Scénarios</div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="mlabel" style="margin-bottom:6px">Scénarios</div>
         <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-          <div><span class="mlabel" style="color:var(--vl-text-3)">Conservateur</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text-2)">${fmtT(estTimeS*1.1)}</span></div>
-          <div><span class="mlabel" style="color:var(--vl-growth)">Agressif</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text)">${fmtT(estTimeS*.92)}</span></div>
+          <div><span class="mlabel" style="color:var(--vl-text-3)">Prudent</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text-2)">${fmtT(timeMax)}</span></div>
+          <div><span class="mlabel" style="color:var(--vl-growth)">Agressif</span> <span style="font-family:var(--vl-mono);font-size:11px;color:var(--vl-text)">${fmtT(timeMin)}</span></div>
         </div>
       </div>`}
     </div>
