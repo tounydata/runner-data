@@ -5,7 +5,10 @@
 export function icon(name, size = 16) {
   const s = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
   const paths = {
-    trail:      '<path d="M3 20 Q8 10 12 14 Q16 18 21 8"/><circle cx="12" cy="14" r="1" fill="currentColor"/>',
+    // Sommets montagne — trail
+    trail:      '<path d="M3 20l8-14 3 6 3-5 5 13" stroke-linejoin="miter"/>',
+    // Flèche avant — course route
+    run:        '<path d="M5 12h14M13 6l6 6-6 6"/>',
     road:       '<path d="M12 2v20M8 6l4-4 4 4M8 18l4 4 4-4"/><path d="M6 10h12M6 14h12" stroke-dasharray="2 2"/>',
     heart:      '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
     elevation:  '<polyline points="1 20 6 9 11 14 16 4 21 20"/>',
@@ -14,7 +17,8 @@ export function icon(name, size = 16) {
     wind:       '<path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>',
     terrain:    '<polygon points="3 20 12 4 21 20"/><polyline points="9 16 12 13 15 16"/>',
     nutrition:  '<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>',
-    renfo:      '<rect x="2" y="10" width="4" height="4" rx="1"/><rect x="18" y="10" width="4" height="4" rx="1"/><rect x="6" y="7" width="3" height="10" rx="1"/><rect x="15" y="7" width="3" height="10" rx="1"/><line x1="9" y1="12" x2="15" y2="12" stroke-width="2.5"/>',
+    // Haltère solide — fill override (le SVG parent est fill="none")
+    renfo:      '<path fill="currentColor" stroke="none" d="M7 6h2v12h-2zM15 6h2v12h-2zM4 9h3v6h-3zM17 9h3v6h-3zM9 11h6v2h-6z"/>',
     calendar:   '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
     profile:    '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     strava:     '<path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h-5.672l2.836-5.598z"/>',
