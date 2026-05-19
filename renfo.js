@@ -1946,7 +1946,7 @@ export async function startRenfoSession(dayKey) {
       <div style="font-size:.78rem;color:var(--vl-text-2)">Footing léger 3min → montées de genoux 30s → talons-fesses 30s → squat profond × 10 → rotation de buste × 10 de chaque côté</div>
     </div>
     ${exoRows}
-    <button onclick="completeRenfoSession('${dayKey}')" style="width:100%;padding:14px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:1rem;font-weight:700;letter-spacing:.04em;margin-top:6px;touch-action:manipulation">
+    <button onclick="openCompletionPicker('${dayKey}')" style="width:100%;padding:14px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:1rem;font-weight:700;letter-spacing:.04em;margin-top:6px;touch-action:manipulation">
       TERMINER LA SÉANCE
     </button>
   </div>`;
@@ -2066,10 +2066,11 @@ function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) 
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;touch-action:none';
 
   const isWeighted = loadType === 'external_kg';
-  const rpeRows = [[6,'Facile'],[7,'Modéré'],[8,'Cible'],[9,'Dur'],[10,'Max']].map(([r, label]) =>
-    `<button type="button" data-rpe="${r}" style="padding:12px 4px;border-radius:10px;border:1.5px solid;cursor:pointer;touch-action:manipulation;text-align:center;outline:none;border-color:${r===8?'var(--vl-ember)':'var(--vl-border)'};background:${r===8?'var(--vl-ember)':'transparent'};color:${r===8?'#fff':'var(--vl-text-2)'}">
-      <div style="font-family:var(--vl-display);font-size:1.5rem;font-weight:800;line-height:1">${r}</div>
-      <div style="font-family:var(--vl-mono);font-size:.45rem;margin-top:4px;line-height:1.2">${label}</div>
+  const RPE_LABELS = ['','Repos','Très léger','Léger','Assez léger','Modéré','Difficile','Assez dur','Dur ✓','Très dur','Max'];
+  const rpeRows = [1,2,3,4,5,6,7,8,9,10].map(r =>
+    `<button type="button" data-rpe="${r}" style="padding:10px 2px;border-radius:8px;border:1.5px solid;cursor:pointer;touch-action:manipulation;text-align:center;outline:none;border-color:${r===8?'var(--vl-ember)':'var(--vl-border)'};background:${r===8?'var(--vl-ember)':'transparent'};color:${r===8?'#fff':'var(--vl-text-2)'}">
+      <div style="font-family:var(--vl-display);font-size:1.3rem;font-weight:800;line-height:1">${r}</div>
+      <div style="font-family:var(--vl-mono);font-size:.4rem;margin-top:3px;line-height:1.2">${RPE_LABELS[r]}</div>
     </button>`
   ).join('');
 
@@ -2225,25 +2226,72 @@ export function applyVariant(exerciseId, newVariantId) {
   showToast('Variante mise à jour', 'success');
 }
 
-export async function completeRenfoSession(dayKey) {
-  const completed = window._renfoSessionCompleted || {};
-  const n = Object.keys(completed).length;
-  if (n === 0) { showToast('Coche au moins un exercice', 'info'); return; }
+export function openCompletionPicker(dayKey) {
+  const existing = document.getElementById('renfoCompletionPicker');
+  if (existing) existing.remove();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const overlay = document.createElement('div');
+  overlay.id = 'renfoCompletionPicker';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;touch-action:none';
+  overlay.innerHTML = `<div style="width:100%;background:var(--vl-bg2);border-radius:20px 20px 0 0;padding:20px 20px calc(32px + env(safe-area-inset-bottom,0px))" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:var(--vl-border);border-radius:2px;margin:0 auto 18px"></div>
+    <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:6px">Terminer la séance</div>
+    <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-bottom:18px">Les exercices non cochés seront automatiquement validés.</div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Date de la séance</div>
+      <input id="sessionDatePicker" type="date" value="${todayStr}" max="${todayStr}"
+        style="width:100%;padding:10px 12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:8px;color:var(--vl-text);font-size:1rem;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('renfoCompletionPicker').remove()" style="flex:1;padding:13px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem;touch-action:manipulation">Annuler</button>
+      <button onclick="completeRenfoSession('${dayKey}',document.getElementById('sessionDatePicker').value)" style="flex:2;padding:13px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:.95rem;font-weight:700;touch-action:manipulation">CONFIRMER</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+}
 
-  const todayStr = new Date().toISOString().slice(0,10);
+export async function completeRenfoSession(dayKey, sessionDate) {
+  const dateStr = sessionDate || new Date().toISOString().slice(0, 10);
+  document.getElementById('renfoCompletionPicker')?.remove();
+
+  // Auto-complete all unchecked exercises (Problem 3)
+  const completed = { ...(window._renfoSessionCompleted || {}) };
+  const session = renfoProgram?.week_schedule?.[dayKey];
+  if (session) {
+    session.exercises.forEach(exo => {
+      if (!completed[exo.exercise_id]) {
+        completed[exo.exercise_id] = {
+          variantId: exo.variant_id, loadType: exo.load_type,
+          loadKg: null, reps: null, rpe: null,
+          logged_at: new Date().toISOString(), auto_completed: true
+        };
+      }
+    });
+  }
+
+  // Merge with existing session on same date (Problem 2 — no overwrite)
+  const { data: prev } = await sb.from('renfo_session_log')
+    .select('completed_exercises')
+    .eq('user_id', VLState.currentUser.id)
+    .eq('session_date', dateStr)
+    .maybeSingle();
+  const merged = prev ? { ...(prev.completed_exercises || {}), ...completed } : completed;
+
+  const n = Object.keys(merged).length;
   const { error } = await sb.from('renfo_session_log').upsert({
     user_id: VLState.currentUser.id,
-    session_date: todayStr,
+    session_date: dateStr,
     day_key: dayKey,
-    completed_exercises: completed
+    completed_exercises: merged
   }, { onConflict: 'user_id,session_date' });
 
   if (error) { showToast('Erreur sauvegarde séance', 'error'); return; }
 
-  showToast(`Séance complétée · ${n} exercice${n>1?'s':''}`, 'success');
-  // Refresh logs and go back to home
-  renfoSessionLogs = renfoSessionLogs.filter(l => l.session_date !== todayStr);
-  renfoSessionLogs.unshift({ session_date: todayStr, day_key: dayKey, completed_exercises: completed });
+  const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  showToast(`${label} — ${n} exercice${n > 1 ? 's' : ''} enregistré${n > 1 ? 's' : ''}`, 'success');
+  renfoSessionLogs = renfoSessionLogs.filter(l => l.session_date !== dateStr);
+  renfoSessionLogs.unshift({ session_date: dateStr, day_key: dayKey, completed_exercises: merged });
   VLState.renfoSessionLogs = renfoSessionLogs;
   renderRenfoHome();
 }
