@@ -19,7 +19,13 @@ import {
 import { openAnalyse, closeAnalyse, raceMenuLinkActivity } from './activity-analysis.js';
 import { handleGpxDrop, handleGpxFile, navigateSection, closeSectionPopup, resetStrategy } from './race-strategy.js';
 import { saveNutritionProducts, filterNutrBrand } from './nutrition.js';
-import { loadRenfoApp } from './renfo.js';
+import { loadRenfoApp, preloadRenfoState,
+  renderOnboardingStep, renfoNextStep, renfoObSelect, renfoToggleBand,
+  finishRenfoOnboarding, renderRenfoHome, startRenfoSession,
+  toggleExoDetail, toggleExoCheck, validateExoWithLoad,
+  submitRenfoLog, completeRenfoSession, showRenfoHistoryView,
+  showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
+} from './renfo.js';
 
 window.Vorcelab = {
   navigate, showPanel,
@@ -39,7 +45,12 @@ window.Vorcelab = {
   openAnalyse, closeAnalyse, raceMenuLinkActivity,
   handleGpxDrop, handleGpxFile, navigateSection, closeSectionPopup, resetStrategy,
   saveNutritionProducts, filterNutrBrand,
-  loadRenfoApp,
+  loadRenfoApp, preloadRenfoState,
+  renderOnboardingStep, renfoNextStep, renfoObSelect, renfoToggleBand,
+  finishRenfoOnboarding, renderRenfoHome, startRenfoSession,
+  toggleExoDetail, toggleExoCheck, validateExoWithLoad,
+  submitRenfoLog, completeRenfoSession, showRenfoHistoryView,
+  showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
 };
 
 // Expose as direct globals for inline onclick compatibility
