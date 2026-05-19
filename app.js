@@ -1531,12 +1531,17 @@ async function openAnalyse(act) {
       : '<span class="mono t3">Aucune course dans le calendrier — ajoutes-en une depuis l\'onglet Calendrier</span>';
   }
 
-  // AI analysis async
-  const aiText = await generateLocalActivitySummary(act, streams, paf);
-  const summaryBox = document.getElementById('summaryBox');
-  if (summaryBox) {
-    summaryBox.innerHTML = `<div class="summary-header"><div class="summary-icon">📊</div><div class="summary-title">résumé Statistiques</div></div><div class="summary-text">${aiText}</div>`;
-  }
+// Local summary async
+const summaryText = await generateLocalActivitySummary(act, streams, paf);
+const summaryBox = document.getElementById('summaryBox');
+if (summaryBox) {
+  summaryBox.innerHTML = `
+    <div class="summary-header">
+      <div class="summary-icon">📊</div>
+      <div class="summary-title">Résumé statistiques</div>
+    </div>
+    <div class="summary-text">${escapeHTML(summaryText)}</div>
+  `;
 }
 
 function showLinkActivityPanel(actId) {
