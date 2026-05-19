@@ -744,7 +744,7 @@ function renderDashboard() {
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--text3)">…</div><div class="s-sl">% aérobie sem.</div></div>
+    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--vl-text-3)">—</div><div class="s-sl">% EF · 7j</div></div>
   `;
 
   // Annual chart
@@ -761,8 +761,10 @@ function renderDashboard() {
     loadEl.style.display = '';
   }
 
-  // Async: fetch HR streams for this week and compute real aerobic %
-  loadAerobicStat(thisWeek, fcMax);
+  // % EF sur 7 jours glissants (synchrone, average_heartrate suffit)
+  const sevenDaysAgo = new Date(now - 7 * 86400000);
+  const last7Days = VLState.allActivities.filter(a => new Date(a.start_date) >= sevenDaysAgo);
+  loadAerobicStat(last7Days, fcMax);
 }
 
 function renderLastActivity() {
@@ -812,27 +814,22 @@ function renderLastActivity() {
   <button class="btn-analyse" onclick="openAnalyse(${JSON.stringify(act).replace(/"/g,'&quot;')})">Analyser cette sortie →</button>`;
 }
 
-async function loadAerobicStat(weekActs, fcMax) {
-  const threshold = fcMax * 0.75;
-  const actsWithHR = weekActs.filter(a => isRun(a.type));
-  if (!actsWithHR.length) { document.getElementById('aerobicStatVal').textContent = '—'; return; }
-
-  let totalPts = 0, aerobicPts = 0;
-  await Promise.all(actsWithHR.map(async a => {
-    try {
-      const streams = await fetchStreams(a.id);
-      const hr = streams.heartrate?.data;
-      if (!hr?.length) return;
-      totalPts += hr.length;
-      aerobicPts += hr.filter(v => v < threshold).length;
-    } catch {}
-  }));
-
+function loadAerobicStat(acts7d, fcMax) {
   const el = document.getElementById('aerobicStatVal');
   if (!el) return;
-  if (totalPts === 0) { el.textContent = '—'; return; }
-  const pct = Math.round(aerobicPts / totalPts * 100);
-  el.style.color = '';
+  const threshold = fcMax * 0.75;
+  const withHR = acts7d.filter(a => a.average_heartrate);
+  if (!withHR.length) { el.textContent = '—'; return; }
+  // Pondéré par la durée : chaque sortie pèse son moving_time
+  let totalDur = 0, easyDur = 0;
+  withHR.forEach(a => {
+    const t = a.moving_time || 0;
+    totalDur += t;
+    if (a.average_heartrate < threshold) easyDur += t;
+  });
+  if (!totalDur) { el.textContent = '—'; return; }
+  const pct = Math.round(easyDur / totalDur * 100);
+  el.style.color = pct >= 75 ? 'var(--vl-growth)' : pct < 50 ? 'var(--vl-ember)' : '';
   el.style.fontSize = '';
   el.textContent = pct + '%';
 }
