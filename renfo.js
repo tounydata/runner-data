@@ -2,6 +2,8 @@
 // VORCELAB — MODULE RENFORCEMENT MUSCULAIRE
 // ============================================================
 
+import { VLState, sb } from './app-state.js';
+
 const RENFO_EXERCISES = {
 
   // ── FORCE LOURDE ──────────────────────────────────────────
@@ -1273,12 +1275,12 @@ let renfoProgram = null;
 let renfoSessionLogs = [];
 let _renfoOnboarding = { equipment: {} };
 
-async function loadRenfoApp() {
+export async function loadRenfoApp() {
   const el = document.getElementById('renfoApp');
-  if (!el || !currentUser) return;
+  if (!el || !VLState.currentUser) return;
   el.innerHTML = `<div style="padding:48px 0;text-align:center;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem">Chargement…</div>`;
 
-  const { data: profile } = await sb.from('renfo_profile').select('*').eq('user_id', currentUser.id).maybeSingle();
+  const { data: profile } = await sb.from('renfo_profile').select('*').eq('user_id', VLState.currentUser.id).maybeSingle();
   renfoProfile = profile;
 
   if (!profile || !profile.onboarding_completed) {
@@ -1289,14 +1291,16 @@ async function loadRenfoApp() {
   }
 
   const [{ data: program }, { data: logs }] = await Promise.all([
-    sb.from('renfo_program').select('*').eq('user_id', currentUser.id).maybeSingle(),
-    sb.from('renfo_session_log').select('*').eq('user_id', currentUser.id)
+    sb.from('renfo_program').select('*').eq('user_id', VLState.currentUser.id).maybeSingle(),
+    sb.from('renfo_session_log').select('*').eq('user_id', VLState.currentUser.id)
       .gte('session_date', new Date(Date.now() - 14*86400000).toISOString().slice(0,10))
       .order('session_date', { ascending: false })
   ]);
 
   renfoProgram = program;
   renfoSessionLogs = logs || [];
+  VLState.renfoProgram = renfoProgram;
+  VLState.renfoSessionLogs = renfoSessionLogs;
   renderRenfoHome();
 }
 
@@ -1447,7 +1451,7 @@ async function finishRenfoOnboarding() {
   el.innerHTML = `<div style="padding:48px 0;text-align:center;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem">Génération du programme…</div>`;
 
   const profile = {
-    user_id: currentUser.id,
+    user_id: VLState.currentUser.id,
     objective_weight: _renfoOnboarding.objective_weight || 50,
     sessions_per_week: _renfoOnboarding.sessions_per_week || 3,
     equipment: _renfoOnboarding.equipment || {},
@@ -1461,7 +1465,7 @@ async function finishRenfoOnboarding() {
 
   const schedule = generateRenfoProgram(profile);
   const { error: re } = await sb.from('renfo_program').upsert({
-    user_id: currentUser.id,
+    user_id: VLState.currentUser.id,
     week_schedule: schedule,
     generated_at: new Date().toISOString(),
     generation_inputs: profile
@@ -1470,6 +1474,8 @@ async function finishRenfoOnboarding() {
 
   renfoProgram = { week_schedule: schedule };
   renfoSessionLogs = [];
+  VLState.renfoProgram = renfoProgram;
+  VLState.renfoSessionLogs = renfoSessionLogs;
   showToast('Programme généré 🎯', 'success');
   renderRenfoHome();
 }
@@ -1478,6 +1484,7 @@ const RENFO_FOCUS_COLORS = {
   force_lourde:'#E5562A', pliometrie:'#f39c12', excentrique:'#3498db',
   excentrique_pliometrie:'#e67e22', tronc:'#9b59b6', haut_corps:'#1abc9c', mobilite:'#2ecc71'
 };
+VLState.RENFO_FOCUS_COLORS = RENFO_FOCUS_COLORS;
 
 // ── Inline SVG icons ─────────────────────────────────────────────────────────
 const _ICON_PLAY = `<svg width="9" height="11" viewBox="0 0 9 11" fill="currentColor" style="display:block;flex-shrink:0"><path d="M0 0.5l9 5-9 5z"/></svg>`;
@@ -1620,12 +1627,12 @@ async function startRenfoSession(dayKey) {
 
   // Pre-load weight suggestions for external_kg exercises
   const suggestions = {};
-  if (currentUser) {
+  if (VLState.currentUser) {
     await Promise.all(
       session.exercises
         .filter(e => e.load_type === 'external_kg')
         .map(async e => {
-          const kg = await suggestNextLoad(currentUser.id, e.exercise_id);
+          const kg = await suggestNextLoad(VLState.currentUser.id, e.exercise_id);
           if (kg !== null) suggestions[e.exercise_id] = kg;
         })
     );
@@ -1811,7 +1818,7 @@ function submitRenfoLog(exerciseId, variantId, loadType) {
   const todayStr = new Date().toISOString().slice(0,10);
   const e1rm = (loadKg && reps) ? epley1RM(loadKg, reps) : null;
   sb.from('renfo_exercise_log').insert({
-    user_id: currentUser.id,
+    user_id: VLState.currentUser.id,
     session_date: todayStr,
     exercise_id: exerciseId,
     variant_id: variantId,
@@ -1828,7 +1835,7 @@ function submitRenfoLog(exerciseId, variantId, loadType) {
 
   if (e1rm) {
     sb.from('renfo_max_lifts').upsert({
-      user_id: currentUser.id,
+      user_id: VLState.currentUser.id,
       exercise_id: exerciseId,
       one_rm: e1rm,
       is_estimated: true,
@@ -1846,7 +1853,7 @@ async function completeRenfoSession(dayKey) {
 
   const todayStr = new Date().toISOString().slice(0,10);
   const { error } = await sb.from('renfo_session_log').upsert({
-    user_id: currentUser.id,
+    user_id: VLState.currentUser.id,
     session_date: todayStr,
     day_key: dayKey,
     completed_exercises: completed
@@ -1858,6 +1865,7 @@ async function completeRenfoSession(dayKey) {
   // Refresh logs and go back to home
   renfoSessionLogs = renfoSessionLogs.filter(l => l.session_date !== todayStr);
   renfoSessionLogs.unshift({ session_date: todayStr, day_key: dayKey, completed_exercises: completed });
+  VLState.renfoSessionLogs = renfoSessionLogs;
   renderRenfoHome();
 }
 
@@ -1980,18 +1988,19 @@ async function saveRenfoSettings() {
 
   const schedule = generateRenfoProgram(updated);
   await sb.from('renfo_program').upsert({
-    user_id: currentUser.id,
+    user_id: VLState.currentUser.id,
     week_schedule: schedule,
     generated_at: new Date().toISOString(),
     generation_inputs: updated
   });
   renfoProgram = { week_schedule: schedule };
+  VLState.renfoProgram = renfoProgram;
   showToast('Programme ajusté à ton nouveau profil', 'success');
   renderRenfoHome();
 }
 
 async function resetRenfoOnboarding() {
-  await sb.from('renfo_profile').upsert({ user_id: currentUser.id, onboarding_completed: false });
+  await sb.from('renfo_profile').upsert({ user_id: VLState.currentUser.id, onboarding_completed: false });
   renfoProfile = null;
   _renfoOnboarding = {};
   renderOnboardingStep(1);

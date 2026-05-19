@@ -1,13 +1,6 @@
-// Future ES module exports:
-// - NUTRITION_DB
-// - getUserGels
-// - getUserBoissons
-// - genNutrition
-// - renderNutritionProducts
-// - filterNutrBrand
-// - saveNutritionProducts
+import { VLState, sb } from './app-state.js';
 
-const NUTRITION_DB = {
+export const NUTRITION_DB = {
   gels:[
     {id:'naak-ultra',brand:'Näak',name:'Ultra Energy Gel',carbs:27,caffeine:35,water:false,note:'Semi-liquide, sans eau requis'},
     {id:'naak-boost25',brand:'Näak',name:'Boost Gel 25',carbs:25,caffeine:0,water:false,note:'Sans eau requis'},
@@ -45,18 +38,18 @@ const NUTRITION_DB = {
   ]
 };
 
-function getUserGels(){
-  const sel = userProfile.nutrition_products||[];
+export function getUserGels(){
+  const sel = VLState.userProfile.nutrition_products||[];
   const gels = NUTRITION_DB.gels.filter(g=>sel.includes(g.id));
   const barres = NUTRITION_DB.barres.filter(b=>sel.includes(b.id));
   return [...gels,...barres];
 }
-function getUserBoissons(){
-  const sel = userProfile.nutrition_products||[];
+export function getUserBoissons(){
+  const sel = VLState.userProfile.nutrition_products||[];
   return NUTRITION_DB.boissons.filter(b=>sel.includes(b.id));
 }
 
-function genNutrition(distM, estTimeS){
+export function genNutrition(distM, estTimeS){
   const dh = estTimeS/3600;
   const dk = distM/1000;
   const userGels = getUserGels();
@@ -130,8 +123,8 @@ function genNutrition(distM, estTimeS){
 let _nutrActiveBrandGel = null;
 let _nutrActiveBrandDrink = null;
 
-function renderNutritionProducts() {
-  const sel = userProfile.nutrition_products||[];
+export function renderNutritionProducts() {
+  const sel = VLState.userProfile.nutrition_products||[];
   const allGels = [...NUTRITION_DB.gels, ...NUTRITION_DB.barres];
   const allDrinks = NUTRITION_DB.boissons;
 
@@ -174,20 +167,20 @@ function renderNutritionProducts() {
   if(drinkListEl) drinkListEl.innerHTML = allDrinks.filter(p=>p.brand===_nutrActiveBrandDrink).map(mkCard).join('');
 }
 
-function filterNutrBrand(type, brand) {
+export function filterNutrBrand(type, brand) {
   // Save current checked state before re-rendering
   const checked = [...document.querySelectorAll('input[data-nutr]:checked')].map(i=>i.dataset.nutr);
-  userProfile.nutrition_products = [...new Set([...(userProfile.nutrition_products||[]),...checked])];
+  VLState.userProfile.nutrition_products = [...new Set([...(VLState.userProfile.nutrition_products||[]),...checked])];
   if(type==='gel') _nutrActiveBrandGel = brand;
   else _nutrActiveBrandDrink = brand;
   renderNutritionProducts();
 }
 
-async function saveNutritionProducts() {
+export async function saveNutritionProducts() {
   const checked = [...document.querySelectorAll('input[data-nutr]:checked')].map(i=>i.dataset.nutr);
-  userProfile.nutrition_products = checked;
+  VLState.userProfile.nutrition_products = checked;
   const msg = document.getElementById('nutrSaveMsg');
-  const {error} = await sb.from('profiles').upsert({id:currentUser.id, nutrition_products: checked});
+  const {error} = await sb.from('profiles').upsert({id:VLState.currentUser.id, nutrition_products: checked});
   if(error){msg.textContent='❌ Erreur';msg.style.color='var(--red)';}
   else{msg.textContent=`✓ ${checked.length} produit(s) sauvegardé(s)`;msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',3000);}
 }
