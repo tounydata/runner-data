@@ -174,9 +174,18 @@ export async function analyzeGPX(points, fname) {
 
   const sectionTimes=[];
   let estTimeS=0;
+  // Personal calibration: VAM > coeff_uphill > Minetti (fallback)
+  const _vam=VLState.userProfile.vam_avg||0,_cu=VLState.userProfile.coeff_uphill||0,_cd=VLState.userProfile.coeff_downhill||0,_cf=VLState.userProfile.coeff_flat||0;
   sections.forEach((s,i)=>{
     const surfKey=window._gpxSectionSurfaces?.[i]??null;
-    const pentePenalty=1+minettiGradePenalty(s.grade/100);
+    const g=s.grade/100;
+    let pente;
+    if(s.type==='up'&&_vam>0&&g>0.01){const vp=3_600_000*g/_vam;pente=Math.max(0,vp/basePaceS-1);}
+    else if(s.type==='up'&&_cu>0){pente=minettiGradePenalty(g)*_cu;}
+    else if(s.type==='down'&&_cd>0){pente=minettiGradePenalty(g)*_cd;}
+    else if(s.type==='flat'&&_cf>0){pente=minettiGradePenalty(g)*_cf;}
+    else{pente=minettiGradePenalty(g);}
+    const pentePenalty=1+pente;
     const terPenalty=terrainTimePenalty(surfKey,weather,s.grade,s.type);
     const t=basePaceS*pentePenalty*terPenalty*s.dist/1000;
     sectionTimes.push(Math.round(t));estTimeS+=t;
@@ -657,10 +666,18 @@ export function renderDetailedSection(s, secTimeS, idx=0){
 export function buildSplitsTable(kmSecs, basePaceS){
   const fcMax=VLState.userProfile.fc_max||205;
   const pct88=Math.round(fcMax*.88),pct84=Math.round(fcMax*.84),pct79=Math.round(fcMax*.79);
+  const _vam=VLState.userProfile.vam_avg||0,_cu=VLState.userProfile.coeff_uphill||0,_cd=VLState.userProfile.coeff_downhill||0,_cf=VLState.userProfile.coeff_flat||0;
   let cumTime=0,rows='';
   kmSecs.filter(s=>s!=null&&s.km!=null&&s.grade!=null).forEach(s=>{
     const distKm=(s.dist||0)/1000;
-    const secTime=basePaceS*(1+minettiGradePenalty(s.grade/100))*distKm;
+    const g=s.grade/100,type=s.grade>4?'up':s.grade<-4?'down':'flat';
+    let pente;
+    if(type==='up'&&_vam>0&&g>0.01){const vp=3_600_000*g/_vam;pente=Math.max(0,vp/basePaceS-1);}
+    else if(type==='up'&&_cu>0){pente=minettiGradePenalty(g)*_cu;}
+    else if(type==='down'&&_cd>0){pente=minettiGradePenalty(g)*_cd;}
+    else if(type==='flat'&&_cf>0){pente=minettiGradePenalty(g)*_cf;}
+    else{pente=minettiGradePenalty(g);}
+    const secTime=basePaceS*(1+pente)*distKm;
     cumTime+=secTime;
     const type=s.grade>4?'up':s.grade<-4?'down':'flat';
     const fc={up:`< ${Math.abs(s.grade)>10?pct84:pct88} bpm`,down:'Libre',flat:`< ${pct79} bpm`}[type];

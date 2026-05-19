@@ -376,6 +376,13 @@ export function renderAthleteProfile(streams, act) {
   const vamLevel = maxVAM > 1000 ? {l:'Excellent', c:'var(--green)'} : maxVAM > 700 ? {l:'Bon', c:'var(--cyan)'} : maxVAM > 400 ? {l:'Moyen', c:'var(--yellow)'} : {l:'À développer', c:'var(--orange)'};
   const recovLevel = avgRecovery > 30 ? {l:'Rapide', c:'var(--green)'} : avgRecovery > 20 ? {l:'Correct', c:'var(--cyan)'} : avgRecovery > 10 ? {l:'Lent', c:'var(--yellow)'} : {l:'Très lent', c:'var(--orange)'};
 
+  // Persist VAM to profile — used by race-strategy.js section predictor
+  if(avgVAM && VLState.currentUser?.id) {
+    Object.assign(VLState.userProfile, {vam_avg: avgVAM, vam_max: maxVAM, ...(avgRecovery != null ? {recovery_drop_avg: avgRecovery} : {})});
+    sb.from('profiles').upsert({id: VLState.currentUser.id, vam_avg: avgVAM, vam_max: maxVAM, ...(avgRecovery != null ? {recovery_drop_avg: avgRecovery} : {})})
+      .then(({error}) => { if(error) console.warn('[VL] save VAM', error); });
+  }
+
   section.innerHTML = `
     <div class="card">
       <div class="clabel">Profil athlète — extrait de cette sortie</div>
