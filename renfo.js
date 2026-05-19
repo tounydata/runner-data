@@ -4,6 +4,8 @@
 
 import { VLState, sb } from './app-state.js';
 
+function fmtRest(s){ const m=Math.floor(s/60),r=s%60; return m>0?(r>0?m+'min'+r+'s':m+'min'):s+'s'; }
+
 const RENFO_FOCUS_COLORS = {
   force_lourde:'#E5562A', pliometrie:'#f39c12', excentrique:'#3498db',
   excentrique_pliometrie:'#e67e22', tronc:'#9b59b6', haut_corps:'#1abc9c', mobilite:'#2ecc71'
@@ -990,6 +992,208 @@ const RENFO_EXERCISES = {
     movement: 'Marcher latéralement en maintenant la tension dans l\'élastique. Ne jamais ramener les pieds à moins de largeur d\'épaules. 10 pas dans un sens, 10 dans l\'autre.',
     common_errors: 'Laisser les pieds se rapprocher complètement (perd la tension). Se tenir debout (perdre la semi-flexion). Tronc qui bascule d\'un côté.',
     youtube_search: 'monster walk fessier moyen prévention genou'
+  },
+
+  hip_thrust: {
+    id: 'hip_thrust',
+    name_fr: 'Hip thrust',
+    name_tech: 'Pont de hanche chargé',
+    category: 'force_lourde',
+    primary_muscles: ['grand fessier', 'ischio-jambiers'],
+    benefits: ['force_max', 'economie_course', 'resilience'],
+    variants: [
+      { id: 'hip_thrust_barbell', name: 'Hip thrust barre', required_equipment: { barbell: true, bench: true }, priority: 1, load_type: 'external_kg', default_sets: 4, default_reps: 8, target_rpe: 8, rest_seconds: 120 },
+      { id: 'hip_thrust_haltere', name: 'Hip thrust haltère', required_equipment_any: [{ dumbbells_max_kg: 20 }], priority: 2, load_type: 'external_kg', default_sets: 4, default_reps: 10, target_rpe: 8, rest_seconds: 90 },
+      { id: 'hip_thrust_bw', name: 'Hip thrust poids de corps', required_equipment: {}, priority: 3, load_type: 'bodyweight_variant', load_variant_options: ['au sol', 'épaules sur banc', 'unilatéral'], default_sets: 3, default_reps: 15, target_rpe: 7, rest_seconds: 60 }
+    ],
+    position: 'Épaules appuyées sur un banc ou au sol. Pieds à plat, écartés largeur hanches, proches des fesses. Barre posée sur les hanches (au-dessus des os du bassin).',
+    movement: 'Pousser les talons dans le sol, soulever les hanches en contractant les fessiers. Finir en ligne droite épaules-hanches-genoux. Tenir 1s en haut. Descendre lentement en 2s.',
+    common_errors: 'Creuser le bas du dos en hyperextension. Genoux qui tombent vers l\'intérieur. Pousser avec les orteils plutôt que les talons.',
+    youtube_search: 'hip thrust fessier course à pied force'
+  },
+
+  lunge_marcheur: {
+    id: 'lunge_marcheur',
+    name_fr: 'Fente marcheur',
+    name_tech: 'Walking Lunge',
+    category: 'force_lourde',
+    primary_muscles: ['quadriceps', 'grand fessier', 'ischio-jambiers'],
+    benefits: ['force_max', 'stabilite', 'trail_technique'],
+    variants: [
+      { id: 'lunge_halteres', name: 'Fente marcheur haltères', required_equipment_any: [{ dumbbells_max_kg: 12 }], priority: 1, load_type: 'external_kg', default_sets: 3, default_reps: 12, target_rpe: 8, rest_seconds: 90 },
+      { id: 'lunge_bw', name: 'Fente marcheur poids de corps', required_equipment: {}, priority: 2, load_type: 'bodyweight_variant', load_variant_options: ['standard', 'avec rotation de buste', 'fente arrière'], default_sets: 3, default_reps: 16, target_rpe: 7, rest_seconds: 60 }
+    ],
+    position: 'Debout, mains sur les hanches ou haltères dans chaque main. Dos droit, regard devant.',
+    movement: 'Grand pas en avant. Descendre le genou arrière à 5 cm du sol. Genou avant dans l\'axe du pied, ne dépasse pas les orteils. Pousser sur le pied avant pour avancer. Alterner les côtés.',
+    common_errors: 'Genou avant qui dépasse les orteils. Tronc qui s\'incline en avant. Pas assez d\'amplitude.',
+    youtube_search: 'fente marcheur haltères trail musculation coureur'
+  },
+
+  tibialis_raise: {
+    id: 'tibialis_raise',
+    name_fr: 'Relevé tibial',
+    name_tech: 'Tibialis Raise',
+    category: 'excentrique',
+    primary_muscles: ['tibial antérieur'],
+    benefits: ['resilience', 'prevention_blessure'],
+    variants: [
+      { id: 'tibialis_bw', name: 'Tibialis raise dos au mur', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['dos au mur', 'bord de marche', 'avec charge sur pied'], default_sets: 3, default_reps: 25, target_rpe: 7, rest_seconds: 45 },
+      { id: 'tibialis_bande', name: 'Tibialis raise élastique', required_equipment: { bands: true }, priority: 2, load_type: 'band', load_variant_options: ['light', 'medium'], default_sets: 3, default_reps: 20, target_rpe: 7, rest_seconds: 45 }
+    ],
+    position: 'Dos appuyé contre un mur, pieds à 30 cm du mur. Jambes tendues, talons au sol.',
+    movement: 'Relever les pointes de pied vers le tibia le plus haut possible. Tenir 1s. Redescendre lentement en 3s. Sentir le muscle devant le tibia travailler. Ne pas compenser avec les mollets.',
+    common_errors: 'Mouvement trop rapide (phase excentrique essentielle). Genoux fléchis. Amplitude trop petite.',
+    youtube_search: 'tibialis raise prévention fracture de stress running shin splints'
+  },
+
+  reverse_nordic: {
+    id: 'reverse_nordic',
+    name_fr: 'Reverse nordic',
+    name_tech: 'Reverse Nordic Curl',
+    category: 'excentrique',
+    primary_muscles: ['quadriceps', 'tendon rotulien'],
+    benefits: ['resilience', 'prevention_blessure', 'descente_trail'],
+    variants: [
+      { id: 'reverse_nordic_bw', name: 'Reverse nordic poids de corps', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['amplitude partielle', 'amplitude complète', 'avec élastique assisté'], default_sets: 3, default_reps: 8, target_rpe: 8, rest_seconds: 90 }
+    ],
+    position: 'À genoux sur tapis. Corps droit de genoux à tête. Pieds fixés sous un objet lourd ou par un partenaire.',
+    movement: 'Maintenir le gainage du corps. S\'incliner vers l\'arrière lentement en 3-4s (quadriceps excentriques). Arrêter juste avant de toucher le sol. Pousser avec les talons pour remonter.',
+    common_errors: 'Plier les hanches (doit rester droit). Aller trop vite. Ne pas aller assez loin par peur.',
+    youtube_search: 'reverse nordic curl prévention tendinopathie rotule coureur'
+  },
+
+  lateral_bound: {
+    id: 'lateral_bound',
+    name_fr: 'Bonds latéraux',
+    name_tech: 'Lateral Bounds / Skater Jumps',
+    category: 'pliometrie',
+    primary_muscles: ['grand fessier', 'abducteurs', 'quadriceps'],
+    benefits: ['stabilite', 'pliometrie', 'trail_technique'],
+    variants: [
+      { id: 'lateral_bound_bw', name: 'Bonds latéraux poids de corps', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['amplitude réduite', 'amplitude maximale', 'avec pause équilibre 2s'], default_sets: 3, default_reps: 8, target_rpe: 7, rest_seconds: 90 }
+    ],
+    position: 'Debout sur une jambe, légère flexion de genou. Bras libres pour l\'équilibre.',
+    movement: 'Sauter latéralement vers la jambe opposée. Atterrir sur une seule jambe en amortissant sur 2-3s (genou fléchi). Stabiliser. Rebondir de l\'autre côté. 4 bonds de chaque côté = 1 série.',
+    common_errors: 'Atterrissage raide sans amortissement. Genou qui s\'effondre en valgus à l\'atterrissage. Amplitude trop faible.',
+    youtube_search: 'lateral bounds skater jumps trail running stability'
+  },
+
+  box_jump: {
+    id: 'box_jump',
+    name_fr: 'Saut sur box',
+    name_tech: 'Box Jump',
+    category: 'pliometrie',
+    primary_muscles: ['quadriceps', 'grand fessier', 'mollets'],
+    benefits: ['pliometrie', 'force_max', 'economie_course'],
+    variants: [
+      { id: 'box_jump_step', name: 'Box jump sur marche/caisse', required_equipment: { step: true }, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['~20 cm', '~40 cm', '~60 cm'], default_sets: 4, default_reps: 5, target_rpe: 7, rest_seconds: 120 },
+      { id: 'box_jump_bw', name: 'Saut vertical sur place', required_equipment: {}, priority: 2, load_type: 'bodyweight_variant', load_variant_options: ['standard', 'triple flexion maximale'], default_sets: 4, default_reps: 6, target_rpe: 7, rest_seconds: 90 }
+    ],
+    position: 'Debout devant la box, pieds écartés largeur hanches. Semi-flexion de préparation.',
+    movement: 'Contre-mouvement rapide (bras en arrière). Sauter sur la box, atterrir pieds à plat en semi-squat. Descendre de la box (ne pas sauter en arrière). Récupération complète entre répétitions.',
+    common_errors: 'Atterrir sur les orteils. Genoux en valgus à l\'atterrissage. Enchaîner trop vite.',
+    youtube_search: 'box jump explosivité running puissance'
+  },
+
+  copenhagen_plank: {
+    id: 'copenhagen_plank',
+    name_fr: 'Copenhagen plank',
+    name_tech: 'Copenhagen Hip Adduction',
+    category: 'tronc',
+    primary_muscles: ['adducteurs', 'fessier moyen', 'obliques'],
+    benefits: ['stabilite', 'resilience', 'prevention_blessure'],
+    variants: [
+      { id: 'copenhagen_genou', name: 'Copenhagen plank appui genou', required_equipment: { bench: true }, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['statique 20s', 'statique 30s', 'avec balancement'], default_sets: 3, default_reps: 3, target_rpe: 7, rest_seconds: 60 },
+      { id: 'copenhagen_pied', name: 'Copenhagen plank appui pied', required_equipment: { bench: true }, priority: 2, load_type: 'bodyweight_variant', load_variant_options: ['statique 15s', 'statique 25s'], default_sets: 3, default_reps: 3, target_rpe: 8, rest_seconds: 60 },
+      { id: 'copenhagen_sol', name: 'Adduction latérale au sol', required_equipment: {}, priority: 3, load_type: 'bodyweight_variant', load_variant_options: ['jambe du bas levée', 'écartement debout'], default_sets: 3, default_reps: 15, target_rpe: 6, rest_seconds: 45 }
+    ],
+    position: 'En planche latérale. Jambe supérieure posée sur un banc (genou pour variante facile, pied pour variante difficile). Jambe inférieure libre.',
+    movement: 'Tenir la planche latérale. Lever la jambe inférieure pour rejoindre la jambe supérieure. Tenir. Redescendre lentement. Bassin droit, pas de rotation.',
+    common_errors: 'Bassin qui tombe. Rotation du tronc. Jambe inférieure trop basse.',
+    youtube_search: 'copenhagen plank adducteurs prévention pubalgie running'
+  },
+
+  single_leg_glute_bridge: {
+    id: 'single_leg_glute_bridge',
+    name_fr: 'Pont fessier 1 jambe',
+    name_tech: 'Single Leg Glute Bridge',
+    category: 'excentrique',
+    primary_muscles: ['grand fessier', 'ischio-jambiers', 'stabilisateurs lombaires'],
+    benefits: ['resilience', 'stabilite', 'prevention_blessure'],
+    variants: [
+      { id: 'slgb_bw', name: 'Pont fessier unilatéral', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['standard', 'jambe opposée tendue', 'pied surélevé'], default_sets: 3, default_reps: 12, target_rpe: 7, rest_seconds: 45 },
+      { id: 'slgb_charge', name: 'Pont fessier unilatéral lesté', required_equipment_any: [{ dumbbells_max_kg: 16 }], priority: 2, load_type: 'external_kg', default_sets: 3, default_reps: 10, target_rpe: 8, rest_seconds: 60 }
+    ],
+    position: 'Allongé sur le dos, bras à plat. Une jambe pliée (pied à plat), l\'autre jambe tendue horizontalement.',
+    movement: 'Pousser sur le talon de la jambe pliée. Soulever les hanches jusqu\'à alignement épaules-hanche-genou. Tenir 2s en contractant le fessier. Descendre en 2s. Jambe tendue reste parallèle à la jambe de travail.',
+    common_errors: 'Bassin qui s\'incline d\'un côté. Jambe tendue qui aide. Descente trop rapide.',
+    youtube_search: 'single leg glute bridge fessier running unilatéral'
+  },
+
+  hip_abduction: {
+    id: 'hip_abduction',
+    name_fr: 'Abduction de hanche',
+    name_tech: 'Hip Abduction / Coquillage',
+    category: 'mobilite',
+    primary_muscles: ['fessier moyen', 'petit fessier', 'rotateurs externes'],
+    benefits: ['stabilite', 'resilience', 'prevention_blessure'],
+    variants: [
+      { id: 'hip_abd_bande', name: 'Abduction debout élastique', required_equipment: { bands: true }, priority: 1, load_type: 'band', load_variant_options: ['light', 'medium', 'heavy'], default_sets: 3, default_reps: 15, target_rpe: 6, rest_seconds: 45 },
+      { id: 'hip_abd_clam', name: 'Coquillage au sol', required_equipment: {}, priority: 2, load_type: 'bodyweight_variant', load_variant_options: ['genou plié 45°', 'genou plié 90°', 'jambe tendue'], default_sets: 3, default_reps: 20, target_rpe: 6, rest_seconds: 30 }
+    ],
+    position: 'Couché sur le côté, genoux pliés à 45°, hanches empilées. (Variante debout: élastique autour des chevilles, main sur un mur.)',
+    movement: 'Ouvrir le genou supérieur vers le plafond comme un coquillage, sans rouler les hanches en arrière. Tenir 1s. Redescendre lentement. Sentir le fessier moyen travailler, pas la colonne.',
+    common_errors: 'Rouler les hanches en arrière pour compenser. Amplitude trop limitée. Pas de contraction consciente au sommet.',
+    youtube_search: 'coquillage fessier moyen running prévention valgus genou'
+  },
+
+  core_rotation: {
+    id: 'core_rotation',
+    name_fr: 'Rotation de tronc',
+    name_tech: 'Rotational Chop / Anti-rotation',
+    category: 'tronc',
+    primary_muscles: ['obliques', 'transverse', 'grand dorsal'],
+    benefits: ['stabilite', 'economie_course', 'trail_technique'],
+    variants: [
+      { id: 'chop_bande', name: 'Rotation avec élastique', required_equipment: { bands: true, anchor_point: true }, priority: 1, load_type: 'band', load_variant_options: ['light', 'medium', 'heavy'], default_sets: 3, default_reps: 12, target_rpe: 7, rest_seconds: 60 },
+      { id: 'chop_bw', name: 'Rotation poids de corps', required_equipment: {}, priority: 2, load_type: 'bodyweight_variant', load_variant_options: ['mains jointes', 'bras tendu devant'], default_sets: 3, default_reps: 15, target_rpe: 6, rest_seconds: 45 }
+    ],
+    position: 'Debout, pieds écartés largeur épaules. Élastique ancré à hauteur épaule sur le côté. Bras légèrement fléchis.',
+    movement: 'Tirer l\'élastique en diagonale (épaule haute → hanche opposée) en faisant pivoter le buste. Hanches restent face devant. Contrôler le retour en 2s. 12 répétitions d\'un côté puis de l\'autre.',
+    common_errors: 'Faire pivoter les hanches (le travail vient des obliques). Aller trop vite. Bras verrouillés.',
+    youtube_search: 'rotation tronc élastique obliques running gainage'
+  },
+
+  cossack_squat: {
+    id: 'cossack_squat',
+    name_fr: 'Squat cosaque',
+    name_tech: 'Cossack Squat',
+    category: 'mobilite',
+    primary_muscles: ['adducteurs', 'quadriceps', 'fléchisseurs de hanche'],
+    benefits: ['stabilite', 'mobilite_hanche', 'trail_technique'],
+    variants: [
+      { id: 'cossack_bw', name: 'Squat cosaque poids de corps', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['amplitude partielle', 'amplitude complète', 'avec contre-poids'], default_sets: 3, default_reps: 8, target_rpe: 7, rest_seconds: 60 }
+    ],
+    position: 'Pieds très écartés (2× largeur épaules). Orteils légèrement en dehors. Mains jointes devant soi ou contre-poids pour l\'équilibre.',
+    movement: 'Descendre sur une jambe (flexion profonde) en gardant l\'autre jambe tendue au sol. Pied de la jambe tendue à plat. Pousser sur le talon pour remonter. Alterner les côtés.',
+    common_errors: 'Jambe tendue dont le pied décolle. Dos arrondi en bas. Genou de travail en valgus.',
+    youtube_search: 'cossack squat mobilité hanche trail running adducteurs'
+  },
+
+  wall_sit: {
+    id: 'wall_sit',
+    name_fr: 'Chaise contre le mur',
+    name_tech: 'Wall Sit isométrique',
+    category: 'excentrique',
+    primary_muscles: ['quadriceps', 'fessiers', 'ischio-jambiers'],
+    benefits: ['resilience', 'descente_trail', 'prevention_blessure'],
+    variants: [
+      { id: 'wall_sit_bw', name: 'Chaise poids de corps', required_equipment: {}, priority: 1, load_type: 'bodyweight_variant', load_variant_options: ['30s', '45s', '60s', 'unilatéral 20s'], default_sets: 3, default_reps: 1, target_rpe: 8, rest_seconds: 90 }
+    ],
+    position: 'Dos à plat contre le mur. Pieds à 60 cm du mur, largeur hanches. Descendre jusqu\'à 90° de flexion de genou.',
+    movement: 'Tenir la position statique. Quadriceps parallèles au sol. Ne pas se tenir avec les mains. Respirer. Progresser en durée puis passer en unilatéral.',
+    common_errors: 'Angle du genou trop ouvert (plus de 90°, moins de travail). S\'appuyer avec les mains. Laisser le dos se décoller du mur.',
+    youtube_search: 'wall sit isométrique quadriceps descente trail running'
   }
 
 };
@@ -1083,14 +1287,36 @@ function pickDays(spw) {
   return patterns[spw] || patterns[3];
 }
 
+// Temps de repos inter-série (secondes) selon la science du coaching :
+// Force lourde 2-3 min (adaptation neuromusculaire), excentrique 2-2min30
+// (fatigue tendineuse élevée), pliométrie haute intensité 2-2min30 (récupération
+// ATP), tronc/mobilité 45-90 s (faible demande systémique).
+const INTER_SET_REST = {
+  squat_lourd: 120,        rdl: 120,              bulgare: 120,
+  mollets_lourds: 90,      hip_thrust: 120,        lunge_marcheur: 90,
+  pogo_jumps: 90,          bondissements: 120,     drop_jumps: 150,
+  skips: 60,               lateral_bound: 90,      box_jump: 150,
+  step_down: 120,          nordic: 150,            mollet_excentrique: 90,
+  single_leg_rdl: 90,      tibialis_raise: 60,     reverse_nordic: 120,
+  single_leg_glute_bridge: 60, wall_sit: 120,
+  pallof_press: 60,        side_plank_hipdrop: 60, dead_bug: 45,
+  bird_dog: 45,            suitcase_carry: 60,     copenhagen_plank: 90,
+  core_rotation: 60,
+  tractions_or_row: 120,   pompes: 90,             face_pull: 60,
+  ytw_prone: 60,
+  hip_9090: 30,            pigeon_actif: 30,       knee_to_wall: 30,
+  open_book: 30,           monster_walk: 45,       hip_abduction: 30,
+  cossack_squat: 45,
+};
+
 const SESSION_EXERCISES = {
-  force_lourde:           ['squat_lourd','rdl','bulgare','mollets_lourds'],
-  pliometrie:             ['pogo_jumps','bondissements','drop_jumps'],
-  excentrique:            ['step_down','nordic','mollet_excentrique','single_leg_rdl'],
-  excentrique_pliometrie: ['step_down','nordic','pogo_jumps','bondissements'],
-  tronc:                  ['pallof_press','side_plank_hipdrop','dead_bug','bird_dog','suitcase_carry'],
+  force_lourde:           ['squat_lourd','rdl','bulgare','hip_thrust','lunge_marcheur'],
+  pliometrie:             ['pogo_jumps','bondissements','drop_jumps','lateral_bound','box_jump'],
+  excentrique:            ['step_down','nordic','mollet_excentrique','single_leg_rdl','tibialis_raise','reverse_nordic'],
+  excentrique_pliometrie: ['step_down','nordic','pogo_jumps','bondissements','tibialis_raise'],
+  tronc:                  ['pallof_press','side_plank_hipdrop','dead_bug','bird_dog','suitcase_carry','copenhagen_plank','core_rotation'],
   haut_corps:             ['tractions_or_row','pompes','face_pull','ytw_prone'],
-  mobilite:               ['hip_9090','pigeon_actif','knee_to_wall','open_book','monster_walk']
+  mobilite:               ['hip_9090','pigeon_actif','knee_to_wall','open_book','monster_walk','hip_abduction','cossack_squat']
 };
 
 const FOCUS_META = {
@@ -1133,7 +1359,11 @@ const FOCUS_META = {
 
 function buildSession(focus, profile) {
   const meta = FOCUS_META[focus] || FOCUS_META['tronc'];
-  const exoIds = SESSION_EXERCISES[focus] || [];
+  const allExoIds = SESSION_EXERCISES[focus] || [];
+  const maxExos = (focus === 'tronc' || focus === 'mobilite') ? 5 : 4;
+  const weekNum = Math.floor(Date.now() / (7 * 86400000));
+  const offset = weekNum % Math.max(1, allExoIds.length - maxExos + 1);
+  const exoIds = allExoIds.slice(offset, offset + maxExos);
   const exercises = exoIds.map(id => {
     const exo = RENFO_EXERCISES[id];
     if (!exo) return null;
@@ -1677,11 +1907,16 @@ export async function startRenfoSession(dayKey) {
     }
 
     return `<div id="exo-card-${exo.exercise_id}" class="card" style="margin-bottom:10px;padding:14px">
-      <div style="margin-bottom:6px">
-        <div style="font-family:var(--vl-display);font-size:1.05rem;font-weight:700;margin-bottom:2px">${def.name_fr}</div>
-        <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">${def.name_tech} · ${variant.name}</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div style="min-width:0">
+          <div style="font-family:var(--vl-display);font-size:1.05rem;font-weight:700;margin-bottom:2px">${def.name_fr}</div>
+          <div data-variant-name style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">${def.name_tech} · ${variant.name}</div>
+          ${def.primary_muscles && def.primary_muscles.length ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${def.primary_muscles.map(m=>`<span style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 6px">${m}</span>`).join('')}</div>` : ''}
+        </div>
+        ${def.variants.length > 1 ? `<button onclick="showVariantPicker('${exo.exercise_id}')" style="padding:4px 8px;background:transparent;border:1px solid var(--vl-border);border-radius:6px;cursor:pointer;font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);touch-action:manipulation;flex-shrink:0">Variante</button>` : ''}
       </div>
-      <div style="font-size:.8rem;color:var(--vl-ember);font-weight:600">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}</div>
+      <div data-sets-rpe style="font-size:.8rem;color:var(--vl-ember);font-weight:600">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}</div>
+      <div data-rest-info style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-top:3px">Entre séries : ${fmtRest(INTER_SET_REST[exo.exercise_id]||90)} · Repos suivant : ${fmtRest(variant.rest_seconds||90)}</div>
       ${actionHtml}
       <button onclick="toggleExoDetail('${exo.exercise_id}')" style="margin-top:10px;background:none;border:none;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">
         ${_ICON_CHEVRON} Comment faire
@@ -1731,11 +1966,7 @@ export function toggleExoCheck(exerciseId, variantId, loadType) {
   if (!btn) return;
   const isChecked = btn.dataset.checked === '1';
   if (!isChecked) {
-    if (loadType === 'external_kg') {
-      showRenfoLogPopup(exerciseId, variantId, loadType);
-    } else {
-      markExoChecked(exerciseId, variantId, loadType, null, null, null);
-    }
+    showRenfoLogPopup(exerciseId, variantId, loadType);
   } else {
     btn.dataset.checked = '0';
     btn.style.borderColor = 'var(--vl-border)';
@@ -1749,6 +1980,45 @@ export function validateExoWithLoad(exerciseId, variantId, loadType) {
   const inputEl = document.getElementById('load-' + exerciseId);
   const prefillLoad = inputEl ? (parseFloat(inputEl.value) || null) : null;
   showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad);
+}
+
+export function startRestTimer(secs) {
+  clearInterval(window._renfoRestTimer);
+  const existing = document.getElementById('renfoRestBar');
+  if (existing) existing.remove();
+
+  const bar = document.createElement('div');
+  bar.id = 'renfoRestBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9000;background:var(--vl-bg2);border-top:1.5px solid var(--vl-border);padding:12px 16px 20px;display:flex;flex-direction:column;gap:8px';
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);letter-spacing:.08em">REPOS</div>
+      <button id="renfoRestSkip" style="padding:5px 12px;background:transparent;border:1px solid var(--vl-border);border-radius:6px;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);touch-action:manipulation">Passer</button>
+    </div>
+    <div id="renfoRestCountdown" style="font-family:var(--vl-display);font-size:1.6rem;font-weight:800;color:var(--vl-ember);text-align:center;line-height:1">${fmtRest(secs)}</div>
+    <div style="height:6px;background:var(--vl-bg);border-radius:3px;overflow:hidden">
+      <div id="renfoRestProgress" style="height:100%;width:100%;background:var(--vl-ember);border-radius:3px;transition:width .9s linear"></div>
+    </div>`;
+  document.body.appendChild(bar);
+
+  bar.querySelector('#renfoRestSkip').addEventListener('click', () => {
+    clearInterval(window._renfoRestTimer);
+    bar.remove();
+  });
+
+  let remaining = secs;
+  window._renfoRestTimer = setInterval(() => {
+    remaining--;
+    const countdown = bar.querySelector('#renfoRestCountdown');
+    const progress = bar.querySelector('#renfoRestProgress');
+    if (countdown) countdown.textContent = fmtRest(remaining);
+    if (progress) progress.style.width = Math.max(0, (remaining / secs * 100)).toFixed(1) + '%';
+    if (remaining <= 0) {
+      clearInterval(window._renfoRestTimer);
+      bar.remove();
+      navigator.vibrate?.([100, 50, 100]);
+    }
+  }, 1000);
 }
 
 function markExoChecked(exerciseId, variantId, loadType, loadKg, reps, rpe) {
@@ -1771,6 +2041,10 @@ function markExoChecked(exerciseId, variantId, loadType, loadKg, reps, rpe) {
     const e1rm = epley1RM(loadKg, reps);
     if (e1rm) showToast(`e1RM estimé : ${e1rm} kg`, 'success', 3000);
   }
+  // Start rest timer
+  const def2 = RENFO_EXERCISES[exerciseId];
+  const v2 = def2?.variants?.find(v => v.id === variantId) || def2?.variants?.[0];
+  if (v2?.rest_seconds) startRestTimer(v2.rest_seconds);
 }
 
 function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) {
@@ -1784,12 +2058,13 @@ function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) 
   overlay.id = 'renfoLogPopup';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;touch-action:none';
 
+  const isWeighted = loadType === 'external_kg';
   overlay.innerHTML = `<div style="width:100%;background:var(--vl-bg2);border-radius:20px 20px 0 0;padding:20px 20px 32px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
     <div style="width:36px;height:4px;background:var(--vl-border);border-radius:2px;margin:0 auto 18px"></div>
     <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">${def.name_fr}</div>
     <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-bottom:18px">${def.name_tech}</div>
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div>
+      ${isWeighted ? `<div>
         <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Charge (kg)</div>
         <input id="rlLoad" type="number" inputmode="decimal" min="0" step="2.5"
           placeholder="${prefillLoad ? '' : '60'}" ${prefillLoad !== null ? `value="${prefillLoad}"` : ''}
@@ -1798,7 +2073,7 @@ function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) 
       <div>
         <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Répétitions effectuées</div>
         <input id="rlReps" type="number" inputmode="numeric" min="1" max="30" placeholder="5" style="width:100%;padding:10px 12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:8px;color:var(--vl-text);font-size:1rem;box-sizing:border-box">
-      </div>
+      </div>` : `<div style="font-family:var(--vl-mono);font-size:.8rem;color:var(--vl-text-2);padding:8px 0">Terminé ✓</div>`}
       <div>
         <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Difficulté (RPE) — <span id="rpeLabel">8</span>/10</div>
         <input id="rlRpe" type="range" min="6" max="10" step="1" value="8" oninput="document.getElementById('rpeLabel').textContent=this.value" style="width:100%;accent-color:var(--vl-ember)">
@@ -1855,6 +2130,76 @@ export function submitRenfoLog(exerciseId, variantId, loadType) {
       if (!error) showToast(`e1RM estimé : ${e1rm} kg`, 'success', 3000);
     });
   }
+}
+
+export function showVariantPicker(exerciseId) {
+  const def = RENFO_EXERCISES[exerciseId];
+  if (!def) return;
+
+  const existing = document.getElementById('renfoVariantPicker');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'renfoVariantPicker';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;touch-action:none';
+
+  const variantItems = def.variants.map(v => {
+    const eqHint = v.required_equipment
+      ? Object.keys(v.required_equipment).filter(k => v.required_equipment[k]).join(', ') || 'poids de corps'
+      : (v.required_equipment_any ? 'haltères / kettlebell' : '');
+    return `<button onclick="applyVariant('${exerciseId}','${v.id}')" style="width:100%;text-align:left;padding:12px 14px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:10px;cursor:pointer;color:var(--vl-text);touch-action:manipulation;margin-bottom:8px">
+      <div style="font-family:var(--vl-display);font-size:.85rem;font-weight:700">${v.name}</div>
+      ${eqHint ? `<div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:3px">${eqHint}</div>` : ''}
+    </button>`;
+  }).join('');
+
+  overlay.innerHTML = `<div style="width:100%;background:var(--vl-bg2);border-radius:20px 20px 0 0;padding:20px 20px 32px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:var(--vl-border);border-radius:2px;margin:0 auto 18px"></div>
+    <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">${def.name_fr}</div>
+    <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-bottom:18px">Choisir une variante</div>
+    ${variantItems}
+    <button onclick="document.getElementById('renfoVariantPicker').remove()" style="width:100%;padding:12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:10px;cursor:pointer;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem;touch-action:manipulation">Annuler</button>
+  </div>`;
+
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+}
+
+export function applyVariant(exerciseId, newVariantId) {
+  const picker = document.getElementById('renfoVariantPicker');
+  if (picker) picker.remove();
+
+  const dayKey = window._renfoSessionDayKey;
+  if (!dayKey || !renfoProgram) return;
+  const session = renfoProgram.week_schedule?.[dayKey];
+  if (!session) return;
+
+  const exo = session.exercises.find(e => e.exercise_id === exerciseId);
+  if (!exo) return;
+
+  const def = RENFO_EXERCISES[exerciseId];
+  const newVariant = def?.variants?.find(v => v.id === newVariantId);
+  if (!newVariant) return;
+
+  exo.variant_id = newVariantId;
+  exo.sets = newVariant.default_sets;
+  exo.reps = newVariant.default_reps;
+  exo.target_rpe = newVariant.target_rpe;
+  exo.rest_seconds = newVariant.rest_seconds;
+  exo.load_type = newVariant.load_type;
+
+  // Update DOM text elements in the card
+  const card = document.getElementById('exo-card-' + exerciseId);
+  if (card) {
+    const techEl = card.querySelector('[data-variant-name]');
+    if (techEl) techEl.textContent = def.name_tech + ' · ' + newVariant.name;
+    const setsEl = card.querySelector('[data-sets-rpe]');
+    if (setsEl) setsEl.textContent = `${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}`;
+    const restEl = card.querySelector('[data-rest-info]');
+    if (restEl) restEl.textContent = `Entre séries : ${fmtRest(INTER_SET_REST[exerciseId]||90)} · Repos suivant : ${fmtRest(newVariant.rest_seconds||90)}`;
+  }
+
+  showToast('Variante mise à jour', 'success');
 }
 
 export async function completeRenfoSession(dayKey) {
