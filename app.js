@@ -51,17 +51,21 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', ()
 // PANELS
 // ════════════════════════════════════════════════════
 export function showPanel(name) {
+  // Profil sub-pages: 'profil-records', 'profil-nutrition', 'profil-compte'
+  const profilTab = name.startsWith('profil-') ? name.slice(7) : null;
+  const panelId = profilTab ? 'profil' : name;
+
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item[data-panel]').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.bni[data-panel]').forEach(b => b.classList.remove('active'));
-  const panel = document.getElementById('panel-' + name);
+  const panel = document.getElementById('panel-' + panelId);
   if(!panel) return;
   panel.classList.add('active');
-  document.querySelector(`.sidebar-item[data-panel="${name}"]`)?.classList.add('active');
-  document.querySelector(`.bni[data-panel="${name}"]`)?.classList.add('active');
-  if(name==='strategie') { renderCalendar(); }
-  if(name==='renfo') { loadRenfoApp(); }
-  if(name==='profil') { populateProfilPanel(); }
+  document.querySelector(`.sidebar-item[data-panel="${panelId}"]`)?.classList.add('active');
+  document.querySelector(`.bni[data-panel="${panelId}"]`)?.classList.add('active');
+  if(panelId==='strategie') { renderCalendar(); }
+  if(panelId==='renfo') { loadRenfoApp(); }
+  if(panelId==='profil') { populateProfilPanel(); switchProfilTab(profilTab||'compte'); }
   if(name==='strategie' && !VLState.currentRaceContext) {
     const drop=document.getElementById('gpxDrop');
     if(drop){
@@ -1049,6 +1053,9 @@ export function switchProfilTab(tab) {
   const content = document.getElementById('tab-' + tab);
   if(content) content.style.display = 'block';
   document.querySelector(`.vl-tab[data-tab="${tab}"]`)?.classList.add('active');
+  // Update URL for deep linking without re-triggering hashchange
+  const hash = tab === 'compte' ? 'profil' : `profil-${tab}`;
+  if(window.location.hash.slice(1) !== hash) history.replaceState(null, '', '#' + hash);
 }
 export async function changePassword() {
   const msg=document.getElementById('pwMsg');

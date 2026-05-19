@@ -61,7 +61,7 @@ export function renderCalendar() {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
     const isToday = !otherMonth && year===today.getFullYear() && month===today.getMonth() && dayNum===today.getDate();
     const race = raceByDate[dateStr];
-    const typeEmoji = race ? (race.type==='Trail'?'⛰️':race.type==='Ultra'?'🦅':'🏃') : '';
+    const typeIcon = race ? (race.type==='Trail'||race.type==='Ultra'?icon('trail',10):icon('activity',10)) : '';
 
     // Activity micro-chips (runs + renfo)
     const dayActs = actsByDate[dateStr] || [];
@@ -70,18 +70,18 @@ export function renderCalendar() {
     dayActs.forEach(a => {
       const km = (a.distance / 1000).toFixed(1);
       const isTrail = (a.sport_type||'').toLowerCase().includes('trail');
-      chipsHtml += `<div style="font-family:var(--vl-mono);font-size:9px;color:${isTrail?'var(--cyan)':'var(--green)'};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isTrail?'⛰':'🏃'} ${km}k</div>`;
+      chipsHtml += `<div style="display:flex;align-items:center;gap:2px;font-family:var(--vl-mono);font-size:9px;color:${isTrail?'var(--cyan)':'var(--green)'};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isTrail?icon('trail',9):icon('activity',9)} ${km}k</div>`;
     });
     if (renfoLog) {
       const renfoSched = VLState.renfoProgram?.week_schedule?.[renfoLog.day_key];
       const renfoFocusColors = VLState.RENFO_FOCUS_COLORS;
       const dotCol = renfoFocusColors[renfoSched?.focus] || '#e5562a';
-      chipsHtml += `<div style="display:flex;align-items:center;gap:3px;margin-top:1px"><div style="width:5px;height:5px;border-radius:50%;background:${dotCol};flex-shrink:0"></div><div style="font-family:var(--vl-mono);font-size:9px;color:${dotCol};line-height:1">💪</div></div>`;
+      chipsHtml += `<div style="display:flex;align-items:center;gap:3px;margin-top:1px"><div style="width:5px;height:5px;border-radius:50%;background:${dotCol};flex-shrink:0"></div><div style="color:${dotCol};line-height:1;display:flex">${icon('renfo',9)}</div></div>`;
     }
 
     cells += `<div class="cal-cell${otherMonth?' other-month':''}${isToday?' today':''}${race?' has-event':''}" ${race?`onclick="openEventView('${escapeAttr(race.id)}')"`:''}>
       <div class="cal-day-num">${dayNum}</div>
-      ${race ? `<div class="cal-event-dot">${typeEmoji} ${escapeHTML(race.name)}</div><div class="cal-event-type">${race.distance||'?'}km${race.elevation?` · ${race.elevation}m D+`:''}</div>` : ''}
+      ${race ? `<div class="cal-event-dot" style="display:flex;align-items:center;gap:3px">${typeIcon} ${escapeHTML(race.name)}</div><div class="cal-event-type">${race.distance||'?'}km${race.elevation?` · ${race.elevation}m D+`:''}</div>` : ''}
       ${chipsHtml ? `<div style="margin-top:${race?'2px':'1px'}">${chipsHtml}</div>` : ''}
     </div>`;
   }
@@ -94,7 +94,7 @@ export function renderCalendar() {
     upEl.innerHTML = upcoming.length ? `
       <div class="clabel" style="margin-bottom:8px">Prochaines courses</div>
       ${upcoming.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="openEventView('${escapeAttr(r.id)}')">
-        <div style="font-size:1.2rem">${r.type==='Trail'?'⛰️':r.type==='Ultra'?'🦅':'🏃'}</div>
+        <div style="display:flex;align-items:center;color:${r.type==='Trail'||r.type==='Ultra'?'var(--cyan)':'var(--green)'}">${r.type==='Trail'||r.type==='Ultra'?icon('trail',18):icon('activity',18)}</div>
         <div style="flex:1">
           <div style="font-weight:600;font-size:.85rem">${escapeHTML(r.name)}</div>
           <div class="mono t3" style="font-size:.6rem">${new Date(r.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${r.distance||'?'}km${r.elevation?` · ${r.elevation}m D+`:''}</div>
@@ -248,7 +248,7 @@ export async function saveEditRace() {
     window._openEventRace = updated;
     if(VLState.currentRaceContext?.id===updated.id) VLState.currentRaceContext = updated;
     const titleEl = document.getElementById('eventViewTitle');
-    if(titleEl) titleEl.textContent = `${updated.type==='Trail'?'⛰️':updated.type==='Ultra'?'🦅':'🏃'} ${updated.name} — ${new Date(updated.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
+    if(titleEl) titleEl.innerHTML = `${updated.type==='Trail'||updated.type==='Ultra'?icon('trail',14):icon('activity',14)} ${escapeHTML(updated.name)} — ${new Date(updated.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}`;
   }
   document.getElementById('editRaceForm').style.display = 'none';
   renderCalendar();
@@ -437,7 +437,7 @@ export function renderRaces() {
         <div class="race-meta">${d.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} · ${r.distance||'?'}km · D+${r.elevation||'?'}m</div>
         <div class="race-tags">
           <span class="race-tag" style="border-color:${color}40;color:${color}">${escapeHTML(r.type)}</span>
-          ${r.goal_time?`<span class="race-tag" style="border-color:var(--text3)40;color:var(--text2)">🎯 ${escapeHTML(r.goal_time)}</span>`:''}
+          ${r.goal_time?`<span class="race-tag" style="border-color:var(--text3)40;color:var(--text2)">${icon('check',10)} ${escapeHTML(r.goal_time)}</span>`:''}
           ${hasGpx?`<span class="race-tag" style="border-color:var(--green)40;color:var(--green)">✓ GPX</span>`:''}
           ${hasActivity?`<span class="race-tag" style="border-color:var(--purple)40;color:var(--purple)">✓ Activité</span>`:''}
         </div>
