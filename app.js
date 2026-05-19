@@ -744,7 +744,7 @@ function renderDashboard() {
   document.getElementById('statsGrid').innerHTML = `
     <div class="s-stat"><div class="s-sv">${fmtD(durM)}</div><div class="s-sl">Temps mois</div></div>
     ${avgFC?`<div class="s-stat"><div class="s-sv">${avgFC}</div><div class="s-sl">FC moy mois</div></div>`:''}
-    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--vl-text-3)">—</div><div class="s-sl">% EF · 7j</div></div>
+    <div class="s-stat" id="aerobicStatCard"><div class="s-sv tc" id="aerobicStatVal" style="font-size:1rem;color:var(--vl-text-3)">…</div><div class="s-sl">% EF · 7j glissants</div></div>
   `;
 
   // Annual chart
@@ -761,8 +761,10 @@ function renderDashboard() {
     loadEl.style.display = '';
   }
 
-  // % EF semaine calendaire — streams complets
-  loadAerobicStat(thisWeek, fcMax);
+  // % EF glissant 7 jours — streams complets
+  const sevenDaysAgo = new Date(now - 7 * 86400000);
+  const last7Days = VLState.allActivities.filter(a => new Date(a.start_date) >= sevenDaysAgo);
+  loadAerobicStat(last7Days, fcMax);
 }
 
 function renderLastActivity() {
@@ -818,9 +820,8 @@ async function loadAerobicStat(weekActs, fcMax) {
   el.textContent = '…';
 
   const threshold = fcMax * 0.75;
-  // Seulement les sorties avec cardiofréquencemètre pour éviter les appels inutiles
-  const candidates = weekActs.filter(a => a.average_heartrate);
-  if (!candidates.length) { el.textContent = '—'; return; }
+  if (!weekActs.length) { el.textContent = '—'; return; }
+  const candidates = weekActs;
 
   let totalPts = 0, aerobicPts = 0;
   await Promise.all(candidates.map(async a => {
