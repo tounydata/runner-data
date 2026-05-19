@@ -314,73 +314,112 @@ export async function linkActivityToRace(raceId, raceName, actId) {
   }
 }
 
+// ────────────────────────────────────────────────────
+// VAM COMPUTATION — pure function, no side effects
+// ────────────────────────────────────────────────────
+export function computeVAMFromStreams(streams) {
+  const altD=streams.altitude?.data||[], hrD=streams.heartrate?.data||[];
+  const velD=streams.velocity_smooth?.data||[], distD=streams.distance?.data||[];
+  if(!altD.length || !velD.length) return null;
+
+  let uphillSections=[], downhillSections=[], recoveries=[];
+  let inUphill=false, uphillStart=null;
+  const WIN=Math.min(30, Math.floor(altD.length/10));
+
+  for(let i=WIN; i<altD.length-WIN; i++){
+    const elevN=altD[i+WIN]-altD[i], distN=distD[i+WIN]-distD[i];
+    const grade=distN>0 ? elevN/distN*100 : 0;
+    if(grade>4 && !inUphill){
+      inUphill=true; uphillStart={idx:i, alt:altD[i], dist:distD[i], time:i};
+    } else if(grade<=1.5 && inUphill){
+      inUphill=false;
+      const dAlt=altD[i]-uphillStart.alt, dTime=i-uphillStart.time;
+      if(dAlt>10 && dTime>0){
+        const vam=Math.round(dAlt/(dTime/3600));
+        const avgHR=hrD.length ? Math.round(hrD.slice(uphillStart.idx,i).reduce((a,b)=>a+b,0)/(i-uphillStart.idx)) : null;
+        uphillSections.push({vam, dAlt:Math.round(dAlt), dist:Math.round(distD[i]-uphillStart.dist), avgHR});
+        if(hrD.length){
+          const hrAtTop=hrD[i]||0, hrAfter60=hrD[Math.min(i+60,hrD.length-1)]||0;
+          if(hrAtTop>0) recoveries.push({drop:hrAtTop-hrAfter60, hrAtTop, hrAfter60});
+        }
+      }
+    }
+    if(grade<-5){
+      const avgVel=velD.slice(i,i+30).reduce((a,b)=>a+b,0)/30;
+      downhillSections.push({speed:+(avgVel*3.6).toFixed(1), grade:+grade.toFixed(1)});
+    }
+  }
+
+  if(!uphillSections.length && !recoveries.length) return null;
+
+  return {
+    uphillSections, downhillSections, recoveries,
+    avgVAM:     uphillSections.length ? Math.round(uphillSections.reduce((a,b)=>a+b.vam,0)/uphillSections.length) : null,
+    maxVAM:     uphillSections.length ? Math.max(...uphillSections.map(s=>s.vam)) : null,
+    avgRecovery:recoveries.length ? Math.round(recoveries.reduce((a,b)=>a+b.drop,0)/recoveries.length) : null,
+    avgDownhill:downhillSections.length ? +(downhillSections.reduce((a,b)=>a+b.speed,0)/downhillSections.length).toFixed(1) : null,
+  };
+}
+
+// ────────────────────────────────────────────────────
+// AUTO-CALIBRATION — bootstrap VAM from last N trail activities
+// Called from app.js on init (if vam_avg null) and after sync
+// ────────────────────────────────────────────────────
+export async function autoCalibrate(activities, topN = 10) {
+  if(!VLState.currentUser?.id) return null;
+  const candidates = (activities||[])
+    .filter(a => (a.type||a.sport_type||'').toLowerCase().includes('trail') && (a.total_elevation_gain||0) > 100)
+    .slice(0, topN);
+  if(!candidates.length) return null;
+
+  const allVAMs=[], allRecoveries=[];
+  for(const act of candidates) {
+    const streams = await fetchStreams(act.id);
+    const r = computeVAMFromStreams(streams);
+    if(r?.avgVAM) {
+      allVAMs.push(r.avgVAM);
+      if(r.avgRecovery != null) allRecoveries.push(r.avgRecovery);
+    }
+  }
+  if(!allVAMs.length) return null;
+
+  const avgVAM    = Math.round(allVAMs.reduce((a,b)=>a+b,0)/allVAMs.length);
+  const maxVAM    = Math.max(...allVAMs);
+  const avgRecovery = allRecoveries.length ? Math.round(allRecoveries.reduce((a,b)=>a+b,0)/allRecoveries.length) : null;
+
+  Object.assign(VLState.userProfile, {vam_avg:avgVAM, vam_max:maxVAM, ...(avgRecovery!=null?{recovery_drop_avg:avgRecovery}:{})});
+  await sb.from('profiles').upsert({
+    id: VLState.currentUser.id,
+    vam_avg: avgVAM, vam_max: maxVAM,
+    ...(avgRecovery!=null ? {recovery_drop_avg:avgRecovery} : {}),
+  });
+  console.info(`[VL] VAM calibré : ${avgVAM} m/h (${allVAMs.length}/${candidates.length} activités)`);
+  return {avgVAM, maxVAM, avgRecovery, processed:allVAMs.length, total:candidates.length};
+}
+
 export function renderAthleteProfile(streams, act) {
   const section = document.getElementById('athleteProfileSection');
   if(!section) return;
 
-  const altD = streams.altitude?.data||[];
-  const hrD = streams.heartrate?.data||[];
-  const velD = streams.velocity_smooth?.data||[];
-  const distD = streams.distance?.data||[];
-  if(!altD.length || !velD.length) return;
+  const vamData = computeVAMFromStreams(streams);
 
-  // Compute VAM on uphills, downhill speed, post-climb recovery
-  let uphillSections=[], downhillSections=[], recoveries=[];
-  let inUphill=false, uphillStart=null;
-  let prevState='flat';
-
-  const WIN = Math.min(30, Math.floor(altD.length/10)); // adaptive lookahead
-  for(let i=WIN; i<altD.length-WIN; i++){
-    const elevN = altD[i+WIN]-altD[i];
-    const distN = distD[i+WIN]-distD[i];
-    const grade = distN>0 ? elevN/distN*100 : 0;
-
-    if(grade > 4 && !inUphill){
-      inUphill=true;
-      uphillStart={idx:i, alt:altD[i], dist:distD[i], time:i};
-    } else if(grade <= 1.5 && inUphill){
-      inUphill=false;
-      const dAlt=altD[i]-uphillStart.alt;
-      const dTime=(i-uphillStart.time);
-      const dDist=distD[i]-uphillStart.dist;
-      if(dAlt>10 && dTime>0){
-        const vam=dAlt/(dTime/3600);
-        const avgHR=hrD.length?hrD.slice(uphillStart.idx,i).reduce((a,b)=>a+b,0)/(i-uphillStart.idx):null;
-        uphillSections.push({vam:Math.round(vam),dAlt:Math.round(dAlt),dist:Math.round(dDist),avgHR:avgHR?Math.round(avgHR):null});
-        // Recovery after climb: HR drop in next 60s
-        if(hrD.length){
-          const hrAtTop=hrD[i]||0;
-          const hrAfter60=hrD[Math.min(i+60,hrD.length-1)]||0;
-          const drop=hrAtTop-hrAfter60;
-          if(hrAtTop>0) recoveries.push({drop,hrAtTop,hrAfter60});
-        }
-      }
-    }
-    if(grade < -5){
-      const avgVel=velD.slice(i,i+30).reduce((a,b)=>a+b,0)/30;
-      downhillSections.push({speed:+(avgVel*3.6).toFixed(1),grade:+grade.toFixed(1)});
-    }
-  }
+  if(!vamData) return;
+  const {uphillSections, downhillSections, recoveries, avgVAM, maxVAM, avgRecovery, avgDownhill} = vamData;
 
   if(!uphillSections.length && !recoveries.length) {
     section.innerHTML = `<div class="card"><div class="clabel">Profil athlète</div><div class="mono t3" style="font-size:.75rem;padding:8px 0">Pas de montées significatives détectées sur cette sortie.</div></div>`;
     return;
   }
 
-  const avgVAM = uphillSections.length ? Math.round(uphillSections.reduce((a,b)=>a+b.vam,0)/uphillSections.length) : null;
-  const maxVAM = uphillSections.length ? Math.max(...uphillSections.map(s=>s.vam)) : null;
-  const avgRecovery = recoveries.length ? Math.round(recoveries.reduce((a,b)=>a+b.drop,0)/recoveries.length) : null;
-  const avgDownhill = downhillSections.length ? +(downhillSections.reduce((a,b)=>a+b.speed,0)/downhillSections.length).toFixed(1) : null;
-
   // Level assessment
   const vamLevel = maxVAM > 1000 ? {l:'Excellent', c:'var(--green)'} : maxVAM > 700 ? {l:'Bon', c:'var(--cyan)'} : maxVAM > 400 ? {l:'Moyen', c:'var(--yellow)'} : {l:'À développer', c:'var(--orange)'};
   const recovLevel = avgRecovery > 30 ? {l:'Rapide', c:'var(--green)'} : avgRecovery > 20 ? {l:'Correct', c:'var(--cyan)'} : avgRecovery > 10 ? {l:'Lent', c:'var(--yellow)'} : {l:'Très lent', c:'var(--orange)'};
 
-  // Persist VAM to profile — used by race-strategy.js section predictor
+  // Persist single-activity VAM to profile
   if(avgVAM && VLState.currentUser?.id) {
-    Object.assign(VLState.userProfile, {vam_avg: avgVAM, vam_max: maxVAM, ...(avgRecovery != null ? {recovery_drop_avg: avgRecovery} : {})});
-    sb.from('profiles').upsert({id: VLState.currentUser.id, vam_avg: avgVAM, vam_max: maxVAM, ...(avgRecovery != null ? {recovery_drop_avg: avgRecovery} : {})})
-      .then(({error}) => { if(error) console.warn('[VL] save VAM', error); });
+    Object.assign(VLState.userProfile, {vam_avg:avgVAM, vam_max:maxVAM, ...(avgRecovery!=null?{recovery_drop_avg:avgRecovery}:{})});
+    sb.from('profiles').upsert({id:VLState.currentUser.id, vam_avg:avgVAM, vam_max:maxVAM, ...(avgRecovery!=null?{recovery_drop_avg:avgRecovery}:{})})
+      .then(({error})=>{ if(error) console.warn('[VL] save VAM',error); });
   }
 
   section.innerHTML = `

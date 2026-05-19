@@ -1,6 +1,6 @@
 import { VLState, sb, SUPA_URL, CLIENT_ID, FC_MAX_DEFAULT, RUNNING_TYPES } from './app-state.js';
 import { renderCalendar, loadRaces } from './race-calendar.js';
-import { openAnalyse } from './activity-analysis.js';
+import { openAnalyse, autoCalibrate } from './activity-analysis.js';
 import { loadRenfoApp, preloadRenfoState } from './renfo.js';
 import { isRun, fmtP, fmtD, fmtT, bC, deltaHTML, tE, tL, parseCsvDate } from './formatters.js';
 import { escapeHTML, escapeAttr, safeUrl } from './security.js';
@@ -320,6 +320,10 @@ async function initApp(user) {
   showPanel(initHash);
   // Onboarding pour nouveaux utilisateurs
   if(!localStorage.getItem('onb_done')) initOnboarding();
+  // Bootstrap VAM silently if not yet calibrated (fire and forget)
+  if(!VLState.userProfile.vam_avg && VLState.allActivities?.length) {
+    autoCalibrate(VLState.allActivities);
+  }
 }
 
 // ════════════════════════════════════════════════════
@@ -494,12 +498,20 @@ export async function manualSync() {
   const btn = document.getElementById('btnSync');
   if(btn) { btn.textContent = '⟳'; btn.style.animation = 'spin 1s linear infinite'; btn.disabled = true; }
   showToast('Synchronisation Strava en cours…', 'info', 3000);
+  const prevIds = new Set((VLState.allActivities||[]).map(a=>a.id));
   try {
     await refreshActivitiesFromServer();
     await new Promise(r => setTimeout(r, 3000)); // laisse le temps à l'edge function
     await loadActivities();
     renderDashboard();
     showToast('Synchronisation terminée ✓', 'success');
+    // Recalibrate VAM if new trail runs detected
+    const hasNewTrail = (VLState.allActivities||[]).some(a =>
+      !prevIds.has(a.id) &&
+      (a.type||a.sport_type||'').toLowerCase().includes('trail') &&
+      (a.total_elevation_gain||0) > 100
+    );
+    if(hasNewTrail) autoCalibrate(VLState.allActivities);
   } catch(e) {
     showToast('Erreur de synchronisation', 'error');
   } finally {
