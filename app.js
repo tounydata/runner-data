@@ -1,12 +1,18 @@
-// ════════════════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════════════════
-const SUPA_URL = 'https://wanzrkdgqmcctwvnbmuv.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indhbnpya2RncW1jY3R3dm5ibXV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MjYyNjksImV4cCI6MjA5MzAwMjI2OX0.sSjZ956YRpSpCFxDrYDntTvIGHnmVEbe3JDsjTJsze4';
-const CLIENT_ID = '161609'; // Strava Client ID — public, safe in frontend
+import { VLState, sb, SUPA_URL, CLIENT_ID, FC_MAX_DEFAULT, RUNNING_TYPES } from './app-state.js';
+import { renderCalendar, loadRaces } from './race-calendar.js';
+import { openAnalyse } from './activity-analysis.js';
+import { loadRenfoApp } from './renfo.js';
+import { isRun, fmtP, fmtD, fmtT, bC, deltaHTML, tE, tL, parseCsvDate } from './formatters.js';
+import { escapeHTML, escapeAttr, safeUrl } from './security.js';
+import { populateRaceSelector } from './race-strategy.js';
+import { renderNutritionProducts } from './nutrition.js';
+
 const REDIRECT_URI = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/`;
-const FC_MAX_DEFAULT = 205;
-const RUNNING_TYPES = ['Run', 'TrailRun', 'Trail Run', 'Running'];
+let historyActivities = [];
+let annualChartInst = null;
+let annualChartMode = 'km';
+let isLight = false;
+let themeMode = localStorage.getItem('vl-theme') || 'auto';
 
 // Dismiss splash after animation completes
 (function(){
@@ -14,22 +20,6 @@ const RUNNING_TYPES = ['Run', 'TrailRun', 'Trail Run', 'Running'];
   if(!splash) return;
   setTimeout(()=>{ splash.classList.add('vl-fade'); setTimeout(()=>splash.remove(), 420); }, 1300);
 })();
-
-const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY);
-
-// GLOBAL STATE — temporary until ES modules migration (Passe 3)
-// These vars are read by all modules. Passe 3 will move them into a structured store.
-let currentUser = null;
-let userProfile = { pain_zones: [] };
-let allActivities = []; // from Strava API — runs only
-let historyActivities = []; // from ZIP
-let races = [];
-let annualChartInst = null;
-let annualChartMode = 'km';
-let isLight = false;
-let themeMode = localStorage.getItem('vl-theme') || 'auto'; // 'dark' | 'light' | 'auto'
-let currentRaceContext = null;
 
 
 // ════════════════════════════════════════════════════
@@ -46,7 +36,7 @@ function applyTheme(mode) {
   document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.themeBtn === mode));
 }
-function setTheme(mode) {
+export function setTheme(mode) {
   localStorage.setItem('vl-theme', mode);
   applyTheme(mode);
 }
@@ -60,7 +50,7 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', ()
 // ════════════════════════════════════════════════════
 // PANELS
 // ════════════════════════════════════════════════════
-function showPanel(name) {
+export function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item[data-panel]').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.bni[data-panel]').forEach(b => b.classList.remove('active'));
@@ -71,7 +61,7 @@ function showPanel(name) {
   document.querySelector(`.bni[data-panel="${name}"]`)?.classList.add('active');
   if(name==='strategie') { renderCalendar(); }
   if(name==='renfo') { loadRenfoApp(); }
-  if(name==='strategie' && !currentRaceContext) {
+  if(name==='strategie' && !VLState.currentRaceContext) {
     const drop=document.getElementById('gpxDrop');
     if(drop){
       drop.style.display='block';
@@ -81,7 +71,7 @@ function showPanel(name) {
   }
 }
 
-function navigate(panel) {
+export function navigate(panel) {
   const hash = panel === 'dashboard' ? '' : panel;
   if(window.location.hash.slice(1) !== hash) {
     window.location.hash = hash;
@@ -98,7 +88,7 @@ window.addEventListener('hashchange', () => {
 // ════════════════════════════════════════════════════
 // AUTH
 // ════════════════════════════════════════════════════
-function switchTab(tab, btn) {
+export function switchTab(tab, btn) {
   document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
@@ -106,7 +96,7 @@ function switchTab(tab, btn) {
   document.getElementById('authMsg').textContent = '';
 }
 
-async function login() {
+export async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value;
   const msg = document.getElementById('authMsg');
@@ -148,7 +138,7 @@ function updatePasswordRules() {
     el.style.color = rule.ok ? 'var(--green)' : 'var(--vl-text-3)';
   });
 }
-async function signup() {
+export async function signup() {
   const name = document.getElementById('signupName').value;
   const email = document.getElementById('signupEmail').value;
   const pass = document.getElementById('signupPassword').value;
@@ -178,7 +168,7 @@ async function signup() {
     setTimeout(() => initApp(data.user), 1500);
   }
 }
-async function disconnectStrava() {
+export async function disconnectStrava() {
   const ok = confirm('Déconnecter Strava de ce compte Vorcelab ? Les futures synchronisations seront arrêtées.');
   if (!ok) return;
 
@@ -201,7 +191,7 @@ async function disconnectStrava() {
 
     if (!r.ok) throw new Error('Erreur déconnexion Strava');
 
-    allActivities = [];
+    VLState.allActivities = [];
 
     document.getElementById('statusDot').className = 'dot dot-off';
     document.getElementById('statusText').textContent = 'Strava';
@@ -225,7 +215,7 @@ async function disconnectStrava() {
     showToast('Impossible de déconnecter Strava', 'error');
   }
 }
-async function deleteAccount() {
+export async function deleteAccount() {
   const firstConfirm = confirm(
     'Supprimer définitivement ton compte Vorcelab ?\n\nToutes tes données seront supprimées : profil, activités, calendrier, renfo, connexion Strava.\n\nCette action est irréversible.'
   );
@@ -268,11 +258,11 @@ async function deleteAccount() {
 
     await sb.auth.signOut();
 
-    currentUser = null;
-    userProfile = { pain_zones: [] };
-    allActivities = [];
+    VLState.currentUser = null;
+    VLState.userProfile = { pain_zones: [] };
+    VLState.allActivities = [];
     historyActivities = [];
-    races = [];
+    VLState.races = [];
 
     document.querySelectorAll('.modal, .overlay, .drawer, .profile-modal').forEach(el => {
       el.classList.remove('show', 'active', 'open');
@@ -287,14 +277,14 @@ async function deleteAccount() {
     showToast('Impossible de supprimer le compte', 'error');
   }
 }
-async function logout() {
+export async function logout() {
   await sb.auth.signOut();
 
-  currentUser = null;
-  userProfile = { pain_zones: [] };
-  allActivities = [];
+  VLState.currentUser = null;
+  VLState.userProfile = { pain_zones: [] };
+  VLState.allActivities = [];
   historyActivities = [];
-  races = [];
+  VLState.races = [];
 
   document.querySelectorAll('.modal, .overlay, .drawer, .profile-modal').forEach(el => {
     el.classList.remove('show', 'active', 'open');
@@ -306,7 +296,7 @@ async function logout() {
 }
 
 async function initApp(user) {
-  currentUser = user;
+  VLState.currentUser = user;
   document.getElementById('authScreen').classList.remove('show');
   document.getElementById('appShell').classList.add('show');
   await loadProfile();
@@ -341,7 +331,7 @@ function renderPainGrid() {
   if(!grid) return;
   grid.innerHTML = '';
   PAIN_ZONES.forEach(z => {
-    const active = (userProfile.pain_zones||[]).includes(z.key);
+    const active = (VLState.userProfile.pain_zones||[]).includes(z.key);
     const div = document.createElement('div');
     div.className = 'pain-zone' + (active ? ' active' : '');
     div.onclick = () => { togglePainZone(z.key, div); };
@@ -351,14 +341,14 @@ function renderPainGrid() {
 }
 
 function togglePainZone(key, el) {
-  if (!userProfile.pain_zones) userProfile.pain_zones = [];
-  const idx = userProfile.pain_zones.indexOf(key);
-  if (idx >= 0) { userProfile.pain_zones.splice(idx,1); el.classList.remove('active'); el.querySelector('input').checked=false; }
-  else { userProfile.pain_zones.push(key); el.classList.add('active'); el.querySelector('input').checked=true; }
+  if (!VLState.userProfile.pain_zones) VLState.userProfile.pain_zones = [];
+  const idx = VLState.userProfile.pain_zones.indexOf(key);
+  if (idx >= 0) { VLState.userProfile.pain_zones.splice(idx,1); el.classList.remove('active'); el.querySelector('input').checked=false; }
+  else { VLState.userProfile.pain_zones.push(key); el.classList.add('active'); el.querySelector('input').checked=true; }
 }
 
 function updateSilhouetteSex() {
-  const sex = userProfile?.sex || 'M';
+  const sex = VLState.userProfile?.sex || 'M';
   const isFemale = sex === 'F';
   const show = (id, visible) => { const el=document.getElementById(id); if(el) el.style.display=visible?'':'none'; };
   show('sg-front-m', !isFemale); show('sg-front-f', isFemale);
@@ -366,10 +356,10 @@ function updateSilhouetteSex() {
 }
 
 async function loadProfile() {
-  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  const { data } = await sb.from('profiles').select('*').eq('id', VLState.currentUser.id).single();
   if (data) {
-    userProfile = { pain_zones: [], ...data };
-    userProfile.pain_zones = userProfile.pain_zones || [];
+    VLState.userProfile = { pain_zones: [], ...data };
+    VLState.userProfile.pain_zones = VLState.userProfile.pain_zones || [];
     const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
     set('p-name', data.name); set('p-birthdate', data.birthdate); set('p-sex', data.sex);
     set('p-weight', data.weight); set('p-height', data.height);
@@ -378,9 +368,9 @@ async function loadProfile() {
     set('p-goals', data.goals);
     if (data.name) { document.getElementById('headerName').textContent = data.name; const hm=document.getElementById('headerNameMobile'); if(hm) hm.textContent=data.name; }
     if (data.avatar_url) updateAvatar(data.avatar_url);
-    if (data.nutrition_products) userProfile.nutrition_products = data.nutrition_products;
+    if (data.nutrition_products) VLState.userProfile.nutrition_products = data.nutrition_products;
     if (data.prs) {
-      const p = data.prs; userProfile.prs = p;
+      const p = data.prs; VLState.userProfile.prs = p;
       const sp = (id,v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
       if(p['5k']){sp('pr-5k',p['5k'].time);sp('pr-5k-date',p['5k'].date);}
       if(p['10k']){sp('pr-10k',p['10k'].time);sp('pr-10k-date',p['10k'].date);}
@@ -393,9 +383,9 @@ async function loadProfile() {
   }
 }
 
-async function saveProfile() {
+export async function saveProfile() {
   const profile = {
-    id: currentUser.id,
+    id: VLState.currentUser.id,
     name: document.getElementById('p-name').value||null,
     birthdate: document.getElementById('p-birthdate').value||null,
     age: document.getElementById('p-birthdate').value ? Math.floor((new Date()-new Date(document.getElementById('p-birthdate').value))/31557600000) : null,
@@ -406,14 +396,14 @@ async function saveProfile() {
     fc_max: parseInt(document.getElementById('p-fcmax').value)||null,
     lactate_threshold: parseInt(document.getElementById('p-lactate').value)||null,
     lactate_pace: document.getElementById('p-lactate-pace').value||null,
-    pain_zones: userProfile.pain_zones||[],
+    pain_zones: VLState.userProfile.pain_zones||[],
     goals: document.getElementById('p-goals').value||null,
     updated_at: new Date().toISOString()
   };
   const { error } = await sb.from('profiles').upsert(profile);
   const msg = document.getElementById('profileSaveMsg');
   if (error) { msg.textContent='❌ '+error.message; msg.style.color='var(--red)'; }
-  else { userProfile={...userProfile,...profile}; updateSilhouetteSex(); msg.textContent='✓ Sauvegardé'; msg.style.color='var(--green)'; if(profile.name){document.getElementById('headerName').textContent=profile.name;const hm=document.getElementById('headerNameMobile');if(hm)hm.textContent=profile.name;} setTimeout(()=>msg.textContent='',3000); }
+  else { VLState.userProfile={...VLState.userProfile,...profile}; updateSilhouetteSex(); msg.textContent='✓ Sauvegardé'; msg.style.color='var(--green)'; if(profile.name){document.getElementById('headerName').textContent=profile.name;const hm=document.getElementById('headerNameMobile');if(hm)hm.textContent=profile.name;} setTimeout(()=>msg.textContent='',3000); }
 }
 
 function parsePRTime(str) {
@@ -425,7 +415,7 @@ function parsePRTime(str) {
   return null;
 }
 
-async function savePRs() {
+export async function savePRs() {
   const prs = {};
   const add = (key,tid,did,extra={}) => { const t=document.getElementById(tid)?.value?.trim(),d=document.getElementById(did)?.value,s=parsePRTime(t); if(s!==null){prs[key]={time:t,date:d||null,timeS:s,...extra};} };
   add('5k','pr-5k','pr-5k-date',{dist:5000});
@@ -438,16 +428,16 @@ async function savePRs() {
   const ut=document.getElementById('pr-ultra')?.value?.trim();
   const uts=parsePRTime(ut);
   if(uts!==null&&ud)prs['ultra']={time:ut,timeS:uts,dist:ud*1000,dplus:udp,date:document.getElementById('pr-ultra-date')?.value||null};
-  const {error}=await sb.from('profiles').upsert({id:currentUser.id,prs,updated_at:new Date().toISOString()});
+  const {error}=await sb.from('profiles').upsert({id:VLState.currentUser.id,prs,updated_at:new Date().toISOString()});
   const msg=document.getElementById('prSaveMsg');
   if(error){msg.textContent='❌ '+error.message;msg.style.color='var(--red)';}
-  else{userProfile.prs=prs;msg.textContent='✓ PR sauvegardés';msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',3000);}
+  else{VLState.userProfile.prs=prs;msg.textContent='✓ PR sauvegardés';msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',3000);}
 }
 
 // ════════════════════════════════════════════════════
 // STRAVA AUTH
 // ════════════════════════════════════════════════════
-function connectStrava() {
+export function connectStrava() {
   const state = crypto.randomUUID();
   sessionStorage.setItem('strava_oauth_state', state);
   const params = new URLSearchParams({
@@ -494,7 +484,7 @@ function setStravaConnected(name) {
   const bsm = document.getElementById('btnStravaMobile'); if(bsm) bsm.style.display = 'none';
 }
 
-async function manualSync() {
+export async function manualSync() {
   const btn = document.getElementById('btnSync');
   if(btn) { btn.textContent = '⟳'; btn.style.animation = 'spin 1s linear infinite'; btn.disabled = true; }
   showToast('Synchronisation Strava en cours…', 'info', 3000);
@@ -601,13 +591,13 @@ async function loadActivities() {
   const { data: rows, error } = await sb
     .from('strava_activities')
     .select('*')
-    .eq('user_id', currentUser.id)
+    .eq('user_id', VLState.currentUser.id)
     .is('deleted_at', null)
     .order('start_date', { ascending: false })
     .limit(200);
   if (error) { console.error('loadActivities error:', error.message); return; }
-  allActivities = (rows || []).filter(r => isRun(r.type)).map(mapDbActivity);
-  if (allActivities.length > 0) setStravaConnected();
+  VLState.allActivities = (rows || []).filter(r => isRun(r.type)).map(mapDbActivity);
+  if (VLState.allActivities.length > 0) setStravaConnected();
   renderDashboard();
 }
 
@@ -643,7 +633,7 @@ function renderSparkline(id, data, color) {
 // DASHBOARD RENDER
 // ════════════════════════════════════════════════════
 function renderDashboard() {
-  if (!allActivities.length) { showOnboarding(); return; }
+  if (!VLState.allActivities.length) { showOnboarding(); return; }
   showDashContent();
 
   const now = new Date();
@@ -653,11 +643,11 @@ function renderDashboard() {
   const monthFr = ['jan','fév','mars','avr','mai','juin','juil','août','sep','oct','nov','déc'][now.getMonth()].toUpperCase();
   const weekLbl = document.getElementById('dashWeekLabel');
   if (weekLbl) weekLbl.textContent = `SEM. ${weekNum} · ${monthFr} ${now.getFullYear()}`;
-  const thisMonth = allActivities.filter(a => {
+  const thisMonth = VLState.allActivities.filter(a => {
     const d = new Date(a.start_date);
     return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   });
-  const lastMonth = allActivities.filter(a => {
+  const lastMonth = VLState.allActivities.filter(a => {
     const d = new Date(a.start_date);
     const lm = new Date(now.getFullYear(), now.getMonth()-1, 1);
     return d.getMonth()===lm.getMonth() && d.getFullYear()===lm.getFullYear();
@@ -668,8 +658,8 @@ function renderDashboard() {
   const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysToMon);
   const prevWeekStart = new Date(weekStart); prevWeekStart.setDate(weekStart.getDate() - 7);
   const prevWeekEnd   = new Date(weekStart); // exclusive upper bound (= weekStart)
-  const thisWeek = allActivities.filter(a => new Date(a.start_date) >= weekStart);
-  const prevWeek = allActivities.filter(a => { const d=new Date(a.start_date); return d>=prevWeekStart && d<prevWeekEnd; });
+  const thisWeek = VLState.allActivities.filter(a => new Date(a.start_date) >= weekStart);
+  const prevWeek = VLState.allActivities.filter(a => { const d=new Date(a.start_date); return d>=prevWeekStart && d<prevWeekEnd; });
 
   const km = r => r.reduce((s,a)=>s+a.distance/1000,0);
   const dp = r => r.reduce((s,a)=>s+(a.total_elevation_gain||0),0);
@@ -721,7 +711,7 @@ function renderDashboard() {
   setSatDelta('s-runs-week-delta',pctRunsW);
 
   // Simple stats cards
-  const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
+  const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
   const withHR = thisMonth.filter(a=>a.average_heartrate);
   const avgFC = withHR.length ? Math.round(withHR.reduce((s,a)=>s+a.average_heartrate,0)/withHR.length) : null;
   document.getElementById('statsGrid').innerHTML = `
@@ -743,7 +733,7 @@ function renderDashboard() {
 function renderLastActivity() {
   const w = document.getElementById('lastActWidget');
   if (!w) return;
-  const act = allActivities[0];
+  const act = VLState.allActivities[0];
   if (!act) { w.innerHTML = '<div class="mono t3">Aucune activité</div>'; return; }
 
   const now = new Date();
@@ -816,7 +806,7 @@ async function loadAerobicStat(weekActs, fcMax) {
 // ════════════════════════════════════════════════════
 // ANNUAL CHART
 // ════════════════════════════════════════════════════
-function setAnnualMode(mode) {
+export function setAnnualMode(mode) {
   annualChartMode = mode;
   const base = "font-family:var(--vl-mono);font-size:9px;font-weight:700;letter-spacing:.1em;padding:6px 12px;border-radius:4px;border:1px solid var(--vl-line-2);cursor:pointer;touch-action:manipulation";
   const btnKm = document.getElementById('annualBtnKm');
@@ -833,7 +823,7 @@ function renderAnnualChart() {
 
   // API: distance in meters → /1000 = km. CSV: distance in meters → /1000 = km.
   // Dedup: skip CSV entries whose date already exists in the last 100 API activities.
-  const apiDayKeys = new Set(allActivities.map(a => {
+  const apiDayKeys = new Set(VLState.allActivities.map(a => {
     const d = new Date(a.start_date);
     return isNaN(d.getTime()) ? null : `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   }).filter(Boolean));
@@ -851,7 +841,7 @@ function renderAnnualChart() {
     };
   }).filter(Boolean);
 
-  const allRuns = [...allActivities, ...histRuns]
+  const allRuns = [...VLState.allActivities, ...histRuns]
     .filter(a => isRun(a.type) && (isDp ? true : a.distance>0));
 
   const monthly = {};
@@ -931,11 +921,11 @@ function renderActivities() {
   const gridFull = document.getElementById('actsGridFull');
   const infoEl = document.getElementById('actsInfo');
   const infoFull = document.getElementById('actsInfoFull');
-  if (infoEl) infoEl.textContent = `${allActivities.length} sorties`;
-  if (infoFull) infoFull.textContent = `${allActivities.length} sorties`;
+  if (infoEl) infoEl.textContent = `${VLState.allActivities.length} sorties`;
+  if (infoFull) infoFull.textContent = `${VLState.allActivities.length} sorties`;
   if (grid) grid.innerHTML = '';
   if (gridFull) gridFull.innerHTML = '';
-  allActivities.forEach((act, idx) => {
+  VLState.allActivities.forEach((act, idx) => {
     const d = new Date(act.start_date_local);
     const ds = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}).toUpperCase();
     const pace = fmtP(act.average_speed);
@@ -969,8 +959,8 @@ function renderActivities() {
 // ════════════════════════════════════════════════════
 // RACE CALENDAR
 // ════════════════════════════════════════════════════
-function handleZipDrop(e){e.preventDefault();document.getElementById('zipDropZone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.zip'))processZip(f);}
-function handleZipFile(e){const f=e.target.files[0];if(f)processZip(f);}
+export function handleZipDrop(e){e.preventDefault();document.getElementById('zipDropZone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.zip'))processZip(f);}
+export function handleZipFile(e){const f=e.target.files[0];if(f)processZip(f);}
 
 async function processZip(file) {
   const stats=document.getElementById('histStats');
@@ -1002,8 +992,8 @@ async function parseAndSaveCSV(text, statsEl) {
   const totalDplus=rows.reduce((s,r)=>s+(parseFloat(r['Elevation Gain'])||0),0);
   const dates=rows.map(r=>r['Activity Date']||r['Date']).filter(Boolean).sort();
 
-  const {error}=await sb.from('activities_history').delete().eq('user_id',currentUser.id).then(()=>
-    sb.from('activities_history').insert({user_id:currentUser.id,data:rows,imported_at:new Date().toISOString()})
+  const {error}=await sb.from('activities_history').delete().eq('user_id',VLState.currentUser.id).then(()=>
+    sb.from('activities_history').insert({user_id:VLState.currentUser.id,data:rows,imported_at:new Date().toISOString()})
   );
 
   statsEl.innerHTML=`
@@ -1020,46 +1010,46 @@ async function parseAndSaveCSV(text, statsEl) {
 }
 
 async function loadHistoryFromDB() {
-  const {data}=await sb.from('activities_history').select('data').eq('user_id',currentUser.id).single();
+  const {data}=await sb.from('activities_history').select('data').eq('user_id',VLState.currentUser.id).single();
   if(data?.data){historyActivities=data.data;renderAnnualChart();}
 }
 
 function updateOnboardingSteps() {
-  if(allActivities.length>0){document.getElementById('step1').classList.add('done');document.getElementById('step1-num').textContent='✓';}
+  if(VLState.allActivities.length>0){document.getElementById('step1').classList.add('done');document.getElementById('step1-num').textContent='✓';}
   if(historyActivities.length>0){document.getElementById('step2').classList.add('done');document.getElementById('step2-num').textContent='✓';}
-  if(userProfile.fc_max||userProfile.vo2max){document.getElementById('step3').classList.add('done');document.getElementById('step3-num').textContent='✓';}
+  if(VLState.userProfile.fc_max||VLState.userProfile.vo2max){document.getElementById('step3').classList.add('done');document.getElementById('step3-num').textContent='✓';}
 }
 
 // ════════════════════════════════════════════════════
 // GPX STRATEGY
 // ════════════════════════════════════════════════════
-function openProfil() {
+export function openProfil() {
   document.getElementById('profilOverlay').classList.add('open');
   document.body.style.overflow='hidden';
-  if(currentUser?.email) document.getElementById('p-email').value=currentUser.email;
+  if(VLState.currentUser?.email) document.getElementById('p-email').value=VLState.currentUser.email;
   const preview=document.getElementById('avatarPreview');
   if(preview && !preview.querySelector('img')) {
-    const name=(userProfile?.name||'').trim();
+    const name=(VLState.userProfile?.name||'').trim();
     const parts=name.split(/\s+/).filter(Boolean);
     const initials=parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():parts[0]?parts[0].slice(0,2).toUpperCase():'AB';
     preview.textContent=initials;
   }
   renderNutritionProducts();
 }
-function closeProfil() {
+export function closeProfil() {
   document.getElementById('profilOverlay').classList.remove('open');
   document.body.style.overflow='';
 }
-async function changePassword() {
+export async function changePassword() {
   const msg=document.getElementById('pwMsg');
   msg.textContent='Envoi...';msg.style.color='var(--text2)';
-  const {error}=await sb.auth.resetPasswordForEmail(currentUser.email,{redirectTo:REDIRECT_URI});
+  const {error}=await sb.auth.resetPasswordForEmail(VLState.currentUser.email,{redirectTo:REDIRECT_URI});
   if(error){msg.textContent='❌ '+error.message;msg.style.color='var(--red)';}
   else{msg.textContent='✓ Email envoyé !';msg.style.color='var(--green)';}
 }
 let _cropState = {x:0,y:0,scale:1,startX:0,startY:0,startDist:0,dragging:false};
 
-async function uploadAvatar(event) {
+export async function uploadAvatar(event) {
   const file = event.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -1084,11 +1074,11 @@ function applyTransform() {
   img.style.transformOrigin = 'top left';
 }
 
-function closeCropModal() {
+export function closeCropModal() {
   document.getElementById('cropModal').style.display = 'none';
 }
 
-async function confirmCrop() {
+export async function confirmCrop() {
   const img = document.getElementById('cropImage');
   const size = 400;
   const canvas = document.createElement('canvas');
@@ -1104,13 +1094,13 @@ async function confirmCrop() {
   closeCropModal();
   showToast('Upload en cours...', 'info', 2000);
   canvas.toBlob(async (blob) => {
-    const path = `${currentUser.id}/avatar.jpg`;
+    const path = `${VLState.currentUser.id}/avatar.jpg`;
     const {error} = await sb.storage.from('avatars').upload(path, blob, {upsert:true, contentType:'image/jpeg'});
     if(error){ showToast('Erreur : '+error.message, 'error'); return; }
     const {data} = sb.storage.from('avatars').getPublicUrl(path);
     const url = data.publicUrl + '?t=' + Date.now();
-    await sb.from('profiles').upsert({id:currentUser.id, avatar_url:url});
-    userProfile.avatar_url = url;
+    await sb.from('profiles').upsert({id:VLState.currentUser.id, avatar_url:url});
+    VLState.userProfile.avatar_url = url;
     updateAvatar(url);
     showToast('Photo mise à jour ✓', 'success');
   }, 'image/jpeg', 0.88);
@@ -1182,7 +1172,7 @@ const ONB_TOTAL = 5;
 
 function initOnboarding() {
   // Show only if profile is empty (new user)
-  if(!userProfile.name && !userProfile.fc_max) {
+  if(!VLState.userProfile.name && !VLState.userProfile.fc_max) {
     openOnboarding();
   }
 }
@@ -1194,13 +1184,13 @@ function openOnboarding() {
   document.body.style.overflow = 'hidden';
 }
 
-function closeOnboarding() {
+export function closeOnboarding() {
   document.getElementById('onboardingOverlay').classList.remove('open');
   document.body.style.overflow = '';
   localStorage.setItem('onb_done', '1');
 }
 
-function onbNav(dir) {
+export function onbNav(dir) {
   onbStep = Math.max(0, Math.min(ONB_TOTAL-1, onbStep+dir));
   updateOnbStep();
   if(onbStep === ONB_TOTAL-1) {
@@ -1226,10 +1216,10 @@ function updateOnbStep() {
 // ════════════════════════════════════════════════════
 // CGU
 // ════════════════════════════════════════════════════
-function openCGU() {
+export function openCGU() {
   document.getElementById('cguOverlay').classList.add('open');
 }
-function closeCGU() {
+export function closeCGU() {
   document.getElementById('cguOverlay').classList.remove('open');
 }
 

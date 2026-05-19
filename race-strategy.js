@@ -1,24 +1,17 @@
-// Future ES module exports:
-// - handleGpxDrop
-// - handleGpxFile
-// - parseGPX
-// - analyzeGPX
-// - renderDetailedSection
-// - buildSplitsTable
-// - navigateSection
-// - closeSectionPopup
-// - resetStrategy
-// - linkGpxToRaceById
-// - populateRaceSelector
-// - selectRaceForStrategy
+import { hav, minettiGradePenalty, buildDetailedSections, isTrailRace, RPE_SCALE } from './gpx-core.js';
+import { terrainTimePenalty, fetchTerrainSurfaces, surfaceInfo, slipRisk } from './terrain.js';
+import { escapeHTML } from './security.js';
+import { fmtT, fmtP, fmtD, bC, isRun } from './formatters.js';
+import { VLState, sb, SUPA_URL, FC_MAX_DEFAULT } from './app-state.js';
+import { genNutrition } from './nutrition.js';
 
-let leafletMap = null;
+// leafletMap est dans VLState.leafletMap
 
-function handleGpxDrop(e){e.preventDefault();document.getElementById('gpxDrop').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.gpx'))parseGPX(f);}
-function handleGpxFile(e){const f=e.target.files[0];if(f)parseGPX(f);}
+export function handleGpxDrop(e){e.preventDefault();document.getElementById('gpxDrop').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.gpx'))parseGPX(f);}
+export function handleGpxFile(e){const f=e.target.files[0];if(f)parseGPX(f);}
 
-function parseGPX(file, raceCtx=null){
-  if(raceCtx) currentRaceContext=raceCtx;
+export function parseGPX(file, raceCtx=null){
+  if(raceCtx) VLState.currentRaceContext=raceCtx;
   const reader=new FileReader();
   reader.onload=async e=>{
     const xml=new DOMParser().parseFromString(e.target.result,'text/xml');
@@ -32,7 +25,7 @@ function parseGPX(file, raceCtx=null){
 }
 
 
-async function analyzeGPX(points, fname) {
+export async function analyzeGPX(points, fname) {
   let cumDist=[0],dplus=0,dminus=0;
   for(let i=1;i<points.length;i++){
     cumDist.push(cumDist[i-1]+hav(points[i-1],points[i]));
@@ -49,7 +42,7 @@ async function analyzeGPX(points, fname) {
 
   // Weather gate — only integrate forecast if race ≤ 10 days away
   let weather=null, weatherNote=null;
-  const raceTs=currentRaceContext?.date?new Date(currentRaceContext.date).getTime():null;
+  const raceTs=VLState.currentRaceContext?.date?new Date(VLState.currentRaceContext.date).getTime():null;
   const daysToRace=raceTs?Math.ceil((raceTs-Date.now())/86400000):null;
   const weatherReliable=daysToRace===null||daysToRace<=10;
   if(weatherReliable){
@@ -83,10 +76,10 @@ async function analyzeGPX(points, fname) {
   // ── ALGO PROGRESSION ──
   // Compute performance index from recent quality sessions (>20% time in Z3+)
   function computeProgressionFactor(trailOnly=false) {
-    if(!allActivities.length) return 1;
-    const fcMax=userProfile.fc_max||205;
+    if(!VLState.allActivities.length) return 1;
+    const fcMax=VLState.userProfile.fc_max||205;
     const z3min=Math.round(fcMax*.80);
-    let sessions=allActivities.filter(a=>{
+    let sessions=VLState.allActivities.filter(a=>{
       if(!isRun(a.type)) return false;
       if(trailOnly && a.type!=='TrailRun') return false;
       if(!a.average_heartrate) return false;
@@ -106,14 +99,14 @@ async function analyzeGPX(points, fname) {
 
   const isTrail=isTrailRace();
   const progressionFactor = computeProgressionFactor(isTrail);
-  const qualityCount = allActivities.filter(a=>isRun(a.type)&&a.average_heartrate>(userProfile.fc_max||205)*.80&&a.distance>3000).length;
+  const qualityCount = VLState.allActivities.filter(a=>isRun(a.type)&&a.average_heartrate>(VLState.userProfile.fc_max||205)*.80&&a.distance>3000).length;
 
   // Base pace from real performance data — goal_time never influences pace calculation
   function computeBasePace() {
     const now=Date.now(), cutoff60=now-60*24*3600*1000;
     const raceDpKm=dplus/(totalDist/1000);
     if(isTrail) {
-      const trailRuns=allActivities
+      const trailRuns=VLState.allActivities
         .filter(a=>(a.type==='TrailRun'||/trail/i.test(a.sport_type||''))&&a.distance>5000&&a.average_speed>0)
         .sort((a,b)=>new Date(b.start_date)-new Date(a.start_date))
         .slice(0,20);
@@ -135,14 +128,14 @@ async function analyzeGPX(points, fname) {
       }
       return {paceS:420,source:'⚠️ Aucune sortie trail — sync tes activités trail Strava pour une projection fiable',dataQuality:{trailCount:0,recentCount:0,hasHR:false}};
     }
-    if(userProfile.prs) {
-      const prs=userProfile.prs;
+    if(VLState.userProfile.prs) {
+      const prs=VLState.userProfile.prs;
       const candidates=['semi','10k','15k','marathon','5k'].filter(k=>prs[k]?.timeS&&prs[k]?.dist);
       if(candidates.length) {
         const pr=prs[candidates[0]];
         const paceS=(pr.timeS/pr.dist*1000)/progressionFactor;
         const prog=progressionFactor>1?`+${((progressionFactor-1)*100).toFixed(1)}%`:progressionFactor<0.98?`${((progressionFactor-1)*100).toFixed(1)}%`:'stable';
-        const roadRuns=allActivities.filter(a=>isRun(a.type)&&a.distance>3000);
+        const roadRuns=VLState.allActivities.filter(a=>isRun(a.type)&&a.distance>3000);
         const recentCount=roadRuns.filter(a=>new Date(a.start_date).getTime()>=cutoff60).length;
         return {paceS,source:`📊 PR ${candidates[0].toUpperCase()} · progression ${prog}`,dataQuality:{trailCount:0,recentCount,hasHR:roadRuns.some(a=>a.average_heartrate)}};
       }
@@ -191,8 +184,8 @@ async function analyzeGPX(points, fname) {
 
   // Goal comparison — display only, goal_time has zero effect on pace calc
   let goalCompareStr='',goalCompareColor='var(--vl-text-3)',goalLabel='';
-  if(currentRaceContext?.goal_time){
-    const gParts=currentRaceContext.goal_time.match(/(\d+)[hH](\d*)/);
+  if(VLState.currentRaceContext?.goal_time){
+    const gParts=VLState.currentRaceContext.goal_time.match(/(\d+)[hH](\d*)/);
     if(gParts){
       const goalSec=parseInt(gParts[1])*3600+(parseInt(gParts[2])||0)*60;
       const diff=goalSec-Math.round(estTimeS);
@@ -211,8 +204,8 @@ async function analyzeGPX(points, fname) {
 
   const dh=estTimeS/3600;
   const distKm=totalDist/1000;
-  const raceName=currentRaceContext?.name||fname.replace('.gpx','')||'Course';
-  const raceDate=currentRaceContext?.date?new Date(currentRaceContext.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):'';
+  const raceName=VLState.currentRaceContext?.name||fname.replace('.gpx','')||'Course';
+  const raceDate=VLState.currentRaceContext?.date?new Date(VLState.currentRaceContext.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):'';
   const splits=buildSplitsTable(kmSecs,basePaceS);
 
   const res=document.getElementById('stratResult');
@@ -221,11 +214,11 @@ async function analyzeGPX(points, fname) {
 
   // isTrail already declared above
   const saveGpxItem = document.getElementById('raceMenuSaveGpx');
-  if(saveGpxItem) saveGpxItem.style.display = currentRaceContext?.id ? 'block' : 'none';
+  if(saveGpxItem) saveGpxItem.style.display = VLState.currentRaceContext?.id ? 'block' : 'none';
 
 
   res.innerHTML=`
-    ${!currentRaceContext?`<div style="font-family:var(--vl-display);font-size:2rem;letter-spacing:0.02em;line-height:0.9;text-transform:uppercase;margin-bottom:.25rem">${escapeHTML(raceName)}</div><div class="mlabel" style="color:var(--vl-text-3);margin-bottom:1.25rem">${raceDate}</div>`:''}
+    ${!VLState.currentRaceContext?`<div style="font-family:var(--vl-display);font-size:2rem;letter-spacing:0.02em;line-height:0.9;text-transform:uppercase;margin-bottom:.25rem">${escapeHTML(raceName)}</div><div class="mlabel" style="color:var(--vl-text-3);margin-bottom:1.25rem">${raceDate}</div>`:''}
 
     <!-- Stats strip -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1px;background:var(--vl-line);border:1px solid var(--vl-line);border-radius:var(--vl-r-sm);overflow:hidden;margin-bottom:1rem">
@@ -263,10 +256,10 @@ async function analyzeGPX(points, fname) {
         </div>
         <div class="mlabel" style="color:var(--vl-text-3);margin-top:4px">${projSource||'Minetti 2002 · allure estimée'}</div>
       </div>
-      ${currentRaceContext?.goal_time?`
+      ${VLState.currentRaceContext?.goal_time?`
       <div class="vl-proj-obj" style="text-align:right;flex-shrink:0">
         <div class="mlabel" style="margin-bottom:4px">Objectif</div>
-        <div class="vl-proj-obj-time">${escapeHTML(currentRaceContext.goal_time)}</div>
+        <div class="vl-proj-obj-time">${escapeHTML(VLState.currentRaceContext.goal_time)}</div>
         ${goalLabel?`<div class="mlabel" style="color:${goalCompareColor};margin-top:4px">${escapeHTML(goalLabel)}</div>`:''}
         ${goalCompareStr?`<div class="mlabel" style="color:var(--vl-text-3);margin-top:2px">${goalCompareStr}</div>`:''}
       </div>`:`
@@ -338,13 +331,13 @@ async function analyzeGPX(points, fname) {
 
   // Dark map
   setTimeout(()=>{
-    if(leafletMap){leafletMap.remove();leafletMap=null;}
-    leafletMap=L.map('raceMap',{zoomControl:true,scrollWheelZoom:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(leafletMap);
+    if(VLState.leafletMap){VLState.leafletMap.remove();VLState.leafletMap=null;}
+    VLState.leafletMap=L.map('raceMap',{zoomControl:true,scrollWheelZoom:false});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(VLState.leafletMap);
 
     // Tracé de fond sombre
     const allLL=points.filter((_,i)=>i%3===0).map(p=>[p.lat,p.lon]);
-    L.polyline(allLL,{color:'rgba(243,239,228,.08)',weight:5,opacity:1}).addTo(leafletMap);
+    L.polyline(allLL,{color:'rgba(243,239,228,.08)',weight:5,opacity:1}).addTo(VLState.leafletMap);
 
     // Polylines colorées par section + interactivité
     window._sectionPolylines = sections.map((s,idx)=>{
@@ -357,7 +350,7 @@ async function analyzeGPX(points, fname) {
       const step=Math.max(1,Math.floor(raw.length/80));
       const ll=raw.filter((_,i)=>i%step===0||i===raw.length-1).map(p=>[p.lat,p.lon]);
       const col={up:'#E5562A',down:'#E8A23A',flat:'#10B981'}[s.type];
-      const poly=L.polyline(ll,{color:col,weight:4,opacity:.85}).addTo(leafletMap);
+      const poly=L.polyline(ll,{color:col,weight:4,opacity:.85}).addTo(VLState.leafletMap);
       poly.on('click',()=>highlightSection(idx));
       poly.on('mouseover',()=>{if(window._activeSection!==idx)poly.setStyle({weight:6,opacity:1});});
       poly.on('mouseout',()=>{if(window._activeSection!==idx)poly.setStyle({weight:4,opacity:.85});});
@@ -365,10 +358,10 @@ async function analyzeGPX(points, fname) {
     });
 
     // Marqueur survol carte → profil alti
-    window._hoverMarker = L.circleMarker([points[0].lat,points[0].lon],{radius:6,fillColor:'#E5562A',color:'#F3EFE4',weight:2,fillOpacity:1}).addTo(leafletMap);
+    window._hoverMarker = L.circleMarker([points[0].lat,points[0].lon],{radius:6,fillColor:'#E5562A',color:'#F3EFE4',weight:2,fillOpacity:1}).addTo(VLState.leafletMap);
     window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
 
-    leafletMap.on('mousemove',e=>{
+    VLState.leafletMap.on('mousemove',e=>{
       // Trouver le point GPX le plus proche du curseur
       let minDist=Infinity,closest=0;
       points.forEach((p,i)=>{
@@ -388,20 +381,20 @@ async function analyzeGPX(points, fname) {
         }
       }
     });
-    leafletMap.on('mouseout',()=>{
+    VLState.leafletMap.on('mouseout',()=>{
       window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
       if(window._gpxChart){window._gpxChart.data.datasets[1]={label:'Pos',data:samples.map(()=>null),pointRadius:0};window._gpxChart.update('none');}
     });
 
     // Marqueurs départ / arrivée
-    L.circleMarker([points[0].lat,points[0].lon],{radius:9,fillColor:'#10B981',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Départ</b>').addTo(leafletMap);
-    L.circleMarker([points[points.length-1].lat,points[points.length-1].lon],{radius:9,fillColor:'#F3EFE4',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Arrivée</b>').addTo(leafletMap);
+    L.circleMarker([points[0].lat,points[0].lon],{radius:9,fillColor:'#10B981',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Départ</b>').addTo(VLState.leafletMap);
+    L.circleMarker([points[points.length-1].lat,points[points.length-1].lon],{radius:9,fillColor:'#F3EFE4',color:'#0E0D0A',weight:2.5,fillOpacity:1}).bindPopup('<b>Arrivée</b>').addTo(VLState.leafletMap);
 
     // Fit bounds
     const polyAll=L.polyline(allLL);
-    leafletMap.fitBounds(polyAll.getBounds(),{padding:[20,20]});
-    leafletMap.invalidateSize();
-    setTimeout(()=>leafletMap&&leafletMap.invalidateSize(),150);
+    VLState.leafletMap.fitBounds(polyAll.getBounds(),{padding:[20,20]});
+    VLState.leafletMap.invalidateSize();
+    setTimeout(()=>VLState.leafletMap&&VLState.leafletMap.invalidateSize(),150);
   },300);
 
   // Alti chart avec interactivité
@@ -417,7 +410,7 @@ async function analyzeGPX(points, fname) {
   });
 
   function syncMapFromChartIdx(idx){
-    if(!leafletMap) return;
+    if(!VLState.leafletMap) return;
     const s=samples[idx];
     if(!s) return;
     const targetDist=s.d*1000;
@@ -460,7 +453,7 @@ async function analyzeGPX(points, fname) {
         }
       },
       onHover:(e,els,chart)=>{
-        if(els.length&&leafletMap){
+        if(els.length&&VLState.leafletMap){
           syncMapFromChartIdx(els[0].index);
         } else {
           if(window._hoverMarker)window._hoverMarker.setStyle({opacity:0,fillOpacity:0});
@@ -500,17 +493,17 @@ async function analyzeGPX(points, fname) {
   window._pendingGpxSave = points.filter((_,i)=>i%5===0).map(p=>({lat:p.lat,lon:p.lon,ele:p.ele}));
 
   // Auto-save to DB when in race event context — capture id/json before async to survive navigation
-  if (currentRaceContext?.id) {
-    const savedRaceId = currentRaceContext.id;
+  if (VLState.currentRaceContext?.id) {
+    const savedRaceId = VLState.currentRaceContext.id;
     const savedGpxJson = JSON.stringify(window._pendingGpxSave);
     sb.from('race_calendar')
       .update({gpx_data: savedGpxJson})
       .eq('id', savedRaceId)
       .then(({error}) => {
         if (!error) {
-          const idx = races.findIndex(r=>r.id===savedRaceId);
-          if(idx>=0) races[idx].gpx_data = savedGpxJson;
-          if(currentRaceContext?.id===savedRaceId) currentRaceContext.gpx_data = savedGpxJson;
+          const idx = VLState.races.findIndex(r=>r.id===savedRaceId);
+          if(idx>=0) VLState.races[idx].gpx_data = savedGpxJson;
+          if(VLState.currentRaceContext?.id===savedRaceId) VLState.currentRaceContext.gpx_data = savedGpxJson;
           const si = document.getElementById('raceMenuSaveGpx');
           if(si) si.style.display = 'none';
           showToast('GPX enregistré ✓', 'success');
@@ -519,12 +512,12 @@ async function analyzeGPX(points, fname) {
   }
 }
 
-function renderDetailedSection(s, secTimeS, idx=0){
+export function renderDetailedSection(s, secTimeS, idx=0){
   const trail = isTrailRace();
-  const fcMax = userProfile.fc_max||205;
-  const lthr = userProfile.lactate_threshold||Math.round(fcMax*.88);
-  const z2top = userProfile.fc_z2_top || Math.round(fcMax*.70);
-  const z3top = userProfile.fc_z3_top || Math.round(fcMax*.80);
+  const fcMax = VLState.userProfile.fc_max||205;
+  const lthr = VLState.userProfile.lactate_threshold||Math.round(fcMax*.88);
+  const z2top = VLState.userProfile.fc_z2_top || Math.round(fcMax*.70);
+  const z3top = VLState.userProfile.fc_z3_top || Math.round(fcMax*.80);
   const z4top = lthr;
 
   const cols={up:'var(--vl-ember)',down:'var(--vl-amber)',flat:'var(--vl-growth)'};
@@ -621,8 +614,8 @@ function renderDetailedSection(s, secTimeS, idx=0){
   </div>`;
 }
 
-function buildSplitsTable(kmSecs, basePaceS){
-  const fcMax=userProfile.fc_max||205;
+export function buildSplitsTable(kmSecs, basePaceS){
+  const fcMax=VLState.userProfile.fc_max||205;
   const pct88=Math.round(fcMax*.88),pct84=Math.round(fcMax*.84),pct79=Math.round(fcMax*.79);
   let cumTime=0,rows='';
   kmSecs.filter(s=>s!=null&&s.km!=null&&s.grade!=null).forEach(s=>{
@@ -659,7 +652,7 @@ function openSectionPopup(idx) {
 
   const s = sections[idx];
   const total = sections.length;
-  const fcMax = userProfile.fc_max||205;
+  const fcMax = VLState.userProfile.fc_max||205;
   const pct88=Math.round(fcMax*.88),pct84=Math.round(fcMax*.84),pct79=Math.round(fcMax*.79);
   const cols={up:'var(--vl-ember)',down:'var(--vl-amber)',flat:'var(--vl-growth)'};
   const icons={up:'↑',down:'↓',flat:'→'};
@@ -686,7 +679,7 @@ function openSectionPopup(idx) {
 
   // Advice
   const trail = isTrailRace();
-  const lthr = userProfile.lactate_threshold || Math.round(fcMax*.88);
+  const lthr = VLState.userProfile.lactate_threshold || Math.round(fcMax*.88);
   const z3top = Math.round(fcMax*.80);
   const z4top = lthr;
   let advice='';
@@ -753,7 +746,7 @@ function openSectionPopup(idx) {
   }
 }
 
-function navigateSection(dir) {
+export function navigateSection(dir) {
   const sections=window._gpxSections||[];
   const next=window._activeSection+dir;
   if(next>=0&&next<sections.length){
@@ -763,7 +756,7 @@ function navigateSection(dir) {
   }
 }
 
-function closeSectionPopup() {
+export function closeSectionPopup() {
   document.getElementById('sectionPopup').classList.remove('open');
   document.body.style.overflow='';
   if(sectionMapInst){sectionMapInst.remove();sectionMapInst=null;}
@@ -772,7 +765,7 @@ function closeSectionPopup() {
   document.querySelectorAll('.vl-section-card').forEach(el=>el.classList.remove('active'));
 }
 
-function resetStrategy(){
+export function resetStrategy(){
   document.getElementById('stratResult').style.display='none';
   document.getElementById('stratResult').innerHTML='';
   const drop=document.getElementById('gpxDrop');
@@ -780,38 +773,38 @@ function resetStrategy(){
   drop.onclick=()=>document.getElementById('gpxFile').click();
   drop.innerHTML=`<div style="font-size:2.5rem;margin-bottom:.75rem">🗺️</div><div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em;margin-bottom:.4rem">Déposer le fichier GPX</div><div class="mono">Compatible OpenRunner · Strava · Garmin Connect</div>`;
   document.getElementById('gpxFile').value='';
-  currentRaceContext=null;
+  VLState.currentRaceContext=null;
   window._activeSection=-1;
   window._sectionPolylines=[];
   window._pendingGpxSave=null;
-  if(leafletMap){leafletMap.remove();leafletMap=null;}
+  if(VLState.leafletMap){VLState.leafletMap.remove();VLState.leafletMap=null;}
   if(window._gpxChart){window._gpxChart.destroy();window._gpxChart=null;}
 }
 
-function linkGpxToRaceById(raceId) {
+export function linkGpxToRaceById(raceId) {
   if(!raceId) return;
-  const race = races.find(r=>String(r.id)===String(raceId));
+  const race = VLState.races.find(r=>String(r.id)===String(raceId));
   if(!race) return;
-  currentRaceContext = race;
+  VLState.currentRaceContext = race;
   saveGpxToRace();
 }
 
-function populateRaceSelector(){
+export function populateRaceSelector(){
   const container=document.getElementById('raceSelectorList');
   // raceSelector block is hidden in event view (the analyzeGPX output handles association)
   const sel=document.getElementById('raceSelector');
   if(!container||!sel) return;
-  if(!races.length){sel.style.display='none';return;}
+  if(!VLState.races.length){sel.style.display='none';return;}
   // Only show if not in event view
   if(document.getElementById('eventView')?.style.display!=='none') return;
   sel.style.display='block';
-  container.innerHTML=races.filter(r=>new Date(r.date)>=new Date()).map(r=>`<button class="race-sel-btn" onclick="selectRaceForStrategy(${JSON.stringify(r).replace(/"/g,'&quot;')})">${escapeHTML(r.name)} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</button>`).join('');
+  container.innerHTML=VLState.races.filter(r=>new Date(r.date)>=new Date()).map(r=>`<button class="race-sel-btn" onclick="selectRaceForStrategy(${JSON.stringify(r).replace(/"/g,'&quot;')})">${escapeHTML(r.name)} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</button>`).join('');
 }
 
-function selectRaceForStrategy(race){
+export function selectRaceForStrategy(race){
   document.querySelectorAll('.race-sel-btn').forEach(b=>b.classList.remove('active'));
   event.target.classList.add('active');
-  currentRaceContext=race;
+  VLState.currentRaceContext=race;
   if(race.gpx_data){const pts=JSON.parse(race.gpx_data);analyzeGPX(pts,race.name);}
   else document.getElementById('gpxFile').click();
 }

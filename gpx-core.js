@@ -1,14 +1,9 @@
-// Future ES module exports:
-// - hav
-// - minettiGradePenalty
-// - buildDetailedSections
-// - isTrailRace
-// - RPE_SCALE
+import { VLState } from './app-state.js';
 
-function hav(p1,p2){const R=6371000,r=Math.PI/180,dLat=(p2.lat-p1.lat)*r,dLon=(p2.lon-p1.lon)*r,a=Math.sin(dLat/2)**2+Math.cos(p1.lat*r)*Math.cos(p2.lat*r)*Math.sin(dLon/2)**2;return R*2*Math.asin(Math.sqrt(a));}
+export function hav(p1,p2){const R=6371000,r=Math.PI/180,dLat=(p2.lat-p1.lat)*r,dLon=(p2.lon-p1.lon)*r,a=Math.sin(dLat/2)**2+Math.cos(p1.lat*r)*Math.cos(p2.lat*r)*Math.sin(dLon/2)**2;return R*2*Math.asin(Math.sqrt(a));}
 
 // Minetti (2002) gradient penalty — uphill validated, downhill empirical trail model
-function minettiGradePenalty(grade) {
+export function minettiGradePenalty(grade) {
   if(grade >= 0) {
     const i=Math.min(grade, 0.50);
     const c=280.5*i**5 - 58.7*i**4 - 76.8*i**3 + 51.9*i**2 + 19.6*i + 2.5;
@@ -21,7 +16,7 @@ function minettiGradePenalty(grade) {
   }
 }
 
-function buildDetailedSections(kmSecs){
+export function buildDetailedSections(kmSecs){
   if(!kmSecs.length) return [];
 
   // Helper: get endKm from either field name (analyzeGPX uses 'km', comparison uses 'endKm')
@@ -107,19 +102,18 @@ function buildDetailedSections(kmSecs){
   return merged;
 }
 
-function isTrailRace() {
-  // Check currentRaceContext type or default to trail if GPX has significant D+
-  if(currentRaceContext?.type) return ['Trail','TrailRun','trail'].includes(currentRaceContext.type);
+export function isTrailRace() {
+  if(VLState.currentRaceContext?.type) return ['Trail','TrailRun','trail'].includes(VLState.currentRaceContext.type);
   const pts = window._gpxPoints||[];
   if(!pts.length) return true;
   let dplus=0;
   for(let i=1;i<pts.length;i++){const d=pts[i].ele-pts[i-1].ele;if(d>0)dplus+=d;}
   const dist=(window._gpxDistKm||1);
-  return dplus/dist > 20; // >20m D+/km = trail
+  return dplus/dist > 20;
 }
 
 // RPE Scale
-const RPE_SCALE = [
+export const RPE_SCALE = [
   {rpe:1,label:'Très facile',desc:'Marche, échauffement — tu pourrais chanter'},
   {rpe:2,label:'Très facile',desc:'Footing très lent, conversation fluide sans effort'},
   {rpe:3,label:'Facile',desc:'Footing Z2, tu parles en phrases complètes, pourrait durer des heures'},

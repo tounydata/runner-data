@@ -1,17 +1,9 @@
-// Future ES module exports:
-// - fetchStreams
-// - fetchWeather
-// - computePAF
-// - generateLocalActivitySummary
-// - openAnalyse
-// - closeAnalyse
-// - showLinkActivityPanel
-// - linkActivityToRace
-// - renderAthleteProfile
-// - renderRaceComparison
-// - raceMenuLinkActivity
+import { VLState, sb, SUPA_URL, FC_MAX_DEFAULT } from './app-state.js';
+import { isRun, fmtD, fmtP, fmtT } from './formatters.js';
+import { escapeHTML } from './security.js';
+import { hav, buildDetailedSections, minettiGradePenalty } from './gpx-core.js';
 
-async function fetchStreams(activityId) {
+export async function fetchStreams(activityId) {
   // Proxy via edge function — never exposes Strava token to browser
   const { data: { session } } = await sb.auth.getSession();
   if (!session?.access_token) return {};
@@ -26,7 +18,7 @@ async function fetchStreams(activityId) {
   } catch { return {}; }
 }
 
-async function fetchWeather(lat, lon, date) {
+export async function fetchWeather(lat, lon, date) {
   const d=date.split('T')[0], h=parseInt(date.split('T')[1]?.split(':')[0]||10);
   try {
     const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${d}&end_date=${d}&hourly=temperature_2m,precipitation,windspeed_10m&timezone=Europe%2FParis`);
@@ -35,8 +27,8 @@ async function fetchWeather(lat, lon, date) {
   } catch { return null; }
 }
 
-function computePAF(act, weather) {
-  const fcMax=userProfile.fc_max||FC_MAX_DEFAULT;
+export function computePAF(act, weather) {
+  const fcMax=VLState.userProfile.fc_max||FC_MAX_DEFAULT;
   let factors=[],totalAdj=0;
   if(weather?.temp!=null){const a=Math.max(0,(weather.temp-10)*0.008);totalAdj+=a;factors.push({icon:weather.temp>25?'🌡️':weather.temp<5?'❄️':'🌤️',label:'Température',value:`${weather.temp.toFixed(1)}°C`,adj:a>0.005?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.02?'var(--red)':a>0.01?'var(--orange)':'var(--green)'});}
   if(weather?.precip!=null){const a=weather.precip>5?0.03:weather.precip>1?0.02:weather.precip>0.1?0.01:0;totalAdj+=a;factors.push({icon:weather.precip>1?'🌧️':'☀️',label:'Pluie',value:`${weather.precip.toFixed(1)}mm`,adj:a>0?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.01?'var(--orange)':'var(--green)'});}
@@ -51,8 +43,8 @@ function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 // LOCAL ACTIVITY ANALYSIS — NO EXTERNAL AI
 // ════════════════════════════════════════════════════
-async function generateLocalActivitySummary(act, streams, paf) {
-  const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
+export async function generateLocalActivitySummary(act, streams, paf) {
+  const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
 
   const zones = [0, 0, 0, 0, 0];
   const hrS = streams.heartrate?.data || [];
@@ -91,7 +83,7 @@ async function generateLocalActivitySummary(act, streams, paf) {
   const d7ago = new Date(actDate);
   d7ago.setDate(actDate.getDate() - 7);
 
-  const recentRuns = allActivities.filter(a => {
+  const recentRuns = VLState.allActivities.filter(a => {
     const d = new Date(a.start_date);
     return isRun(a.type) && d >= d28ago && d < actDate;
   });
@@ -130,7 +122,7 @@ async function generateLocalActivitySummary(act, streams, paf) {
 // ════════════════════════════════════════════════════
 // ANALYSE OVERLAY
 // ════════════════════════════════════════════════════
-async function openAnalyse(act) {
+export async function openAnalyse(act) {
   const overlay = document.getElementById('analyseOverlay');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -148,7 +140,7 @@ async function openAnalyse(act) {
     : null;
 
   const paf = computePAF(act, weather);
-  const fcMax = userProfile.fc_max || FC_MAX_DEFAULT;
+  const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
   const d = new Date(act.start_date_local);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
@@ -240,14 +232,14 @@ async function openAnalyse(act) {
 
   // Check if this activity is linked to a race — reload fresh from DB first
   await loadRaces();
-  const linkedRace = races.find(r => String(r.strava_activity_id) === String(act.id));
+  const linkedRace = VLState.races.find(r => String(r.strava_activity_id) === String(act.id));
   if(linkedRace?.gpx_data) {
     renderRaceComparison(act, streams, linkedRace);
   }
-  // Always populate link panel with all races (so user can re-link or attach to any course)
+  // Always populate link panel with all VLState.races (so user can re-link or attach to any course)
   const linkList = document.getElementById('linkActivityRaceList');
   if(linkList) {
-    const sorted = [...races].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const sorted = [...VLState.races].sort((a,b)=>new Date(b.date)-new Date(a.date));
     linkList.innerHTML = sorted.length
       ? sorted.map(r=>`<button class="race-sel-btn" data-raceid="${r.id}" data-racename="${escapeAttr(r.name)}" data-actid="${act.id}" onclick="linkActivityToRace(this.dataset.raceid, this.dataset.racename, parseInt(this.dataset.actid))">📅 ${escapeHTML(r.name)} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}</button>`).join('')
       : '<span class="mono t3">Aucune course dans le calendrier — ajoutes-en une depuis l\'onglet Calendrier</span>';
@@ -267,12 +259,12 @@ if (summaryBox) {
 }
 } // ferme openAnalyse()
 
-function showLinkActivityPanel(actId) {
+export function showLinkActivityPanel(actId) {
   const panel = document.getElementById('linkActivityPanel');
   if(panel) panel.style.display = panel.style.display==='none'?'block':'none';
 }
 
-async function linkActivityToRace(raceId, raceName, actId) {
+export async function linkActivityToRace(raceId, raceName, actId) {
   const btn = document.getElementById('btnLinkActivity');
   if(btn){btn.textContent='Liaison...';btn.disabled=true;}
   const {error} = await sb.from('race_calendar')
@@ -281,14 +273,14 @@ async function linkActivityToRace(raceId, raceName, actId) {
   const panel = document.getElementById('linkActivityPanel');
   if(panel) panel.style.display='none';
   if(!error){
-    // Reload races from DB to ensure persistence
+    // Reload VLState.races from DB to ensure persistence
     await loadRaces();
     if(btn){
       btn.textContent=`✓ Lié à ${raceName}`;
       btn.style.background='var(--green)';btn.style.color='#000';btn.style.borderColor='var(--green)';
     }
     // Now check if linked race has GPX and show comparison
-    const linkedRace = races.find(r=>r.id===raceId);
+    const linkedRace = VLState.races.find(r=>r.id===raceId);
     if(linkedRace?.gpx_data){
       const streams=await fetchStreams(actId);
       renderRaceComparison({id:actId,moving_time:0}, streams, linkedRace);
@@ -298,7 +290,7 @@ async function linkActivityToRace(raceId, raceName, actId) {
   }
 }
 
-function renderAthleteProfile(streams, act) {
+export function renderAthleteProfile(streams, act) {
   const section = document.getElementById('athleteProfileSection');
   if(!section) return;
 
@@ -377,7 +369,7 @@ function renderAthleteProfile(streams, act) {
     </div>`;
 }
 
-async function renderRaceComparison(act, streams, race, targetId) {
+export async function renderRaceComparison(act, streams, race, targetId) {
   const section = document.getElementById(targetId||'raceComparisonSection')||document.getElementById('eventComparisonSection');
   if(!section || !race.gpx_data) return;
 
@@ -417,9 +409,9 @@ async function renderRaceComparison(act, streams, race, targetId) {
       const tf=sections.reduce((a,s)=>a+(1+minettiGradePenalty(s.grade/100))*s.dist/1000,0);
       basePaceS=tf>0?gs/tf:gs/(totalDist/1000);
     }
-  } else if(userProfile.prs?.semi?.timeS){
+  } else if(VLState.userProfile.prs?.semi?.timeS){
     const isTrail=/trail|ultra/i.test(race.type||'');
-    basePaceS=userProfile.prs.semi.timeS/21097*1000*(isTrail?1.18:1.0);
+    basePaceS=VLState.userProfile.prs.semi.timeS/21097*1000*(isTrail?1.18:1.0);
   }
 
   const predicted=sections.map(s=>{
@@ -446,7 +438,7 @@ async function renderRaceComparison(act, streams, race, targetId) {
   });
 
   // Calorie estimation: weight × (dist_km + D+/100 + D-/200) — Minetti km-equivalent model
-  const weight = userProfile.weight || 70;
+  const weight = VLState.userProfile.weight || 70;
   const predCal = Math.round(weight * (totalDist/1000 + totalDplus/100 + totalDminus/200));
   const actCal = act.calories && act.calories > 0 ? act.calories : null;
   const calDiff = actCal ? Math.round((actCal - predCal) / predCal * 100) : null;
@@ -485,7 +477,7 @@ async function renderRaceComparison(act, streams, race, targetId) {
   const avgDownDiff=downDiffs.length?Math.round(downDiffs.reduce((a,b)=>a+b,0)/downDiffs.length):null;
   const avgFlatDiff=flatDiffs.length?Math.round(flatDiffs.reduce((a,b)=>a+b,0)/flatDiffs.length):null;
 
-  const sportType=(currentRaceContext||window._openEventRace)?.type||race.type||'Trail';
+  const sportType=(VLState.currentRaceContext||window._openEventRace)?.type||race.type||'Trail';
   const calibChips=[
     avgUpDiff!==null?`⛰️ Montées ${avgUpDiff>0?'+':''}${avgUpDiff}% (×${(1+avgUpDiff/100).toFixed(2)})`:'',
     avgDownDiff!==null?`🎿 Descentes ${avgDownDiff>0?'+':''}${avgDownDiff}% (×${(1+avgDownDiff/100).toFixed(2)})`:'',
@@ -538,11 +530,11 @@ async function renderRaceComparison(act, streams, race, targetId) {
 
   // Save calibration coefficients (per sport type)
   const coeffKey=sportType.toLowerCase().includes('trail')||sportType.toLowerCase().includes('ultra')?'trail':'road';
-  if(avgUpDiff!==null){userProfile.coeff_uphill=1+avgUpDiff/100;userProfile[`coeff_up_${coeffKey}`]=userProfile.coeff_uphill;}
-  if(avgDownDiff!==null){userProfile.coeff_downhill=1+avgDownDiff/100;userProfile[`coeff_down_${coeffKey}`]=userProfile.coeff_downhill;}
-  if(avgFlatDiff!==null){userProfile.coeff_flat=1+avgFlatDiff/100;userProfile[`coeff_flat_${coeffKey}`]=userProfile.coeff_flat;}
+  if(avgUpDiff!==null){VLState.userProfile.coeff_uphill=1+avgUpDiff/100;VLState.userProfile[`coeff_up_${coeffKey}`]=VLState.userProfile.coeff_uphill;}
+  if(avgDownDiff!==null){VLState.userProfile.coeff_downhill=1+avgDownDiff/100;VLState.userProfile[`coeff_down_${coeffKey}`]=VLState.userProfile.coeff_downhill;}
+  if(avgFlatDiff!==null){VLState.userProfile.coeff_flat=1+avgFlatDiff/100;VLState.userProfile[`coeff_flat_${coeffKey}`]=VLState.userProfile.coeff_flat;}
   if(avgUpDiff!==null){
-    sb.from('profiles').upsert({id:currentUser.id,coeff_uphill:userProfile.coeff_uphill}).then(()=>{});
+    sb.from('profiles').upsert({id:VLState.currentUser.id,coeff_uphill:VLState.userProfile.coeff_uphill}).then(()=>{});
   }
 
 
@@ -592,13 +584,13 @@ if(validDiffs.length >= 2) {
 }
   }
 
-function raceMenuLinkActivity() {
-  const race = currentRaceContext || window._openEventRace;
+export function raceMenuLinkActivity() {
+  const race = VLState.currentRaceContext || window._openEventRace;
   if (!race) return;
   linkActivityFromRace(race);
 }
 
-function closeAnalyse() {
+export function closeAnalyse() {
   document.getElementById('analyseOverlay').classList.remove('open');
   document.body.style.overflow = '';
   if(window._actMapInst){window._actMapInst.remove();window._actMapInst=null;}

@@ -1,18 +1,12 @@
-// Future ES module exports:
-// - escapeHTML
-// - escapeAttr
-// - safeUrl
-
-// ── XSS helpers ──────────────────────────────────────────────────────────────
-function escapeHTML(s) {
+export function escapeHTML(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function escapeAttr(s) {
+export function escapeAttr(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-function safeUrl(url) {
+export function safeUrl(url) {
   if (!url || typeof url !== 'string') return '';
   const t = url.trim();
   return /^javascript:/i.test(t) ? '' : t;
