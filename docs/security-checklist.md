@@ -88,7 +88,6 @@ Rules:
 
 - [x] No `Access-Control-Allow-Origin: *` on authenticated endpoints
 - [x] CORS issue fixed on `strava-disconnect`
-- [x] Old `runner-os.com` domains removed from CORS allowlists
 
 ---
 
@@ -143,5 +142,4 @@ Minimum checklist before inviting non-technical users:
 - [ ] XSS/innerHTML audit completed
 - [ ] CGU/privacy text updated for final brand and contact
 - [ ] Strava branding/Powered by Strava placement verified
-- [x] Old runner-os domains removed from all Edge Function CORS allowlists
 - [ ] Basic error messages localized and user-friendly
