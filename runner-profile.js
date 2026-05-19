@@ -352,6 +352,7 @@ export async function computeRunnerProfile(activities, userProfile, raceCtx, opt
     rp._computedAt = rpAt;
   }
 
+
   return rp;
 }
 
