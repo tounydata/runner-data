@@ -132,13 +132,12 @@ export async function generateLocalActivitySummary(act, streams, paf) {
 }
 
 // ════════════════════════════════════════════════════
-// ANALYSE OVERLAY
+// ANALYSE — PAGE COMPLÈTE (panel routing)
 // ════════════════════════════════════════════════════
 export async function openAnalyse(act) {
-  const overlay = document.getElementById('analyseOverlay');
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  VLState._prevPanel = window.location.hash.slice(1) || 'dashboard';
   document.getElementById('analyseInner').innerHTML = `<div class="loading" style="min-height:300px"><div class="spinner"></div><div class="mono">Chargement des données...</div></div>`;
+  window.navigate('analyse');
 
   const streams = await fetchStreams(act.id);
   // Fallback: use first latlng point from streams if start_latlng missing
@@ -168,7 +167,7 @@ export async function openAnalyse(act) {
 
   document.getElementById('analyseInner').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
-      <button class="hbtn" onclick="closeAnalyse()">← Fermer</button>
+      <button class="hbtn" onclick="closeAnalyse()">← Retour</button>
       <div style="flex:1">
         <div style="font-family:var(--display);font-size:1.4rem;letter-spacing:.03em">${escapeHTML(act.name)}</div>
         <div class="mono t2" style="display:flex;align-items:center;gap:5px">${dateStr} · ${act.type==='TrailRun'?icon('trail',13):icon('run',13)} ${act.type==='TrailRun'?'Trail':'Route'}</div>
@@ -661,7 +660,6 @@ export function raceMenuLinkActivity() {
 }
 
 export function closeAnalyse() {
-  document.getElementById('analyseOverlay').classList.remove('open');
-  document.body.style.overflow = '';
   if(window._actMapInst){window._actMapInst.remove();window._actMapInst=null;}
+  window.navigate(VLState._prevPanel || 'dashboard');
 }
