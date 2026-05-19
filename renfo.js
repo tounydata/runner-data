@@ -2142,7 +2142,7 @@ export function showVariantPicker(exerciseId) {
   document.body.appendChild(overlay);
 }
 
-function applyVariant(exerciseId, newVariantId) {
+export function applyVariant(exerciseId, newVariantId) {
   const picker = document.getElementById('renfoVariantPicker');
   if (picker) picker.remove();
 
