@@ -197,6 +197,7 @@ export async function disconnectStrava() {
     if (!r.ok) throw new Error('Erreur déconnexion Strava');
 
     VLState.allActivities = [];
+    VLState.stravaConnected = false;
 
     document.getElementById('statusDot').className = 'dot dot-off';
     document.getElementById('statusText').textContent = 'Strava';
@@ -320,8 +321,8 @@ async function initApp(user) {
   showPanel(initHash);
   // Onboarding pour nouveaux utilisateurs
   if(!localStorage.getItem('onb_done')) initOnboarding();
-  // Bootstrap VAM silently if not yet calibrated (fire and forget)
-  if(!VLState.userProfile.vam_avg && VLState.allActivities?.length) {
+  // Bootstrap VAM silently if not yet calibrated and Strava is connected (fire and forget)
+  if(!VLState.userProfile.vam_avg && VLState.allActivities?.length && VLState.stravaConnected) {
     autoCalibrate(VLState.allActivities);
   }
 }
@@ -485,6 +486,7 @@ async function refreshActivitiesFromServer() {
 }
 
 function setStravaConnected(name) {
+  VLState.stravaConnected = true;
   document.getElementById('statusDot').className = 'dot dot-on';
   document.getElementById('statusText').textContent = name || 'Connecté';
   document.getElementById('btnStrava').style.display = 'none';

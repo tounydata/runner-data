@@ -374,6 +374,13 @@ export async function autoCalibrate(activities, topN = 10) {
   const allVAMs=[], allRecoveries=[];
   for(const act of candidates) {
     const streams = await fetchStreams(act.id);
+    if(!Object.keys(streams).length) {
+      if(allVAMs.length === 0) {
+        console.warn('[VL] autoCalibrate: streams inaccessibles (Strava non connecté?), arrêt');
+        return null;
+      }
+      break;
+    }
     const r = computeVAMFromStreams(streams);
     if(r?.avgVAM) {
       allVAMs.push(r.avgVAM);
