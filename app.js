@@ -1,7 +1,7 @@
 import { VLState, sb, SUPA_URL, CLIENT_ID, FC_MAX_DEFAULT, RUNNING_TYPES } from './app-state.js';
 import { renderCalendar, loadRaces } from './race-calendar.js';
 import { openAnalyse } from './activity-analysis.js';
-import { loadRenfoApp } from './renfo.js';
+import { loadRenfoApp, preloadRenfoState } from './renfo.js';
 import { isRun, fmtP, fmtD, fmtT, bC, deltaHTML, tE, tL, parseCsvDate } from './formatters.js';
 import { escapeHTML, escapeAttr, safeUrl } from './security.js';
 import { renderNutritionProducts } from './nutrition.js';
@@ -300,6 +300,7 @@ async function initApp(user) {
   document.getElementById('appShell').classList.add('show');
   await loadProfile();
   await loadRaces();
+  await preloadRenfoState();
   await checkStravaToken();
   await loadHistoryFromDB();
   // Force native date picker to open on tap (needed on some iOS versions)

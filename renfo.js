@@ -4,6 +4,12 @@
 
 import { VLState, sb } from './app-state.js';
 
+const RENFO_FOCUS_COLORS = {
+  force_lourde:'#E5562A', pliometrie:'#f39c12', excentrique:'#3498db',
+  excentrique_pliometrie:'#e67e22', tronc:'#9b59b6', haut_corps:'#1abc9c', mobilite:'#2ecc71'
+};
+VLState.RENFO_FOCUS_COLORS = RENFO_FOCUS_COLORS;
+
 const RENFO_EXERCISES = {
 
   // ── FORCE LOURDE ──────────────────────────────────────────
@@ -1275,6 +1281,17 @@ let renfoProgram = null;
 let renfoSessionLogs = [];
 let _renfoOnboarding = { equipment: {} };
 
+export async function preloadRenfoState() {
+  if(!VLState.currentUser) return;
+  const [{ data: prog }, { data: logs }] = await Promise.all([
+    sb.from('renfo_program').select('*').eq('user_id', VLState.currentUser.id).maybeSingle(),
+    sb.from('renfo_session_log').select('*').eq('user_id', VLState.currentUser.id),
+  ]);
+  VLState.renfoProgram = prog || null;
+  VLState.renfoSessionLogs = logs || [];
+  VLState.RENFO_FOCUS_COLORS = RENFO_FOCUS_COLORS;
+}
+
 export async function loadRenfoApp() {
   const el = document.getElementById('renfoApp');
   if (!el || !VLState.currentUser) return;
@@ -1479,12 +1496,6 @@ async function finishRenfoOnboarding() {
   showToast('Programme généré 🎯', 'success');
   renderRenfoHome();
 }
-
-const RENFO_FOCUS_COLORS = {
-  force_lourde:'#E5562A', pliometrie:'#f39c12', excentrique:'#3498db',
-  excentrique_pliometrie:'#e67e22', tronc:'#9b59b6', haut_corps:'#1abc9c', mobilite:'#2ecc71'
-};
-VLState.RENFO_FOCUS_COLORS = RENFO_FOCUS_COLORS;
 
 // ── Inline SVG icons ─────────────────────────────────────────────────────────
 const _ICON_PLAY = `<svg width="9" height="11" viewBox="0 0 9 11" fill="currentColor" style="display:block;flex-shrink:0"><path d="M0 0.5l9 5-9 5z"/></svg>`;
