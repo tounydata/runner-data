@@ -6,6 +6,7 @@ import { isRun, fmtP, fmtD, fmtT, bC, deltaHTML, tE, tL, parseCsvDate } from './
 import { escapeHTML, escapeAttr, safeUrl } from './security.js';
 import { renderNutritionProducts } from './nutrition.js';
 import { icon } from './icons.js';
+import { computeTrainingLoad, renderLoadBlock } from './training-load.js';
 
 const REDIRECT_URI = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/`;
 let historyActivities = [];
@@ -751,6 +752,14 @@ function renderDashboard() {
 
   // Activities grid
   renderActivities();
+
+  // Charge / Fatigue block
+  const loadEl = document.getElementById('loadBlock');
+  if (loadEl) {
+    const loadData = computeTrainingLoad(VLState.allActivities, fcMax);
+    loadEl.innerHTML = renderLoadBlock(loadData);
+    loadEl.style.display = '';
+  }
 
   // Async: fetch HR streams for this week and compute real aerobic %
   loadAerobicStat(thisWeek, fcMax);
