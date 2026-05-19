@@ -41,3 +41,16 @@ supabase/.branches/
 
 # TypeScript
 *.tsbuildinfo
+
+# Container / environment artifacts
+.devcontainer/
+app.json
+app/
+babel.config.js
+expo-env.d.ts
+lib/
+start.sh
+stores/
+tsconfig.json
+utils/
+README.md
