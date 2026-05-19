@@ -2340,36 +2340,51 @@ function minettiGradePenalty(grade) {
   }
 }
 
-// Terrain time penalty — multiplier on top of Minetti; 1.0 = asphalt baseline
-function terrainTimePenalty(surfaceKey, weather, grade) {
-  if(!surfaceKey) return 1.0;
-  const info=SURFACE_MAP[surfaceKey];
-  if(!info) return 1.0;
-  const prob=weather?.precip_prob??0;
-  const mm6h=weather?.precip_recent??weather?.precip??0;
-  const wet=prob>20||mm6h>0.3;
-  const vwet=prob>50||mm6h>2;
-  const descent=grade<-5;
-  const riskHigh=info.risk==='high';
-  const riskMed=info.risk==='medium';
-  let m=1.0;
-  switch(surfaceKey){
-    case 'asphalt':case 'paved':case 'concrete':m=1.00;break;
-    case 'compacted':case 'track':m=1.02;break;
-    case 'dirt':case 'ground':m=1.04;break;
-    case 'grass':case 'path':case 'footway':case 'bridleway':m=1.06;break;
-    case 'gravel':case 'fine_gravel':case 'pebblestone':m=1.07;break;
-    case 'cobblestone':m=1.09;break;
-    case 'rock':case 'rocks':m=1.12;break;
-    case 'scree':m=1.18;break;
-    case 'sand':m=1.15;break;
-    case 'mud':m=1.22;break;
-    default:m=1.05;
-  }
-  if(vwet) m*=1.08;
-  else if(wet) m*=1.04;
-  if(descent&&(riskHigh||riskMed)) m*=1.04;
-  return m;
+// Applique un coefficient de difficulté terrain au temps estimé par section.
+// Paramètres : clé de surface OSM, météo courante, pente en %, type de section (optionnel).
+// Retourne un multiplicateur ≥ 1. Plafond à 1.35 pour rester prudent.
+function terrainTimePenalty(surfaceKey, weather, grade = 0, sectionType = null) {
+  if (!surfaceKey) return 1;
+
+  const base = TERRAIN_TIME_FACTORS[surfaceKey] ?? 1.04;
+
+  const wet = weather && (
+    (weather.precip_prob ?? 0) > 20 ||
+    (weather.precip_recent ?? weather.precip ?? 0) > 0.3
+  );
+
+  const veryWet = weather && (
+    (weather.precip_prob ?? 0) > 50 ||
+    (weather.precip_recent ?? weather.precip ?? 0) > 2
+  );
+
+  // Surfaces dures : bitume, béton, revêtement — pas de pénalité météo
+  const hardSurfaces = ['asphalt', 'concrete', 'paved'];
+
+  // Surfaces instables en descente raide
+  const unstableSurfaces = ['gravel', 'fine_gravel', 'pebblestone', 'rock', 'rocks', 'scree', 'mud', 'grass', 'sand'];
+
+  // Surfaces déformables en montée raide (pied qui s'enfonce)
+  const deformableSurfaces = ['mud', 'sand', 'grass'];
+
+  const steepDown = grade < -10;
+  const steepUp = grade > 10;
+
+  let factor = base;
+
+  // Humide sur surface non dure : légère pénalité
+  if (wet && !hardSurfaces.includes(surfaceKey)) factor += 0.02;
+
+  // Très humide sur surface non dure : pénalité supplémentaire
+  if (veryWet && !hardSurfaces.includes(surfaceKey)) factor += 0.03;
+
+  // Descente raide + terrain instable : risque de glisse, freinage actif
+  if (steepDown && unstableSurfaces.includes(surfaceKey)) factor += 0.05;
+
+  // Montée raide + sol meuble : pied qui s'enfonce, effort accru
+  if (steepUp && deformableSurfaces.includes(surfaceKey)) factor += 0.04;
+
+  return Math.min(1.35, Math.max(1, factor));
 }
 
 async function analyzeGPX(points, fname) {
@@ -2503,7 +2518,7 @@ async function analyzeGPX(points, fname) {
   sections.forEach((s,i)=>{
     const surfKey=window._gpxSectionSurfaces?.[i]??null;
     const pentePenalty=1+minettiGradePenalty(s.grade/100);
-    const terPenalty=terrainTimePenalty(surfKey,weather,s.grade);
+    const terPenalty=terrainTimePenalty(surfKey,weather,s.grade,s.type);
     const t=basePaceS*pentePenalty*terPenalty*s.dist/1000;
     sectionTimes.push(Math.round(t));estTimeS+=t;
   });
@@ -2860,6 +2875,40 @@ async function analyzeGPX(points, fname) {
 }
 
 // ════════════ TERRAIN SURFACES via OSM Overpass ════════════
+
+// Facteurs terrain initiaux pour la projection chrono.
+// Valeurs prudentes : elles traduisent une difficulté relative du terrain.
+// Objectif : éviter de sous-estimer les sections meubles, instables ou techniques.
+// Ces coefficients pourront être recalibrés avec l'historique réel de l'utilisateur.
+const TERRAIN_TIME_FACTORS = {
+  // Surfaces dures — référence neutre
+  asphalt:     1.00,
+  concrete:    1.00,
+  paved:       1.00,
+  // Piste compacte — très faible pénalité
+  compacted:   1.02,
+  track:       1.02,
+  // Sentiers — faible pénalité
+  path:        1.05,
+  footway:     1.05,
+  bridleway:   1.05,
+  // Terre / sol naturel
+  dirt:        1.06,
+  ground:      1.06,
+  grass:       1.07,
+  // Granulats / pavés — pénalité moyenne
+  gravel:      1.08,
+  fine_gravel: 1.07,
+  pebblestone: 1.09,
+  cobblestone: 1.08,
+  // Terrains instables / techniques — pénalité plus élevée
+  sand:        1.15,
+  mud:         1.18,
+  rock:        1.12,
+  rocks:       1.12,
+  scree:       1.15,
+};
+
 const SURFACE_MAP={
   rock:{fr:'Rochers',emoji:'🪨',risk:'high',col:'var(--red)'},
   rocks:{fr:'Rochers',emoji:'🪨',risk:'high',col:'var(--red)'},
