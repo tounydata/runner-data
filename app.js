@@ -821,20 +821,24 @@ async function loadAerobicStat(weekActs, fcMax) {
 
   const threshold = fcMax * 0.75;
   if (!weekActs.length) { el.textContent = '—'; return; }
-  const candidates = weekActs;
 
-  let totalPts = 0, aerobicPts = 0;
-  await Promise.all(candidates.map(async a => {
+  let totalPts = 0, aerobicPts = 0, approx = false;
+  await Promise.all(weekActs.map(async a => {
     try {
       const streams = await fetchStreams(a.id);
       const hr = streams.heartrate?.data;
-      if (!hr?.length) return;
-      totalPts += hr.length;
-      aerobicPts += hr.filter(v => v < threshold).length;
+      if (hr?.length) {
+        totalPts += hr.length;
+        aerobicPts += hr.filter(v => v < threshold).length;
+      } else if (a.average_heartrate && a.moving_time) {
+        // Fallback si les streams ne sont pas disponibles (rate limit, token, etc.)
+        approx = true;
+        totalPts += a.moving_time;
+        if (a.average_heartrate < threshold) aerobicPts += a.moving_time;
+      }
     } catch {}
   }));
 
-  // Re-chercher l'élément : le DOM peut avoir été reconstruit pendant le fetch async
   const elNow = document.getElementById('aerobicStatVal');
   if (!elNow) return;
 
@@ -842,7 +846,7 @@ async function loadAerobicStat(weekActs, fcMax) {
   const pct = Math.round(aerobicPts / totalPts * 100);
   elNow.style.color = pct >= 75 ? 'var(--vl-growth)' : pct < 50 ? 'var(--vl-ember)' : '';
   elNow.style.fontSize = '';
-  elNow.textContent = pct + '%';
+  elNow.textContent = (approx ? '~' : '') + pct + '%';
 }
 
 // ════════════════════════════════════════════════════
