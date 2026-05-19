@@ -662,13 +662,16 @@ export async function analyzeGPX(points, fname) {
       .update({gpx_data: savedGpxJson})
       .eq('id', savedRaceId)
       .then(({error}) => {
-        if (!error) {
+        if (error) {
+          console.error('GPX save error:', error);
+          window.showToast?.('Erreur sauvegarde GPX : ' + (error.message || error.code), 'error');
+        } else {
           const idx = VLState.races.findIndex(r=>r.id===savedRaceId);
           if(idx>=0) VLState.races[idx].gpx_data = savedGpxJson;
           if(VLState.currentRaceContext?.id===savedRaceId) VLState.currentRaceContext.gpx_data = savedGpxJson;
           const si = document.getElementById('raceMenuSaveGpx');
           if(si) si.style.display = 'none';
-          showToast('GPX enregistré ✓', 'success');
+          window.showToast?.('GPX enregistré ✓', 'success');
         }
       });
   }

@@ -1188,7 +1188,7 @@ function updateAvatar(url) {
 // ════════════════════════════════════════════════════
 // TOASTS
 // ════════════════════════════════════════════════════
-function showToast(msg, type='info', duration=4000) {
+export function showToast(msg, type='info', duration=4000) {
   const icons = {success:'✓',error:'✕',info:'ℹ'};
   const colors = {success:'var(--green)',error:'var(--red)',info:'var(--cyan)'};
   const container = document.getElementById('toastContainer');
