@@ -6,6 +6,7 @@ import { VLState, sb, SUPA_URL, FC_MAX_DEFAULT } from './app-state.js';
 import { genNutrition } from './nutrition.js';
 import { icon } from './icons.js';
 import { computeRunnerProfile, sensitivityLabel, climbSourceLabel } from './runner-profile.js';
+import { computeFreshnessAdjustment } from './race-predictor.js';
 
 // leafletMap est dans VLState.leafletMap
 
@@ -67,7 +68,7 @@ export async function analyzeGPX(points, fname) {
       }
     }catch{weatherNote='Météo indisponible';}
   } else {
-    weatherNote=`Météo J+${daysToRace} non intégrée`;
+    weatherNote=`Météo disponible à partir de J-10`;
   }
 
   // Lancer le calcul profil coureur en parallèle avec terrain (résultat attendu plus tard)
@@ -217,7 +218,7 @@ export async function analyzeGPX(points, fname) {
       const adj = Math.min(0.05, heat.pacePenaltyPer10C * (Math.max(0, weather.temp - 18) / 10));
       if (adj > 0.005) {
         personalMultiplier *= (1 + adj);
-        personalAdjustments.push({ label: `Chaleur ${Math.round(weather.temp)}°C`, detail: `+${(adj*100).toFixed(1)}%`, color: 'var(--vl-amber)' });
+        personalAdjustments.push({ label: `Chaleur ${Math.round(weather.temp)}°C`, detail: `+${(adj*100).toFixed(1)}%${sensitivityLabel(heat) ? ' · ' + sensitivityLabel(heat) : ''}`, color: 'var(--vl-amber)' });
       }
     }
     // Vent : route uniquement (trail en forêt = exposition réduite)
@@ -225,7 +226,7 @@ export async function analyzeGPX(points, fname) {
       const adj = Math.min(0.03, wind.pacePenaltyPer20Kmh * (weather.wind / 20));
       if (adj > 0.005) {
         personalMultiplier *= (1 + adj);
-        personalAdjustments.push({ label: `Vent ${Math.round(weather.wind)} km/h`, detail: `+${(adj*100).toFixed(1)}%`, color: 'var(--vl-amber)' });
+        personalAdjustments.push({ label: `Vent ${Math.round(weather.wind)} km/h`, detail: `+${(adj*100).toFixed(1)}%${sensitivityLabel(wind) ? ' · ' + sensitivityLabel(wind) : ''}`, color: 'var(--vl-amber)' });
       }
     }
     // Sol humide
@@ -233,7 +234,7 @@ export async function analyzeGPX(points, fname) {
       const adj = Math.min(0.04, rain.terrainPenaltySignal * 0.5);
       if (adj > 0.005) {
         personalMultiplier *= (1 + adj);
-        personalAdjustments.push({ label: 'Sol humide', detail: `+${(adj*100).toFixed(1)}%`, color: 'var(--vl-ember)' });
+        personalAdjustments.push({ label: 'Sol humide', detail: `+${(adj*100).toFixed(1)}%${sensitivityLabel(rain) ? ' · ' + sensitivityLabel(rain) : ''}`, color: 'var(--vl-ember)' });
       }
     }
     // Froid
@@ -241,11 +242,23 @@ export async function analyzeGPX(points, fname) {
       const adj = Math.min(0.03, cold.pacePenalty * 0.5);
       if (adj > 0.005) {
         personalMultiplier *= (1 + adj);
-        personalAdjustments.push({ label: `Froid ${Math.round(weather.temp)}°C`, detail: `+${(adj*100).toFixed(1)}%`, color: 'var(--vl-text-3)' });
+        personalAdjustments.push({ label: `Froid ${Math.round(weather.temp)}°C`, detail: `+${(adj*100).toFixed(1)}%${sensitivityLabel(cold) ? ' · ' + sensitivityLabel(cold) : ''}`, color: 'var(--vl-text-3)' });
       }
     }
   }
   if (personalMultiplier > 1) estTimeS *= personalMultiplier;
+
+  // Étape 6 — Fraîcheur (race-predictor.js via training-load.js)
+  const fcMaxRp = VLState.userProfile?.fc_max || FC_MAX_DEFAULT;
+  const freshness = computeFreshnessAdjustment(VLState.allActivities || [], fcMaxRp);
+  if (freshness.multiplier !== 1 && freshness.label) {
+    estTimeS *= freshness.multiplier;
+    if (rp) personalAdjustments.push({
+      label: `Charge : ${freshness.label}`,
+      detail: `${freshness.multiplier > 1 ? '+' : ''}${((freshness.multiplier - 1) * 100).toFixed(0)}%`,
+      color: freshness.multiplier > 1 ? 'var(--vl-ember)' : 'var(--vl-growth)',
+    });
+  }
 
   // Confidence scoring
   const terrainKnown=(window._gpxSectionSurfaces||[]).filter(s=>s!==null).length;
