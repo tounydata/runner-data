@@ -1171,14 +1171,19 @@ async function suggestNextLoad(userId, exerciseId) {
 
   if (!last.completed_all_reps) {
     if (recent.length >= 2 && !recent[1].completed_all_reps)
-      return Math.round(currentLoad * 0.95 * 2) / 2;
+      return Math.round(currentLoad * 0.95 / 1.25) * 1.25;
     return currentLoad;
   }
 
-  if (last.rpe <= 7) return currentLoad + 5;
-  if (last.rpe === 8) return currentLoad + 2.5;
-  if (last.rpe === 9) return currentLoad;
-  if (last.rpe >= 10) return Math.round(currentLoad * 0.95 * 2) / 2;
+  // +4% arrondi au multiple de 1.25kg le plus proche (plancher 1.25kg)
+  if (last.rpe <= 7) {
+    const raw = currentLoad * 1.04;
+    const inc = Math.max(1.25, Math.round((raw - currentLoad) / 1.25) * 1.25);
+    return currentLoad + inc;
+  }
+  if (last.rpe === 8) return currentLoad;
+  if (last.rpe === 9) return Math.round(currentLoad * 0.975 / 1.25) * 1.25;
+  if (last.rpe >= 10) return Math.round(currentLoad * 0.95 / 1.25) * 1.25;
   return currentLoad;
 }
 
