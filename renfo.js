@@ -1077,7 +1077,7 @@ function pickDays(spw) {
 
 const SESSION_EXERCISES = {
   force_lourde:           ['squat_lourd','rdl','bulgare','mollets_lourds'],
-  pliometrie:             ['pogo_jumps','bondissements','drop_jumps','skips'],
+  pliometrie:             ['pogo_jumps','bondissements','drop_jumps'],
   excentrique:            ['step_down','nordic','mollet_excentrique','single_leg_rdl'],
   excentrique_pliometrie: ['step_down','nordic','pogo_jumps','bondissements'],
   tronc:                  ['pallof_press','side_plank_hipdrop','dead_bug','bird_dog','suitcase_carry'],
@@ -1523,35 +1523,35 @@ function renderRenfoHome() {
     return { d, dKey, dStr, ses, logged, isToday: i===6 };
   });
 
-  // Today card — suggest next unfinished session
-  let todayHTML = '';
-  if (todayLog) {
-    const n = Object.keys(todayLog.completed_exercises||{}).length;
-    const doneSession = renfoProgram.week_schedule?.[todayLog.day_key];
-    todayHTML = `<div style="display:flex;align-items:center;gap:14px">
-      <div style="font-size:2.2rem">✅</div>
-      <div>
-        <div style="font-family:var(--vl-display);font-size:1.3rem;font-weight:700">Séance complétée</div>
-        <div style="font-size:.75rem;color:var(--vl-text-2)">${n} exercice${n>1?'s':''} · ${doneSession?.label||''}</div>
+  // Session list for home
+  const todayBanner = todayLog
+    ? (() => {
+        const n = Object.keys(todayLog.completed_exercises||{}).length;
+        const doneLabel = renfoProgram.week_schedule?.[todayLog.day_key]?.label || '';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(34,197,94,.1);border-radius:8px;margin-bottom:10px">
+          <span style="font-size:1.2rem">✅</span>
+          <div style="font-size:.8rem"><strong>Séance du jour faite</strong> · ${n} exercices · ${doneLabel}</div>
+        </div>`;
+      })()
+    : '';
+
+  const allSessionDays = DAYS.filter(d => { const s = renfoProgram.week_schedule?.[d]; return s && !s.rest; });
+  const sessionListHTML = allSessionDays.map(dayKey => {
+    const session = renfoProgram.week_schedule[dayKey];
+    const done = doneFocuses.has(session.focus);
+    const col = RENFO_FOCUS_COLORS[session.focus] || 'var(--vl-ember)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--vl-bg2);border:1.5px solid ${done?'var(--vl-border)':col};border-radius:10px;margin-bottom:8px;${done?'opacity:.6':''}">
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--vl-display);font-size:.95rem;font-weight:700">${session.label}</div>
+        <div style="font-family:var(--vl-mono);font-size:.58rem;color:var(--vl-text-2)">~${session.duration_min} min · ${session.exercises.length} exercices</div>
       </div>
+      ${done
+        ? `<div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">✓ fait</div>`
+        : `<button onclick="startRenfoSession('${dayKey}')" style="padding:9px 18px;background:${col};border:none;border-radius:8px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:.8rem;font-weight:700;touch-action:manipulation;flex-shrink:0;-webkit-tap-highlight-color:transparent">▶</button>`
+      }
     </div>`;
-  } else if (!suggestedSession) {
-    todayHTML = `<div style="display:flex;align-items:center;gap:14px">
-      <div style="font-size:2.2rem">🎉</div>
-      <div>
-        <div style="font-family:var(--vl-display);font-size:1.3rem;font-weight:700">Semaine complète !</div>
-        <div style="font-size:.75rem;color:var(--vl-text-2)">Toutes les séances de la semaine sont faites · repos mérité</div>
-      </div>
-    </div>`;
-  } else {
-    const col = RENFO_FOCUS_COLORS[suggestedSession.focus] || 'var(--vl-ember)';
-    todayHTML = `<div>
-      <div style="font-family:var(--vl-mono);font-size:.6rem;letter-spacing:.1em;color:${col};margin-bottom:4px">${(suggestedSession.focus||'').replace(/_/g,' ').toUpperCase()}</div>
-      <div style="font-family:var(--vl-display);font-size:1.5rem;font-weight:800;margin-bottom:4px">${suggestedSession.label}</div>
-      <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:14px">~${suggestedSession.duration_min} min · ${suggestedSession.exercises.length} exercice${suggestedSession.exercises.length>1?'s':''}</div>
-      <button onclick="startRenfoSession('${nextDayKey}')" style="width:100%;padding:13px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:1rem;font-weight:700;letter-spacing:.04em;touch-action:manipulation;-webkit-tap-highlight-color:transparent">▶ COMMENCER</button>
-    </div>`;
-  }
+  }).join('');
+  const sessionsCardHTML = `${todayBanner}${sessionListHTML || '<div style="font-size:.8rem;color:var(--vl-text-2)">Aucune séance dans ton programme.</div>'}`;
 
   el.innerHTML = `<div style="padding-bottom:8px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.25rem">
@@ -1563,8 +1563,8 @@ function renderRenfoHome() {
     </div>
 
     <div class="card" style="margin-bottom:12px;padding:16px">
-      <div class="clabel" style="margin-bottom:10px">AUJOURD'HUI</div>
-      ${todayHTML}
+      <div class="clabel" style="margin-bottom:10px">SÉANCES</div>
+      ${sessionsCardHTML}
     </div>
 
     <div class="card" style="margin-bottom:12px;padding:14px">
@@ -1619,7 +1619,7 @@ function renderRenfoHome() {
   </div>`;
 }
 
-function startRenfoSession(dayKey) {
+async function startRenfoSession(dayKey) {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
   const session = renfoProgram.week_schedule?.[dayKey];
@@ -1627,22 +1627,53 @@ function startRenfoSession(dayKey) {
 
   const completedExos = {};
 
+  // Pre-load weight suggestions for external_kg exercises
+  const suggestions = {};
+  if (currentUser) {
+    await Promise.all(
+      session.exercises
+        .filter(e => e.load_type === 'external_kg')
+        .map(async e => {
+          const kg = await suggestNextLoad(currentUser.id, e.exercise_id);
+          if (kg !== null) suggestions[e.exercise_id] = kg;
+        })
+    );
+  }
+
   const exoRows = session.exercises.map(exo => {
     const def = RENFO_EXERCISES[exo.exercise_id];
     if (!def) return '';
     const variant = def.variants.find(v => v.id === exo.variant_id) || def.variants[0];
-    const loadLabel = exo.load_type === 'external_kg' ? 'kg à définir' : exo.load_type === 'band' ? 'élastique' : 'poids de corps';
-    return `<div id="exo-card-${exo.exercise_id}" class="card" style="margin-bottom:10px;padding:14px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="flex:1;min-width:0">
-          <div style="font-family:var(--vl-display);font-size:1.05rem;font-weight:700;margin-bottom:2px">${def.name_fr}</div>
-          <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-bottom:6px">${def.name_tech} · ${variant.name}</div>
-          <div style="font-size:.8rem;color:var(--vl-ember)">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe} · ${loadLabel}</div>
-        </div>
-        <button onclick="toggleExoCheck('${exo.exercise_id}','${exo.variant_id}','${exo.load_type}')" id="chk-${exo.exercise_id}"
-          style="width:32px;height:32px;border-radius:50%;border:2px solid var(--vl-border);background:transparent;cursor:pointer;font-size:1rem;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center">
+
+    let actionHtml;
+    if (exo.load_type === 'external_kg') {
+      const suggested = suggestions[exo.exercise_id];
+      actionHtml = `<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <input id="load-${exo.exercise_id}" type="number" inputmode="decimal" step="2.5" min="0"
+          placeholder="${suggested ? `${suggested} kg (suggéré)` : 'Charge en kg…'}"
+          ${suggested ? `value="${suggested}"` : ''}
+          style="flex:1;padding:9px 12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:8px;color:var(--vl-text);font-size:.9rem;box-sizing:border-box">
+        <button id="chk-${exo.exercise_id}" onclick="validateExoWithLoad('${exo.exercise_id}','${exo.variant_id}','${exo.load_type}')"
+          style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--vl-border);background:transparent;cursor:pointer;font-family:var(--vl-display);font-size:.85rem;font-weight:700;color:var(--vl-text-2);touch-action:manipulation;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent">
+          ✓ Valider
         </button>
+      </div>`;
+    } else {
+      const loadLabel = exo.load_type === 'band' ? 'élastique' : 'poids de corps';
+      actionHtml = `<div style="font-size:.72rem;color:var(--vl-text-2);margin-top:6px;margin-bottom:8px">${loadLabel}</div>
+      <button id="chk-${exo.exercise_id}" onclick="toggleExoCheck('${exo.exercise_id}','${exo.variant_id}','${exo.load_type}')"
+        style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--vl-border);background:transparent;cursor:pointer;font-family:var(--vl-display);font-size:.85rem;font-weight:700;color:var(--vl-text-2);touch-action:manipulation;-webkit-tap-highlight-color:transparent">
+        ✓ Exercice fait
+      </button>`;
+    }
+
+    return `<div id="exo-card-${exo.exercise_id}" class="card" style="margin-bottom:10px;padding:14px">
+      <div style="margin-bottom:6px">
+        <div style="font-family:var(--vl-display);font-size:1.05rem;font-weight:700;margin-bottom:2px">${def.name_fr}</div>
+        <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">${def.name_tech} · ${variant.name}</div>
       </div>
+      <div style="font-size:.8rem;color:var(--vl-ember);font-weight:600">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}</div>
+      ${actionHtml}
       <button onclick="toggleExoDetail('${exo.exercise_id}')" style="margin-top:10px;background:none;border:none;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);padding:0;touch-action:manipulation">
         ▾ Comment faire
       </button>
@@ -1705,6 +1736,12 @@ function toggleExoCheck(exerciseId, variantId, loadType) {
   }
 }
 
+function validateExoWithLoad(exerciseId, variantId, loadType) {
+  const inputEl = document.getElementById('load-' + exerciseId);
+  const prefillLoad = inputEl ? (parseFloat(inputEl.value) || null) : null;
+  showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad);
+}
+
 function markExoChecked(exerciseId, variantId, loadType, loadKg, reps, rpe) {
   const btn = document.getElementById('chk-' + exerciseId);
   if (btn) {
@@ -1724,7 +1761,7 @@ function markExoChecked(exerciseId, variantId, loadType, loadKg, reps, rpe) {
   }
 }
 
-function showRenfoLogPopup(exerciseId, variantId, loadType) {
+function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) {
   const def = RENFO_EXERCISES[exerciseId];
   if (!def) { markExoChecked(exerciseId, variantId, loadType, null, null, null); return; }
 
@@ -1742,7 +1779,9 @@ function showRenfoLogPopup(exerciseId, variantId, loadType) {
     <div style="display:flex;flex-direction:column;gap:14px">
       <div>
         <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Charge (kg)</div>
-        <input id="rlLoad" type="number" inputmode="decimal" min="0" step="2.5" placeholder="60" style="width:100%;padding:10px 12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:8px;color:var(--vl-text);font-size:1rem;box-sizing:border-box">
+        <input id="rlLoad" type="number" inputmode="decimal" min="0" step="2.5"
+          placeholder="${prefillLoad ? '' : '60'}" ${prefillLoad !== null ? `value="${prefillLoad}"` : ''}
+          style="width:100%;padding:10px 12px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:8px;color:var(--vl-text);font-size:1rem;box-sizing:border-box">
       </div>
       <div>
         <div style="font-size:.75rem;color:var(--vl-text-2);margin-bottom:6px">Répétitions effectuées</div>
