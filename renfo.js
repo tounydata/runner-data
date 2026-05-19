@@ -1987,6 +1987,7 @@ function fmtCountdown(s) {
   return m > 0 ? `${m}:${sec.toString().padStart(2, '0')}` : `${s}s`;
 }
 
+
 export function startRestTimer(secs) {
   clearInterval(window._renfoRestTimer);
   const existing = document.getElementById('renfoRestBar');
@@ -2073,6 +2074,7 @@ function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) 
       <div style="font-family:var(--vl-mono);font-size:.4rem;margin-top:3px;line-height:1.2">${RPE_LABELS[r]}</div>
     </button>`
   ).join('');
+
 
   overlay.innerHTML = `<div style="width:100%;background:var(--vl-bg2);border-radius:20px 20px 0 0;padding:20px 20px 32px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
     <div style="width:36px;height:4px;background:var(--vl-border);border-radius:2px;margin:0 auto 18px"></div>
