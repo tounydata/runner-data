@@ -514,6 +514,8 @@ export async function manualSync() {
       (a.total_elevation_gain||0) > 100
     );
     if(hasNewTrail) autoCalibrate(VLState.allActivities);
+    // Invalide le cache profil coureur (nouvelles activités = rp potentiellement obsolète)
+    VLState.runnerProfile = null;
   } catch(e) {
     showToast('Erreur de synchronisation', 'error');
   } finally {
