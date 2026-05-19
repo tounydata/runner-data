@@ -1287,6 +1287,28 @@ function pickDays(spw) {
   return patterns[spw] || patterns[3];
 }
 
+// Temps de repos inter-série (secondes) selon la science du coaching :
+// Force lourde 2-3 min (adaptation neuromusculaire), excentrique 2-2min30
+// (fatigue tendineuse élevée), pliométrie haute intensité 2-2min30 (récupération
+// ATP), tronc/mobilité 45-90 s (faible demande systémique).
+const INTER_SET_REST = {
+  squat_lourd: 120,        rdl: 120,              bulgare: 120,
+  mollets_lourds: 90,      hip_thrust: 120,        lunge_marcheur: 90,
+  pogo_jumps: 90,          bondissements: 120,     drop_jumps: 150,
+  skips: 60,               lateral_bound: 90,      box_jump: 150,
+  step_down: 120,          nordic: 150,            mollet_excentrique: 90,
+  single_leg_rdl: 90,      tibialis_raise: 60,     reverse_nordic: 120,
+  single_leg_glute_bridge: 60, wall_sit: 120,
+  pallof_press: 60,        side_plank_hipdrop: 60, dead_bug: 45,
+  bird_dog: 45,            suitcase_carry: 60,     copenhagen_plank: 90,
+  core_rotation: 60,
+  tractions_or_row: 120,   pompes: 90,             face_pull: 60,
+  ytw_prone: 60,
+  hip_9090: 30,            pigeon_actif: 30,       knee_to_wall: 30,
+  open_book: 30,           monster_walk: 45,       hip_abduction: 30,
+  cossack_squat: 45,
+};
+
 const SESSION_EXERCISES = {
   force_lourde:           ['squat_lourd','rdl','bulgare','hip_thrust','lunge_marcheur'],
   pliometrie:             ['pogo_jumps','bondissements','drop_jumps','lateral_bound','box_jump'],
@@ -1893,10 +1915,8 @@ export async function startRenfoSession(dayKey) {
         </div>
         ${def.variants.length > 1 ? `<button onclick="showVariantPicker('${exo.exercise_id}')" style="padding:4px 8px;background:transparent;border:1px solid var(--vl-border);border-radius:6px;cursor:pointer;font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);touch-action:manipulation;flex-shrink:0">Variante</button>` : ''}
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <div data-sets-rpe style="font-size:.8rem;color:var(--vl-ember);font-weight:600">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe} · Repos ${fmtRest(variant.rest_seconds||60)}</div>
-        <button onclick="startRestTimer(${variant.rest_seconds||60})" style="padding:4px 10px;background:transparent;border:1px solid var(--vl-ember);border-radius:6px;cursor:pointer;font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-ember);touch-action:manipulation;flex-shrink:0">⏱ Repos</button>
-      </div>
+      <div data-sets-rpe style="font-size:.8rem;color:var(--vl-ember);font-weight:600">${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}</div>
+      <div data-rest-info style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-top:3px">Entre séries : ${fmtRest(INTER_SET_REST[exo.exercise_id]||90)} · Repos suivant : ${fmtRest(variant.rest_seconds||90)}</div>
       ${actionHtml}
       <button onclick="toggleExoDetail('${exo.exercise_id}')" style="margin-top:10px;background:none;border:none;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">
         ${_ICON_CHEVRON} Comment faire
@@ -2174,7 +2194,9 @@ export function applyVariant(exerciseId, newVariantId) {
     const techEl = card.querySelector('[data-variant-name]');
     if (techEl) techEl.textContent = def.name_tech + ' · ' + newVariant.name;
     const setsEl = card.querySelector('[data-sets-rpe]');
-    if (setsEl) setsEl.textContent = `${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe} · Repos ${fmtRest(newVariant.rest_seconds||60)}`;
+    if (setsEl) setsEl.textContent = `${exo.sets}×${exo.reps} · RPE cible ${exo.target_rpe}`;
+    const restEl = card.querySelector('[data-rest-info]');
+    if (restEl) restEl.textContent = `Entre séries : ${fmtRest(INTER_SET_REST[exerciseId]||90)} · Repos suivant : ${fmtRest(newVariant.rest_seconds||90)}`;
   }
 
   showToast('Variante mise à jour', 'success');

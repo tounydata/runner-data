@@ -25,7 +25,7 @@ import { loadRenfoApp, preloadRenfoState,
   toggleExoDetail, toggleExoCheck, validateExoWithLoad,
   submitRenfoLog, completeRenfoSession, showRenfoHistoryView,
   showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
-  showVariantPicker, applyVariant, startRestTimer,
+  showVariantPicker, applyVariant,
 } from './renfo.js';
 
 window.Vorcelab = {
@@ -52,7 +52,7 @@ window.Vorcelab = {
   toggleExoDetail, toggleExoCheck, validateExoWithLoad,
   submitRenfoLog, completeRenfoSession, showRenfoHistoryView,
   showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
-  showVariantPicker, applyVariant, startRestTimer,
+  showVariantPicker, applyVariant,
 };
 
 // Expose as direct globals for inline onclick compatibility
