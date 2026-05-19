@@ -3,6 +3,8 @@ import { isRun, fmtD, fmtP, fmtT } from './formatters.js';
 import { escapeHTML, escapeAttr } from './security.js';
 import { hav, buildDetailedSections, minettiGradePenalty } from './gpx-core.js';
 import { icon } from './icons.js';
+import { buildSessionInsights, renderSessionQualityBlock } from './session-quality.js';
+import { findSimilarActivities, computeProgressSignals, renderComparisonBlock } from './progress-comparison.js';
 
 export async function fetchStreams(activityId) {
   // Proxy via edge function — never exposes Strava token to browser
@@ -227,7 +229,11 @@ export async function openAnalyse(act) {
     <div id="athleteProfileSection" class="mt2"></div>
 
     <!-- COMPARAISON PRÉVU/RÉEL (si course liée avec GPX) -->
-    <div id="raceComparisonSection" class="mt2"></div>`;
+    <div id="raceComparisonSection" class="mt2"></div>
+    <!-- QUALITÉ DE SÉANCE (étape 4) -->
+    <div id="sessionQualityBlock"></div>
+    <!-- COMPARAISON HISTORIQUE (étape 5) -->
+    <div id="progressCompBlock"></div>`;
 
   // Charts
   if(cA.length){new Chart(document.getElementById('apChart'),{type:'line',data:{labels:cDist,datasets:[{label:'Alt',data:cA,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:1.5,yAxisID:'yA'},...(cH.length?[{label:'FC',data:cH,borderColor:'#f43f5e',backgroundColor:'transparent',fill:false,tension:.4,pointRadius:0,borderWidth:1.5,borderDash:[3,2],yAxisID:'yH'}]:[])]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,font:{size:9},callback:v=>v+'km'},grid:{color:'rgba(255,255,255,.05)'}},yA:{position:'left',ticks:{font:{size:9},callback:v=>v+'m'},grid:{color:'rgba(255,255,255,.05)'}},yH:{position:'right',min:50,max:220,ticks:{font:{size:9}},grid:{display:false}}}}})}
@@ -279,6 +285,15 @@ if (summaryBox) {
     </div>
     <div class="summary-text">${escapeHTML(summaryText)}</div>
   `;
+
+  // Étape 4 — Qualité de séance
+  const sqEl = document.getElementById('sessionQualityBlock');
+  if (sqEl) sqEl.innerHTML = renderSessionQualityBlock(buildSessionInsights(act, streams, fcMax));
+
+  // Étape 5 — Comparaison historique
+  const similar = findSimilarActivities(act, VLState.allActivities);
+  const pcEl = document.getElementById('progressCompBlock');
+  if (pcEl) pcEl.innerHTML = renderComparisonBlock(act, similar, computeProgressSignals(act, similar));
 }
 } // ferme openAnalyse()
 
