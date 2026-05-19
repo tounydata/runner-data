@@ -1321,7 +1321,7 @@ export async function loadRenfoApp() {
   renderRenfoHome();
 }
 
-function renderOnboardingStep(step) {
+export function renderOnboardingStep(step) {
   const el = document.getElementById('renfoApp');
   if (!el) return;
 
@@ -1414,7 +1414,7 @@ function renderOnboardingStep(step) {
   </div>`;
 }
 
-function renfoNextStep(current) {
+export function renfoNextStep(current) {
   if (current === 1 && _renfoOnboarding.objective_weight === undefined) {
     showToast('Choisis un objectif pour continuer', 'info'); return;
   }
@@ -1435,7 +1435,7 @@ function renfoEquipSet(key, val) {
   }
 }
 
-function renfoObSelect(btn) {
+export function renfoObSelect(btn) {
   const type = btn.dataset.type;
   const val = +btn.dataset.val;
   document.querySelectorAll(`.vl-ob-btn[data-type="${type}"]`).forEach(b => {
@@ -1448,7 +1448,7 @@ function renfoObSelect(btn) {
   if (type === 'spw') _renfoOnboarding.sessions_per_week = val;
 }
 
-function renfoToggleBand(btn, band) {
+export function renfoToggleBand(btn, band) {
   if (!_renfoOnboarding.equipment) _renfoOnboarding.equipment = {};
   if (!_renfoOnboarding.equipment.bands) _renfoOnboarding.equipment.bands = [];
   const idx = _renfoOnboarding.equipment.bands.indexOf(band);
@@ -1463,7 +1463,7 @@ function renfoToggleBand(btn, band) {
   }
 }
 
-async function finishRenfoOnboarding() {
+export async function finishRenfoOnboarding() {
   const el = document.getElementById('renfoApp');
   el.innerHTML = `<div style="padding:48px 0;text-align:center;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem">Génération du programme…</div>`;
 
@@ -1507,7 +1507,7 @@ const _ICON_ARROW_LEFT = `<svg width="8" height="14" viewBox="0 0 8 14" fill="no
 const RENFO_DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const RENFO_DAY_FR = ['D','L','M','M','J','V','S'];
 
-function renderRenfoHome() {
+export function renderRenfoHome() {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
 
@@ -1628,7 +1628,7 @@ function renderRenfoHome() {
   </div>`;
 }
 
-async function startRenfoSession(dayKey) {
+export async function startRenfoSession(dayKey) {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
   const session = renfoProgram.week_schedule?.[dayKey];
@@ -1720,13 +1720,13 @@ async function startRenfoSession(dayKey) {
   window._renfoSessionDayKey = dayKey;
 }
 
-function toggleExoDetail(exerciseId) {
+export function toggleExoDetail(exerciseId) {
   const d = document.getElementById('exo-detail-' + exerciseId);
   if (!d) return;
   d.style.display = d.style.display === 'none' ? 'block' : 'none';
 }
 
-function toggleExoCheck(exerciseId, variantId, loadType) {
+export function toggleExoCheck(exerciseId, variantId, loadType) {
   const btn = document.getElementById('chk-' + exerciseId);
   if (!btn) return;
   const isChecked = btn.dataset.checked === '1';
@@ -1745,7 +1745,7 @@ function toggleExoCheck(exerciseId, variantId, loadType) {
   }
 }
 
-function validateExoWithLoad(exerciseId, variantId, loadType) {
+export function validateExoWithLoad(exerciseId, variantId, loadType) {
   const inputEl = document.getElementById('load-' + exerciseId);
   const prefillLoad = inputEl ? (parseFloat(inputEl.value) || null) : null;
   showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad);
@@ -1817,7 +1817,7 @@ function showRenfoLogPopup(exerciseId, variantId, loadType, prefillLoad = null) 
   document.body.appendChild(overlay);
 }
 
-function submitRenfoLog(exerciseId, variantId, loadType) {
+export function submitRenfoLog(exerciseId, variantId, loadType) {
   const loadKg = parseFloat(document.getElementById('rlLoad')?.value) || null;
   const reps = parseInt(document.getElementById('rlReps')?.value) || null;
   const rpe = parseInt(document.getElementById('rlRpe')?.value) || 8;
@@ -1857,7 +1857,7 @@ function submitRenfoLog(exerciseId, variantId, loadType) {
   }
 }
 
-async function completeRenfoSession(dayKey) {
+export async function completeRenfoSession(dayKey) {
   const completed = window._renfoSessionCompleted || {};
   const n = Object.keys(completed).length;
   if (n === 0) { showToast('Coche au moins un exercice', 'info'); return; }
@@ -1950,11 +1950,11 @@ function showRenfoProgramView() {
   </div>`;
 }
 
-function showRenfoHistoryView() {
+export function showRenfoHistoryView() {
   showToast('Historique — disponible dans la prochaine version', 'info');
 }
 
-async function showRenfoSettings() {
+export async function showRenfoSettings() {
   if (!renfoProfile) return;
   const el = document.getElementById('renfoApp');
 
@@ -1987,7 +1987,7 @@ async function showRenfoSettings() {
   _renfoOnboarding = { ...renfoProfile };
 }
 
-async function saveRenfoSettings() {
+export async function saveRenfoSettings() {
   const updated = {
     ...renfoProfile,
     objective_weight: _renfoOnboarding.objective_weight ?? renfoProfile.objective_weight,
@@ -2010,7 +2010,7 @@ async function saveRenfoSettings() {
   renderRenfoHome();
 }
 
-async function resetRenfoOnboarding() {
+export async function resetRenfoOnboarding() {
   await sb.from('renfo_profile').upsert({ user_id: VLState.currentUser.id, onboarding_completed: false });
   renfoProfile = null;
   _renfoOnboarding = {};
