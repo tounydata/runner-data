@@ -1792,128 +1792,134 @@ export function renderRenfoHome() {
   if (!el || !renfoProgram) return;
 
   const today = new Date();
-  const todayStr = today.toISOString().slice(0,10);
-  const todayLog = renfoSessionLogs.find(l => l.session_date === todayStr);
+  const todayMs = today.getTime();
 
-  // Find next unfinished session this week (flexible — not day-bound)
+  // Weekly done count
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   weekStart.setHours(0, 0, 0, 0);
   const thisWeekLogs = renfoSessionLogs.filter(l => new Date(l.session_date) >= weekStart);
-  const doneFocuses = new Set(thisWeekLogs.map(l => renfoProgram.week_schedule?.[l.day_key]?.focus).filter(Boolean));
-  const sessionDays = DAYS.filter(d => { const s = renfoProgram.week_schedule?.[d]; return s && !s.rest; });
-  const nextDayKey = sessionDays.find(d => !doneFocuses.has(renfoProgram.week_schedule[d]?.focus));
-  const suggestedSession = nextDayKey ? renfoProgram.week_schedule[nextDayKey] : null;
 
-  // Load gauge
-  const last7 = renfoSessionLogs.filter(l => (today - new Date(l.session_date)) / 86400000 <= 7);
-  const last7WithFocus = last7.map(l => {
-    const s = renfoProgram.week_schedule?.[l.day_key];
-    return { focus: s?.focus || 'tronc', duration_min: s?.duration_min || 30 };
-  });
+  // Load 7j
+  const last7 = renfoSessionLogs.filter(l => (todayMs - new Date(l.session_date).getTime()) / 86400000 <= 7);
+  const last7WithFocus = last7.map(l => ({
+    focus: renfoProgram.week_schedule?.[l.day_key]?.focus || l.day_key || 'tronc',
+    duration_min: renfoProgram.week_schedule?.[l.day_key]?.duration_min || FOCUS_META[l.day_key]?.duration_min || 30,
+  }));
   const loadScore = weeklyImpactScore(last7WithFocus);
+  const loadMax = 240;
+  const loadPct = Math.min(100, loadScore / loadMax * 100).toFixed(1);
   const loadZone = weeklyImpactZone(loadScore, renfoProfile?.objective_weight || 50);
 
-  // Streak (consecutive days with a session log)
-  let streak = 0;
-  const sortedLogs = [...renfoSessionLogs].sort((a,b) => new Date(b.session_date) - new Date(a.session_date));
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(today); d.setDate(d.getDate() - i);
-    const dStr = d.toISOString().slice(0,10);
-    if (sortedLogs.find(l => l.session_date === dStr)) streak++;
-    else break;
+  // Focus → dayKey mapping from program
+  const focusToDayKey = {};
+  for (const [dk, s] of Object.entries(renfoProgram.week_schedule || {})) {
+    if (!s.rest) focusToDayKey[s.focus] = dk;
   }
 
-  // 7-day calendar (last 6 days + today)
-  const calDays = Array.from({length:7}, (_,i) => {
-    const d = new Date(today); d.setDate(d.getDate() - (6-i));
-    const dKey = RENFO_DAY_NAMES[d.getDay()];
-    const dStr = d.toISOString().slice(0,10);
-    const logged = renfoSessionLogs.find(l => l.session_date === dStr);
-    const ses = logged ? renfoProgram.week_schedule?.[logged.day_key] : null;
-    return { d, dKey, dStr, ses, logged, isToday: i===6 };
-  });
+  // Per-focus: dernière fois + charge 30j
+  const focusLastDate = {};
+  const focusCount30 = {};
+  for (const log of renfoSessionLogs) {
+    const focus = renfoProgram.week_schedule?.[log.day_key]?.focus || log.day_key;
+    if (!focus) continue;
+    const ageDays = (todayMs - new Date(log.session_date).getTime()) / 86400000;
+    if (!focusLastDate[focus] || log.session_date > focusLastDate[focus]) focusLastDate[focus] = log.session_date;
+    if (ageDays <= 30) focusCount30[focus] = (focusCount30[focus] || 0) + 1;
+  }
 
-  // Session list for home
-  const todayBanner = todayLog
-    ? (() => {
-        const n = Object.keys(todayLog.completed_exercises||{}).length;
-        const doneLabel = renfoProgram.week_schedule?.[todayLog.day_key]?.label || '';
-        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(34,197,94,.1);border-radius:8px;margin-bottom:10px">
-          <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
-          <div style="font-size:.8rem"><strong>Séance du jour faite</strong> · ${n} exercices · ${doneLabel}</div>
-        </div>`;
-      })()
-    : '';
+  const lastFmt = focus => {
+    const d = focusLastDate[focus];
+    if (!d) return 'jamais';
+    const days = Math.round((todayMs - new Date(d).getTime()) / 86400000);
+    if (days === 0) return "aujourd'hui";
+    if (days === 1) return 'hier';
+    return `il y a ${days}j`;
+  };
 
-  const allSessionDays = DAYS.filter(d => { const s = renfoProgram.week_schedule?.[d]; return s && !s.rest; });
-  const sessionListHTML = allSessionDays.map(dayKey => {
-    const session = renfoProgram.week_schedule[dayKey];
-    const done = doneFocuses.has(session.focus);
-    const col = RENFO_FOCUS_COLORS[session.focus] || 'var(--vl-ember)';
-    const action = done ? `openRenfoSessionActions('${dayKey}')` : `startRenfoSession('${dayKey}')`;
-    const border = done ? 'var(--vl-border)' : col;
-    const badge = done
-      ? `<div style="display:flex;align-items:center;gap:5px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);flex-shrink:0">${_ICON_CHECK} fait</div>`
-      : `<div style="display:flex;align-items:center;gap:6px;font-family:var(--vl-display);font-size:.75rem;font-weight:700;color:${col};flex-shrink:0">${_ICON_PLAY} LANCER</div>`;
-    return `<div onclick="${action}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--vl-bg2);border:1.5px solid ${border};border-radius:10px;margin-bottom:8px;${done?'opacity:.6;':''}cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
-      <div style="flex:1;min-width:0">
-        <div style="font-family:var(--vl-display);font-size:.95rem;font-weight:700">${session.label}</div>
-        <div style="font-family:var(--vl-mono);font-size:.58rem;color:var(--vl-text-2)">~${session.duration_min} min · ${session.exercises.length} exercices</div>
-      </div>
-      ${badge}
-    </div>`;
+  const FOCUS_CARDS = [
+    { key: 'force_lourde', sub: 'squat, soulevé, presse' },
+    { key: 'pliometrie',   sub: 'bondissements, sauts' },
+    { key: 'excentrique',  sub: 'descentes, freinages' },
+    { key: 'tronc',        sub: 'gainage, anti-rotation' },
+    { key: 'haut_corps',   sub: 'tractions, pompes' },
+    { key: 'mobilite',     sub: 'hanches, chevilles' },
+  ];
+
+  const cards = FOCUS_CARDS.map(f => {
+    const meta = FOCUS_META[f.key];
+    const exoCount = SESSION_EXERCISES[f.key]?.length || 4;
+    const maxExos = (f.key === 'tronc' || f.key === 'mobilite') ? 5 : 4;
+    const dayKey = focusToDayKey[f.key] || f.key;
+    const dur = renfoProfile?.sessions_per_week >= 5 ? meta.duration_short : meta.duration_min;
+    const count30 = focusCount30[f.key] || 0;
+    const chargePct = Math.min(100, count30 / 4 * 100);
+    const col = VLState.RENFO_FOCUS_COLORS[f.key] || 'var(--vl-ember)';
+    return `
+      <div onclick="startRenfoSession('${dayKey}')" style="display:flex;flex-direction:column;gap:8px;padding:13px;background:var(--vl-bg2);border:1.5px solid ${col}40;border-radius:12px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:border-color .15s" onmouseover="this.style.borderColor='${col}'" onmouseout="this.style.borderColor='${col}40'">
+        <div>
+          <div style="font-family:var(--vl-display);font-size:1rem;font-weight:700;line-height:1.1">${meta.label}</div>
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:3px">${f.sub}</div>
+        </div>
+        <div style="display:flex;gap:10px;font-size:.75rem">
+          <div><div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);letter-spacing:.05em">DURÉE</div><div style="font-weight:600">${dur} min</div></div>
+          <div><div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);letter-spacing:.05em">EXOS</div><div style="font-weight:600">${Math.min(exoCount, maxExos)}</div></div>
+          <div><div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);letter-spacing:.05em">DERNIÈRE</div><div style="font-weight:600">${lastFmt(f.key)}</div></div>
+        </div>
+        <div>
+          <div style="height:4px;background:var(--vl-bg);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${chargePct}%;background:${col};border-radius:2px;transition:width .4s"></div>
+          </div>
+          <div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);margin-top:3px">CHARGE 30J · ${count30}/4</div>
+        </div>
+        <div style="padding:8px 0;text-align:center;border:1.5px solid ${col};border-radius:8px;font-family:var(--vl-display);font-size:.82rem;font-weight:700;color:${col};margin-top:2px">▶ LANCER</div>
+      </div>`;
   }).join('');
-  const sessionsCardHTML = `${todayBanner}${sessionListHTML || '<div style="font-size:.8rem;color:var(--vl-text-2)">Aucune séance dans ton programme.</div>'}`;
 
   el.innerHTML = `<div style="padding-bottom:8px">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.25rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
       <div>
-        <div style="font-family:var(--vl-display);font-size:2rem;font-weight:700;letter-spacing:0.01em;line-height:1">RENFO MUSCULAIRE</div>
+        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);letter-spacing:.1em">SEM. · ${thisWeekLogs.length} SÉANCE${thisWeekLogs.length!==1?'S':''} FAITE${thisWeekLogs.length!==1?'S':''}</div>
+        <div style="font-family:var(--vl-display);font-size:1.8rem;font-weight:800;line-height:1;margin-top:2px">QU'EST-CE QU'ON FAIT ?</div>
+        <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);font-style:italic;margin-top:3px">libre · choisis selon tes envies du jour</div>
       </div>
-      <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;display:flex;align-items:center">${_ICON_GEAR}</button>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;padding:16px">
-      <div class="clabel" style="margin-bottom:10px">SÉANCES</div>
-      ${sessionsCardHTML}
-    </div>
-
-    <div class="card" style="margin-bottom:12px;padding:14px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-        <div class="clabel">CHARGE HEBDO</div>
-        <div style="font-size:.72rem;color:${loadZone.color};font-family:var(--vl-mono)">${loadZone.label}</div>
-      </div>
-      <div style="height:8px;background:var(--vl-bg2);border-radius:4px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100,loadScore/240*100).toFixed(1)}%;background:${loadZone.color};border-radius:4px"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);margin-top:4px">
-        <span>0</span><span>60</span><span>120</span><span>180</span><span>240+</span>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);letter-spacing:.05em">CHARGE 7J</div>
+        <div style="margin-top:4px;width:120px;height:5px;background:var(--vl-bg);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${loadPct}%;background:${loadZone.color};border-radius:3px"></div>
+        </div>
+        <div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);margin-top:3px">${loadScore} unités · <span style="color:${loadZone.color}">${loadZone.label}</span></div>
       </div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-bottom:12px">
-      <div class="card" style="flex:1;padding:14px;text-align:center">
-        <div style="font-family:var(--vl-display);font-size:2.2rem;font-weight:800;color:var(--vl-ember);line-height:1">${streak}</div>
-        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:4px">JOURS STREAK</div>
-      </div>
-      <div class="card" style="flex:1;padding:14px;text-align:center">
-        <div style="font-family:var(--vl-display);font-size:2.2rem;font-weight:800;line-height:1">${last7.length}</div>
-        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:4px">SÉANCES / 7J</div>
-      </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:14px">
+      ${cards}
     </div>
 
-    <button onclick="showRenfoHistoryView()" style="width:100%;text-align:left;padding:14px 16px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text);display:flex;justify-content:space-between;align-items:center;touch-action:manipulation">
-      <span style="font-size:.85rem">Charges &amp; historique</span><span style="color:var(--vl-ember);font-size:.9rem">→</span>
-    </button>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--vl-bg2);border:1px solid var(--vl-border);border-radius:10px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:var(--vl-text);font-size:.8rem;font-weight:600;padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">📚 Bibliothèque d'exos →</button>
+        <button onclick="showRenfoHistoryView()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-size:.8rem;padding:0;touch-action:manipulation">Charges &amp; historique →</button>
+        <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-size:.8rem;padding:0;touch-action:manipulation">Réglages →</button>
+      </div>
+      <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);text-align:right">FICHES TECHNIQUES · DÉMOS · TON HISTORIQUE SUR CHAQUE EXO</div>
+    </div>
   </div>`;
 }
 
 export async function startRenfoSession(dayKey) {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
-  const session = renfoProgram.week_schedule?.[dayKey];
-  if (!session || session.rest) return;
+  let session = renfoProgram.week_schedule?.[dayKey];
+  // Fallback: dayKey is a focus key (e.g. 'force_lourde') — build session on the fly
+  if (!session || session.rest) {
+    if (FOCUS_META[dayKey]) {
+      session = buildSession(dayKey, renfoProfile || {});
+      if (!session) return;
+    } else {
+      return;
+    }
+  }
 
   const completedExos = {};
 
@@ -2039,43 +2045,99 @@ function fmtCountdown(s) {
 }
 
 
-export function startRestTimer(secs) {
+export function startRestTimer(secs, type = 'set', nextLabel = null) {
   clearInterval(window._renfoRestTimer);
-  const existing = document.getElementById('renfoRestBar');
+  const existing = document.getElementById('renfoRestOverlay');
   if (existing) existing.remove();
 
-  const bar = document.createElement('div');
-  bar.id = 'renfoRestBar';
-  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9000;background:var(--vl-bg2);border-top:2px solid var(--vl-ember);padding:14px 20px;padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))';
-  bar.innerHTML = `
-    <div style="display:flex;align-items:center;gap:16px">
-      <div id="renfoRestCountdown" style="font-family:var(--vl-display);font-size:2.8rem;font-weight:800;color:var(--vl-ember);line-height:1;min-width:90px;flex-shrink:0">${fmtCountdown(secs)}</div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);letter-spacing:.1em">REPOS</div>
-        <div style="height:8px;background:var(--vl-bg);border-radius:4px;overflow:hidden">
-          <div id="renfoRestProgress" style="height:100%;width:100%;background:var(--vl-ember);border-radius:4px;transition:width .9s linear"></div>
-        </div>
-      </div>
-      <button id="renfoRestSkip" style="padding:10px 16px;background:transparent;border:1.5px solid var(--vl-border);border-radius:8px;cursor:pointer;font-family:var(--vl-mono);font-size:.7rem;color:var(--vl-text-2);touch-action:manipulation;flex-shrink:0">Passer</button>
-    </div>`;
-  document.body.appendChild(bar);
+  // WebAudio bip
+  function playBip(freq = 880, dur = 0.08) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.start(); osc.stop(ctx.currentTime + dur);
+    } catch(e) {}
+  }
 
-  bar.querySelector('#renfoRestSkip').addEventListener('click', () => {
+  const typeLabel = type === 'exo' ? 'REPOS ENTRE EXERCICES' : 'REPOS ENTRE SÉRIES';
+  const overlay = document.createElement('div');
+  overlay.id = 'renfoRestOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#0E0D0A;z-index:9500;display:flex;flex-direction:column;touch-action:none';
+
+  const fmtTimer = s => { const m = Math.floor(s/60), r = s%60; return m > 0 ? `${m}:${r.toString().padStart(2,'0')}` : `0:${s.toString().padStart(2,'0')}`; };
+
+  overlay.innerHTML = `
+    <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-family:var(--vl-mono);font-size:.6rem;color:#666;letter-spacing:.1em">${typeLabel}</div>
+      <button id="renfoRestClose" style="background:none;border:none;cursor:pointer;color:#666;font-family:var(--vl-mono);font-size:.7rem;padding:4px 8px;touch-action:manipulation">×</button>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px">
+      <div id="renfoRestTimer" style="font-family:'Oswald',var(--vl-display),sans-serif;font-size:clamp(100px,28vw,160px);font-weight:600;color:#F3EFE4;line-height:0.9;letter-spacing:-4px">${fmtTimer(secs)}</div>
+      <div style="font-family:var(--vl-mono);font-size:.6rem;color:#666">SUR ${fmtTimer(secs)}</div>
+      <div style="width:min(280px,70vw);height:4px;background:#1a1a1a;border-radius:2px;overflow:hidden;margin-top:4px">
+        <div id="renfoRestBar2" style="height:100%;width:100%;background:#7c3aed;border-radius:2px;transition:width .9s linear"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+        <span id="renfoRestBipBadge" style="display:none;align-items:center;gap:4px;padding:4px 8px;border:1px solid #7c3aed;border-radius:3px">
+          <span style="width:6px;height:6px;background:#7c3aed;border-radius:50%;display:inline-block"></span>
+          <span style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed">BIP ×3 SUR LES 3 DERNIÈRES SEC.</span>
+        </span>
+        <span style="padding:4px 8px;background:#7c3aed;border-radius:3px;font-family:var(--vl-mono);font-size:.55rem;color:#fff">⏱ AUTO →</span>
+      </div>
+      ${nextLabel ? `<div style="margin-top:8px;text-align:center"><div style="font-family:var(--vl-mono);font-size:.55rem;color:#666">${type==='exo'?'EXERCICE SUIVANT':'SÉRIE SUIVANTE'}</div><div style="font-family:var(--vl-display);font-size:1rem;font-weight:700;color:#F3EFE4;margin-top:4px">${nextLabel}</div></div>` : ''}
+    </div>
+    <div style="padding:16px 20px 32px;display:flex;gap:10px">
+      <button id="renfoRestPlus30" style="flex:1;padding:14px;border:1.5px solid #333;border-radius:10px;background:transparent;cursor:pointer;font-family:var(--vl-mono);font-size:.8rem;color:#999;touch-action:manipulation">+30s</button>
+      <button id="renfoRestSkip" style="flex:2;padding:14px;border:1.5px solid #7c3aed;border-radius:10px;background:transparent;cursor:pointer;font-family:var(--vl-display);font-size:.9rem;font-weight:700;color:#7c3aed;touch-action:manipulation">PASSER MAINTENANT →</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  const timerEl = overlay.querySelector('#renfoRestTimer');
+  const barEl = overlay.querySelector('#renfoRestBar2');
+  const bipBadge = overlay.querySelector('#renfoRestBipBadge');
+  const totalSecs = secs;
+  let remaining = secs;
+  let bipped = false;
+
+  const dismiss = () => {
     clearInterval(window._renfoRestTimer);
-    bar.remove();
+    overlay.remove();
+  };
+
+  overlay.querySelector('#renfoRestClose').addEventListener('click', dismiss);
+  overlay.querySelector('#renfoRestSkip').addEventListener('click', dismiss);
+  overlay.querySelector('#renfoRestPlus30').addEventListener('click', () => {
+    remaining += 30;
+    timerEl.textContent = fmtTimer(remaining);
   });
 
-  let remaining = secs;
+  // Defer first bar update
+  requestAnimationFrame(() => {
+    barEl.style.transition = 'none';
+    barEl.style.width = '100%';
+    requestAnimationFrame(() => { barEl.style.transition = 'width .9s linear'; });
+  });
+
   window._renfoRestTimer = setInterval(() => {
     remaining--;
-    const countdown = bar.querySelector('#renfoRestCountdown');
-    const progress = bar.querySelector('#renfoRestProgress');
-    if (countdown) countdown.textContent = fmtCountdown(remaining);
-    if (progress) progress.style.width = Math.max(0, (remaining / secs * 100)).toFixed(1) + '%';
+    if (timerEl) timerEl.textContent = fmtTimer(remaining);
+    if (barEl) barEl.style.width = Math.max(0, remaining / totalSecs * 100).toFixed(1) + '%';
+
+    // BIP in last 3 seconds
+    if (remaining <= 3 && remaining > 0) {
+      if (bipBadge) bipBadge.style.display = 'flex';
+      playBip(remaining === 1 ? 1200 : 880);
+    }
+
     if (remaining <= 0) {
-      clearInterval(window._renfoRestTimer);
-      bar.remove();
-      navigator.vibrate?.([100, 50, 100]);
+      dismiss();
+      navigator.vibrate?.([100, 50, 100, 50, 200]);
     }
   }, 1000);
 }
@@ -2421,6 +2483,119 @@ function showRenfoProgramView() {
 
 export function showRenfoHistoryView() {
   showToast('Historique — disponible dans la prochaine version', 'info');
+}
+
+export function showRenfoLibraryIndex() {
+  const el = document.getElementById('renfoApp');
+  if (!el) return;
+
+  const groups = [
+    { key: 'pliometrie',  label: 'Pliométrie',       col: VLState.RENFO_FOCUS_COLORS.pliometrie },
+    { key: 'force_lourde', label: 'Force lourde',     col: VLState.RENFO_FOCUS_COLORS.force_lourde },
+    { key: 'excentrique', label: 'Excentrique',        col: VLState.RENFO_FOCUS_COLORS.excentrique },
+    { key: 'tronc',       label: 'Tronc & stabilité', col: VLState.RENFO_FOCUS_COLORS.tronc },
+    { key: 'haut_corps',  label: 'Haut du corps',     col: VLState.RENFO_FOCUS_COLORS.haut_corps },
+    { key: 'mobilite',    label: 'Mobilité',           col: VLState.RENFO_FOCUS_COLORS.mobilite },
+  ];
+
+  const groupCards = groups.map(g => {
+    const exoIds = SESSION_EXERCISES[g.key] || [];
+    const rows = exoIds.map(id => {
+      const def = RENFO_EXERCISES[id];
+      if (!def) return '';
+      return `<div onclick="showRenfoLibraryExo('${id}')" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--vl-border);cursor:pointer;touch-action:manipulation" onmouseover="this.style.color='var(--vl-ember)'" onmouseout="this.style.color=''">
+        <span style="font-size:.8rem">${def.name_fr}</span>
+        <span style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">${exoIds.indexOf(id)+1}/${exoIds.length}</span>
+      </div>`;
+    }).join('');
+    return `<div style="padding:14px;background:var(--vl-bg2);border:1.5px solid ${g.col}30;border-radius:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <div style="font-family:var(--vl-display);font-size:1rem;font-weight:700;color:${g.col}">${g.label}</div>
+        <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2)">${exoIds.length} EXOS</div>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div style="padding-bottom:8px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
+      <button onclick="renderRenfoHome()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;font-size:1.2rem">←</button>
+      <div>
+        <div style="font-family:var(--vl-display);font-size:1.6rem;font-weight:800;line-height:1">BIBLIOTHÈQUE D'EXERCICES</div>
+        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);font-style:italic;margin-top:2px">fiches techniques · ton historique sur chaque exo</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+      ${groupCards}
+    </div>
+  </div>`;
+}
+
+export function showRenfoLibraryExo(exoId) {
+  const el = document.getElementById('renfoApp');
+  const def = RENFO_EXERCISES[exoId];
+  if (!el || !def) return;
+
+  const muscleRows = (def.primary_muscles || []).map((m, i) => {
+    const pct = Math.max(30, 95 - i * 15);
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:100px;font-size:.75rem;color:var(--vl-text-2)">${m}</div>
+      <div style="flex:1;height:5px;background:var(--vl-bg);border-radius:2px">
+        <div style="height:100%;width:${pct}%;background:var(--vl-ember);border-radius:2px"></div>
+      </div>
+      <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);width:30px;text-align:right">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  const variantRows = (def.variants || []).map(v =>
+    `<div style="padding:5px 0;border-bottom:1px dashed var(--vl-border);font-size:.78rem;color:var(--vl-text-2)">· ${v.name}</div>`
+  ).join('');
+
+  el.innerHTML = `<div style="padding-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem">
+      <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;font-size:1.2rem">←</button>
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">BIBLIOTHÈQUE / ${(def.category||'').replace(/_/g,' ').toUpperCase()}</div>
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <div style="font-family:var(--vl-display);font-size:2rem;font-weight:800;line-height:1;text-transform:uppercase">${def.name_fr}</div>
+      ${def.name_tech ? `<div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);font-style:italic;margin-top:4px">${def.name_tech}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+        ${(def.primary_muscles||[]).map(m=>`<span style="font-family:var(--vl-mono);font-size:.5rem;padding:3px 8px;border:1px solid var(--vl-border);border-radius:3px;color:var(--vl-text-2)">${m}</span>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="padding:12px">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:8px;letter-spacing:.1em">EXÉCUTION</div>
+          <div style="font-size:.8rem;color:var(--vl-text-2);line-height:1.6">${def.movement || '—'}</div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:6px;letter-spacing:.1em">POSITION</div>
+          <div style="font-size:.78rem;color:var(--vl-text-2);line-height:1.5">${def.position || '—'}</div>
+        </div>
+        ${def.variants?.length > 1 ? `<div class="card" style="padding:12px">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:6px;letter-spacing:.1em">VARIANTES (${def.variants.length})</div>
+          ${variantRows}
+        </div>` : ''}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${muscleRows.length ? `<div class="card" style="padding:12px">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:10px;letter-spacing:.1em">MUSCLES ACTIVÉS</div>
+          <div style="display:flex;flex-direction:column;gap:6px">${muscleRows}</div>
+        </div>` : ''}
+        ${def.common_errors ? `<div class="card" style="padding:12px">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-ember);margin-bottom:6px;letter-spacing:.1em">ERREURS FRÉQUENTES</div>
+          <div style="font-size:.78rem;color:var(--vl-text-2);line-height:1.5">${def.common_errors}</div>
+        </div>` : ''}
+        <div class="card" style="padding:10px;text-align:center">
+          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);font-style:italic">ⓘ fiche consultable · pour lancer cet exo, démarre une séance qui le contient</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 export async function showRenfoSettings() {
