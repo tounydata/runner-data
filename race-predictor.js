@@ -45,7 +45,14 @@ export function computeProgressionFactor(activities, fcMax, trailOnly = false) {
   const half   = Math.floor(sessions.length / 2);
   const early  = sessions.slice(0, half);
   const recent = sessions.slice(-half);
-  const avgE   = early.reduce((s, a) => s + a.average_speed, 0) / early.length;
-  const avgR   = recent.reduce((s, a) => s + a.average_speed, 0) / recent.length;
+  // Pondération par moving_time : une sortie de 2h Z3+ pèse 8× plus qu'une de 15min
+  const weightedAvg = (arr) => {
+    const totalTime = arr.reduce((s, a) => s + (a.moving_time || 0), 0);
+    return totalTime > 0
+      ? arr.reduce((s, a) => s + a.average_speed * (a.moving_time || 0), 0) / totalTime
+      : 0;
+  };
+  const avgE = weightedAvg(early);
+  const avgR = weightedAvg(recent);
   return avgE > 0 ? Math.min(1.10, Math.max(0.90, avgR / avgE)) : 1;
 }
