@@ -65,10 +65,10 @@ export function genNutrition(distM, estTimeS){
     standard:   { short: 40, long: 60 },   // coureur régulier
     trained:    { short: 50, long: 70 },   // habitué aux courses longues
     gut_trained:{ short: 60, long: 80 },   // entraînement digestif confirmé
-    elite:      { short: 70, long: 90 },   // uniquement si testé à l'entraînement
+    elite:      { short: 70, long: 90 },   // à n'activer que si testé à l'entraînement
   };
   const carbsPro = CARBS_PROFILES[nutritionLevel] || CARBS_PROFILES.standard;
-  // Limite caféine indicative : 3mg/kg (prudent — littérature : 3-6mg/kg performance)
+  // Limite caféine indicative : 3mg/kg (prudent, littérature : 3-6mg/kg performance)
   const bodyWeight = VLState.userProfile?.body_weight || VLState.userProfile?.weight || 70;
   const caffeineMaxMg = Math.round(bodyWeight * 3);
 
