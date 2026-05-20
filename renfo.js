@@ -1851,19 +1851,17 @@ export function renderRenfoHome() {
     const session = renfoProgram.week_schedule[dayKey];
     const done = doneFocuses.has(session.focus);
     const col = RENFO_FOCUS_COLORS[session.focus] || 'var(--vl-ember)';
-    if (done) return `<div onclick="openRenfoSessionActions('${dayKey}')" style="display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--vl-bg2);border:1.5px solid var(--vl-border);border-radius:10px;margin-bottom:8px;opacity:.6;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
+    const action = done ? `openRenfoSessionActions('${dayKey}')` : `startRenfoSession('${dayKey}')`;
+    const border = done ? 'var(--vl-border)' : col;
+    const badge = done
+      ? `<div style="display:flex;align-items:center;gap:5px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);flex-shrink:0">${_ICON_CHECK} fait</div>`
+      : `<div style="display:flex;align-items:center;gap:6px;font-family:var(--vl-display);font-size:.75rem;font-weight:700;color:${col};flex-shrink:0">${_ICON_PLAY} LANCER</div>`;
+    return `<div onclick="${action}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--vl-bg2);border:1.5px solid ${border};border-radius:10px;margin-bottom:8px;${done?'opacity:.6;':''}cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
       <div style="flex:1;min-width:0">
         <div style="font-family:var(--vl-display);font-size:.95rem;font-weight:700">${session.label}</div>
         <div style="font-family:var(--vl-mono);font-size:.58rem;color:var(--vl-text-2)">~${session.duration_min} min · ${session.exercises.length} exercices</div>
       </div>
-      <div style="display:flex;align-items:center;gap:5px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);flex-shrink:0">${_ICON_CHECK} fait</div>
-    </div>`;
-    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--vl-bg2);border:1.5px solid ${col};border-radius:10px;margin-bottom:8px">
-      <div style="flex:1;min-width:0">
-        <div style="font-family:var(--vl-display);font-size:.95rem;font-weight:700">${session.label}</div>
-        <div style="font-family:var(--vl-mono);font-size:.58rem;color:var(--vl-text-2)">~${session.duration_min} min · ${session.exercises.length} exercices</div>
-      </div>
-      <button onclick="startRenfoSession('${dayKey}')" style="display:flex;align-items:center;gap:7px;padding:9px 14px;background:${col};border:none;border-radius:8px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:.75rem;font-weight:700;touch-action:manipulation;flex-shrink:0;-webkit-tap-highlight-color:transparent">${_ICON_PLAY} LANCER</button>
+      ${badge}
     </div>`;
   }).join('');
   const sessionsCardHTML = `${todayBanner}${sessionListHTML || '<div style="font-size:.8rem;color:var(--vl-text-2)">Aucune séance dans ton programme.</div>'}`;
