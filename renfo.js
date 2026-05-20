@@ -1801,6 +1801,17 @@ export async function cancelRenfoSession(dayKey) {
   renderRenfoHome();
 }
 
+function _renfoTabBar(active) {
+  const tabs = [
+    { id: 'programme',   label: 'Programme',   fn: 'renderRenfoHome()' },
+    { id: 'bibliotheque', label: 'Bibliothèque', fn: 'showRenfoLibraryIndex()' },
+    { id: 'reglages',    label: 'Réglages',     fn: 'showRenfoSettings()' },
+  ];
+  return `<div style="display:flex;border-bottom:2px solid var(--vl-border);margin-bottom:16px">${
+    tabs.map(t => `<button onclick="${t.fn}" style="background:none;border:none;border-bottom:3px solid ${active===t.id?'var(--vl-ember)':'transparent'};margin-bottom:-2px;color:${active===t.id?'var(--vl-ember)':'var(--vl-text-3)'};font-family:var(--vl-mono);font-size:12px;font-weight:600;letter-spacing:.06em;padding:10px 16px;cursor:pointer;text-transform:uppercase;transition:color .15s,border-color .15s;touch-action:manipulation">${t.label}</button>`).join('')
+  }</div>`;
+}
+
 export function renderRenfoHome() {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
@@ -1890,6 +1901,7 @@ export function renderRenfoHome() {
   }).join('');
 
   el.innerHTML = `<div style="padding-bottom:8px">
+    ${_renfoTabBar('programme')}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
       <div>
         <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);letter-spacing:.1em">SEM. · ${thisWeekLogs.length} SÉANCE${thisWeekLogs.length!==1?'S':''} FAITE${thisWeekLogs.length!==1?'S':''}</div>
@@ -1909,13 +1921,6 @@ export function renderRenfoHome() {
       ${cards}
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--vl-bg2);border:1px solid #7c3aed30;border-radius:10px;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:#7c3aed;font-size:.8rem;font-weight:600;padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">BIBLIOTHÈQUE D'EXOS →</button>
-        <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-size:.8rem;padding:0;touch-action:manipulation">Réglages →</button>
-      </div>
-      <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);text-align:right">FICHES · CHARGES · HISTORIQUE PAR EXO</div>
-    </div>
   </div>`;
 }
 
@@ -2306,6 +2311,8 @@ window._serieComplete = _serieComplete;
 window._prevSessionUnit = _prevSessionUnit;
 window._nextSessionUnit = _nextSessionUnit;
 window._toggleSessDetail = _toggleSessDetail;
+window._chooseLocation = _chooseLocation;
+window._renderEquipmentPrep = _renderEquipmentPrep;
 
 export function toggleExoDetail(exerciseId) {
   const d = document.getElementById('exo-detail-' + exerciseId);
@@ -2800,9 +2807,9 @@ async function fetchWgerImage(wgerId) {
   if (!window._wgerImageCache) window._wgerImageCache = {};
   if (window._wgerImageCache[wgerId] !== undefined) return window._wgerImageCache[wgerId];
   try {
-    const res = await fetch(`https://wger.de/api/v2/exerciseimage/?format=json&exercise_base=${wgerId}&is_main=true`);
+    const res = await fetch(`https://wger.de/api/v2/exerciseinfo/${wgerId}/?format=json`);
     const data = await res.json();
-    const img = data.results?.[0];
+    const img = (data.images || []).find(i => i.is_main) || data.images?.[0];
     const url = img ? 'https://wger.de' + img.image : null;
     window._wgerImageCache[wgerId] = url;
     return url;
@@ -2934,13 +2941,7 @@ export function showRenfoLibraryIndex() {
   }).join('');
 
   el.innerHTML = `<div style="padding-bottom:8px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
-      <button onclick="renderRenfoHome()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;font-size:1.2rem">←</button>
-      <div>
-        <div style="font-family:var(--vl-display);font-size:1.6rem;font-weight:800;line-height:1">BIBLIOTHÈQUE D'EXERCICES</div>
-        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);font-style:italic;margin-top:2px">fiches · charges · historique par exo</div>
-      </div>
-    </div>
+    ${_renfoTabBar('bibliotheque')}
     ${_chargeSection}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
       ${groupCards}
@@ -3056,10 +3057,7 @@ export async function showRenfoSettings() {
   const el = document.getElementById('renfoApp');
 
   el.innerHTML = `<div style="padding-bottom:8px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
-      <button onclick="renderRenfoHome()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;display:flex;align-items:center">${_ICON_ARROW_LEFT}</button>
-      <div style="font-family:var(--vl-display);font-size:1.5rem;font-weight:800">Réglages Renfo</div>
-    </div>
+    ${_renfoTabBar('reglages')}
     <div class="card" style="padding:16px;margin-bottom:12px">
       <div class="clabel" style="margin-bottom:12px">OBJECTIF</div>
       ${[
