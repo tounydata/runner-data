@@ -1309,6 +1309,20 @@ const INTER_SET_REST = {
   cossack_squat: 45,
 };
 
+const WGER_IDS = {
+  squat_lourd: 1801,
+  hip_thrust: 294,
+  lunge_marcheur: 1903,
+  nordic: 910,
+  reverse_nordic: 909,
+  dead_bug: 178,
+  core_rotation: 1193,
+  tractions_or_row: 1696,
+  pompes: 1964,
+  face_pull: 1732,
+  bird_dog: 1910,
+};
+
 const SESSION_EXERCISES = {
   force_lourde:           ['squat_lourd','rdl','bulgare','hip_thrust','lunge_marcheur'],
   pliometrie:             ['pogo_jumps','bondissements','drop_jumps','lateral_bound','box_jump'],
@@ -1871,7 +1885,7 @@ export function renderRenfoHome() {
           </div>
           <div style="font-family:var(--vl-mono);font-size:.48rem;color:var(--vl-text-2);margin-top:3px">CHARGE 30J · ${count30}/4</div>
         </div>
-        <div style="padding:8px 0;text-align:center;border:1.5px solid #7c3aed;border-radius:8px;font-family:var(--vl-display);font-size:.82rem;font-weight:700;color:#7c3aed;margin-top:2px">▶ LANCER</div>
+        <div style="padding:8px 0;text-align:center;border:1.5px solid #7c3aed;border-radius:8px;font-family:var(--vl-display);font-size:.82rem;font-weight:700;color:#7c3aed;margin-top:2px">LANCER</div>
       </div>`;
   }).join('');
 
@@ -1897,7 +1911,7 @@ export function renderRenfoHome() {
 
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--vl-bg2);border:1px solid #7c3aed30;border-radius:10px;flex-wrap:wrap;gap:8px">
       <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:#7c3aed;font-size:.8rem;font-weight:600;padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">📚 Bibliothèque d'exos →</button>
+        <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:#7c3aed;font-size:.8rem;font-weight:600;padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">BIBLIOTHÈQUE D'EXOS →</button>
         <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-size:.8rem;padding:0;touch-action:manipulation">Réglages →</button>
       </div>
       <div style="font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);text-align:right">FICHES · CHARGES · HISTORIQUE PAR EXO</div>
@@ -1937,12 +1951,31 @@ export async function startRenfoSession(dayKey) {
     completedExos: {},
     suggestions,
   };
+  // Prevent same focus twice in same calendar week (except mobilité)
+  if (session.focus !== 'mobilite') {
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    weekStart.setHours(0, 0, 0, 0);
+    const alreadyDone = renfoSessionLogs.some(l => {
+      const logFocus = renfoProgram?.week_schedule?.[l.day_key]?.focus || l.day_key;
+      return new Date(l.session_date) >= weekStart && logFocus === session.focus;
+    });
+    if (alreadyDone) {
+      showToast(`Séance ${session.label} déjà faite cette semaine — repose-toi.`, 'warning', 5000);
+      return;
+    }
+  }
+
   window._renfoSessionState = state;
   window._renfoSessionCompleted = state.completedExos;
   window._renfoSessionDayKey = dayKey;
 
-  // Show warmup screen before first exercise
-  _renderSessionWarmup();
+  // Mobilité : pas d'échauffement
+  if (session.focus === 'mobilite') {
+    _renderSessionExo();
+  } else {
+    _renderSessionWarmup();
+  }
 }
 
 function _renderSessionWarmup() {
@@ -1973,8 +2006,87 @@ function _renderSessionWarmup() {
       }).join('')}
     </div>
     <div style="flex:1;min-height:16px"></div>
+    <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:10px;letter-spacing:.05em;text-align:center">OÙ S'ENTRAÎNER ?</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="_chooseLocation('maison')" style="flex:1;padding:18px 10px;background:var(--vl-bg2);border:2px solid var(--vl-border);border-radius:14px;cursor:pointer;color:var(--vl-text);font-family:var(--vl-display);font-size:1rem;font-weight:800;touch-action:manipulation;text-align:center">
+        <div style="font-size:.55rem;font-family:var(--vl-mono);color:var(--vl-text-2);margin-bottom:4px;letter-spacing:.05em">DOMICILE</div>
+        MAISON
+      </button>
+      <button onclick="_chooseLocation('salle')" style="flex:1;padding:18px 10px;background:#7c3aed;border:2px solid #7c3aed;border-radius:14px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:1rem;font-weight:800;touch-action:manipulation;text-align:center">
+        <div style="font-size:.55rem;font-family:var(--vl-mono);color:rgba(255,255,255,.7);margin-bottom:4px;letter-spacing:.05em">AVEC ÉQUIPEMENT</div>
+        SALLE
+      </button>
+    </div>
+  </div>`;
+}
+
+const _EQUIP_LABELS = {
+  barbell: 'Barre + disques',
+  leg_press: 'Presse à cuisses',
+  bench: 'Banc de musculation',
+  pullup_bar: 'Barre de traction',
+  step: 'Step / marche (20-40cm)',
+  anchor_point: 'Point d\'ancrage élastique',
+  bands: 'Élastiques de résistance',
+  dumbbells: 'Haltères',
+  kettlebell: 'Kettlebell',
+};
+
+function _chooseLocation(loc) {
+  const state = window._renfoSessionState;
+  if (!state) return;
+  state.location = loc;
+  if (loc === 'maison') {
+    const homeProfile = { ...renfoProfile, has_gym_access: false };
+    const equipNeeded = new Set();
+    state.session.exercises = state.session.exercises.map(exo => {
+      const def = RENFO_EXERCISES[exo.exercise_id];
+      if (!def) return exo;
+      const homeVariant = getBestVariant(def, homeProfile);
+      const req = homeVariant.required_equipment || {};
+      const reqAny = homeVariant.required_equipment_any || [];
+      if (req.bands) equipNeeded.add('bands');
+      if (req.pullup_bar) equipNeeded.add('pullup_bar');
+      if (req.step) equipNeeded.add('step');
+      if (req.anchor_point) equipNeeded.add('anchor_point');
+      if (req.bench) equipNeeded.add('bench');
+      if (reqAny.length) {
+        const eq = renfoProfile?.equipment || {};
+        if (reqAny.some(r => r.dumbbells_max_kg && (eq.dumbbells_max_kg || 0) >= r.dumbbells_max_kg)) equipNeeded.add('dumbbells');
+        else if (reqAny.some(r => r.kettlebell_max_kg && (eq.kettlebell_max_kg || 0) >= r.kettlebell_max_kg)) equipNeeded.add('kettlebell');
+      }
+      return { ...exo, variant_id: homeVariant.id };
+    });
+    if (equipNeeded.size > 0) {
+      _renderEquipmentPrep([...equipNeeded]);
+    } else {
+      _renderSessionExo();
+    }
+  } else {
+    _renderSessionExo();
+  }
+}
+
+function _renderEquipmentPrep(equipList) {
+  const el = document.getElementById('renfoApp');
+  if (!el) return;
+  const state = window._renfoSessionState;
+  el.innerHTML = `<div style="display:flex;flex-direction:column;min-height:100%;padding-bottom:4px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+      <button onclick="_renderSessionWarmup()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:4px;touch-action:manipulation;font-size:1.1rem">←</button>
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed;letter-spacing:.1em">PRÉPARATION SÉANCE</div>
+    </div>
+    <div style="font-family:var(--vl-display);font-size:1.5rem;font-weight:800;margin-bottom:4px">Matériel à sortir</div>
+    <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:20px">Pour ta séance à la maison · ${state?.session?.label || ''}</div>
+    <div class="card" style="padding:14px;margin-bottom:16px">
+      ${equipList.map(e => `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vl-border)">
+        <div style="width:20px;height:20px;border:1.5px solid var(--vl-border);border-radius:4px;flex-shrink:0"></div>
+        <div style="font-size:.85rem">${_EQUIP_LABELS[e] || e}</div>
+      </div>`).join('')}
+    </div>
+    <div style="flex:1;min-height:16px"></div>
     <button onclick="_renderSessionExo()" style="width:100%;padding:18px;background:#7c3aed;border:none;border-radius:14px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:1.1rem;font-weight:800;letter-spacing:.04em;touch-action:manipulation">
-      C'EST PARTI →
+      C'EST PRÊT →
     </button>
   </div>`;
 }
@@ -2040,13 +2152,16 @@ function _renderSessionExo() {
       <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">${elapsedFmt}</div>
     </div>
 
-    <div style="margin-bottom:18px">
-      <div style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed;letter-spacing:.1em;margin-bottom:4px">EN COURS</div>
-      <div style="font-family:var(--vl-display);font-size:clamp(1.8rem,7vw,2.6rem);font-weight:800;line-height:1;text-transform:uppercase">${def.name_fr}</div>
-      ${def.primary_muscles?.length ? `<div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-top:6px">${def.primary_muscles.slice(0,3).join(' · ')}</div>` : ''}
-      ${def.variants.length > 1
-        ? `<button onclick="showVariantPicker('${exo.exercise_id}')" style="margin-top:6px;padding:3px 8px;background:transparent;border:1px solid var(--vl-border);border-radius:5px;cursor:pointer;font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);touch-action:manipulation">${variant.name}</button>`
-        : `<div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:4px">${variant.name}</div>`}
+    <div style="margin-bottom:18px;display:flex;align-items:flex-start;gap:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed;letter-spacing:.1em;margin-bottom:4px">EN COURS</div>
+        <div style="font-family:var(--vl-display);font-size:clamp(1.8rem,7vw,2.6rem);font-weight:800;line-height:1;text-transform:uppercase">${def.name_fr}</div>
+        ${def.primary_muscles?.length ? `<div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-top:6px">${def.primary_muscles.slice(0,3).join(' · ')}</div>` : ''}
+        ${def.variants.length > 1
+          ? `<button onclick="showVariantPicker('${exo.exercise_id}')" style="margin-top:6px;padding:3px 8px;background:transparent;border:1px solid var(--vl-border);border-radius:5px;cursor:pointer;font-family:var(--vl-mono);font-size:.5rem;color:var(--vl-text-2);touch-action:manipulation">${variant.name}</button>`
+          : `<div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-top:4px">${variant.name}</div>`}
+      </div>
+      ${WGER_IDS[exo.exercise_id] ? `<div id="sess-wger-img" style="width:66px;height:66px;border-radius:8px;background:var(--vl-bg2);border:1px solid var(--vl-border);flex-shrink:0;overflow:hidden"></div>` : ''}
     </div>
 
     <div style="display:flex;gap:24px;margin-bottom:18px">
@@ -2073,8 +2188,10 @@ function _renderSessionExo() {
 
     <button onclick="_toggleSessDetail()" style="margin-top:10px;background:none;border:none;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);padding:0;touch-action:manipulation;display:flex;align-items:center;gap:5px">${_ICON_CHEVRON} comment faire ?</button>
     <div id="sess-detail" style="display:none;margin-top:8px;padding:10px;background:var(--vl-bg2);border-radius:8px;border:1px solid var(--vl-border)">
-      <div style="font-size:.72rem;color:var(--vl-text-2);margin-bottom:4px"><strong style="color:var(--vl-text)">Position</strong><br>${def.position}</div>
-      <div style="font-size:.72rem;color:var(--vl-text-2);margin-bottom:4px"><strong style="color:var(--vl-text)">Mouvement</strong><br>${def.movement}</div>
+      <div style="font-size:.72rem;color:var(--vl-text-2);margin-bottom:6px"><strong style="color:var(--vl-text)">Position</strong><br>${def.position}</div>
+      <div style="margin-bottom:6px"><strong style="font-size:.72rem;color:var(--vl-text)">Mouvement</strong>
+        ${(def.movement||'').split(/\.\s+/).filter(Boolean).map((s,i)=>`<div style="display:flex;gap:6px;padding:2px 0"><div style="font-family:var(--vl-mono);font-size:.5rem;color:#7c3aed;min-width:14px;padding-top:3px">${i+1}.</div><div style="font-size:.7rem;color:var(--vl-text-2);line-height:1.4">${s.replace(/\.$/,'')}</div></div>`).join('')}
+      </div>
       ${def.common_errors ? `<div style="font-size:.72rem;color:#7c3aed"><strong>Erreurs fréquentes</strong><br>${def.common_errors}</div>` : ''}
       <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(def.youtube_search)}" target="_blank" rel="noopener"
         style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);border-radius:6px;padding:5px 10px;font-family:var(--vl-mono);font-size:.55rem;color:#ff4444;text-decoration:none">${_ICON_PLAY} YouTube</a>
@@ -2087,6 +2204,19 @@ function _renderSessionExo() {
       <button onclick="_nextSessionUnit()" style="flex:1;padding:10px 4px;border:1.5px solid var(--vl-border);border-radius:8px;background:transparent;cursor:pointer;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);touch-action:manipulation">exercice suivant →</button>
     </div>
   </div>`;
+
+  const sessWgerId = WGER_IDS[exo.exercise_id];
+  if (sessWgerId) {
+    fetchWgerImage(sessWgerId).then(url => {
+      const imgZone = document.getElementById('sess-wger-img');
+      if (!imgZone) return;
+      if (url) {
+        imgZone.innerHTML = `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+      } else {
+        imgZone.style.display = 'none';
+      }
+    });
+  }
 }
 
 function _toggleSessDetail() {
@@ -2128,6 +2258,12 @@ function _serieComplete() {
   if (!state) return;
   const exo = state.session.exercises[state.exoIdx];
   if (!exo) return;
+
+  // Pre-warm AudioContext within user gesture (required on iOS)
+  if (!window._renfoAudioCtx) {
+    try { window._renfoAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  window._renfoAudioCtx?.resume?.();
 
   const isLastSerie = state.serieIdx >= exo.sets - 1;
   const isLastExo = state.exoIdx >= state.session.exercises.length - 1;
@@ -2209,15 +2345,20 @@ export function startRestTimer(secs, type = 'set', nextLabel = null) {
   const existing = document.getElementById('renfoRestOverlay');
   if (existing) existing.remove();
 
-  // WebAudio bip
-  function playBip(freq = 880, dur = 0.08) {
+  // WebAudio bip — shared context (iOS requires user-gesture to unlock)
+  function playBip(freq = 880, dur = 0.18) {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!window._renfoAudioCtx) {
+        window._renfoAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ctx = window._renfoAudioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
       osc.start(); osc.stop(ctx.currentTime + dur);
     } catch(e) {}
@@ -2655,6 +2796,65 @@ export function showRenfoHistoryView() {
   showToast('Historique — disponible dans la prochaine version', 'info');
 }
 
+async function fetchWgerImage(wgerId) {
+  if (!window._wgerImageCache) window._wgerImageCache = {};
+  if (window._wgerImageCache[wgerId] !== undefined) return window._wgerImageCache[wgerId];
+  try {
+    const res = await fetch(`https://wger.de/api/v2/exerciseimage/?format=json&exercise_base=${wgerId}&is_main=true`);
+    const data = await res.json();
+    const img = data.results?.[0];
+    const url = img ? 'https://wger.de' + img.image : null;
+    window._wgerImageCache[wgerId] = url;
+    return url;
+  } catch {
+    window._wgerImageCache[wgerId] = null;
+    return null;
+  }
+}
+
+async function loadExoHistory(exoId, chartEl, histEl) {
+  try {
+    const { data } = await sb.from('renfo_exercise_log')
+      .select('logged_at, load_kg, reps_done, rpe_actual, e1rm')
+      .eq('exercise_id', exoId)
+      .gte('logged_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
+      .order('logged_at', { ascending: true });
+    if (!data || data.length === 0) {
+      chartEl.innerHTML = `<div style="text-align:center;padding:20px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">Aucune donnée sur 90j</div>`;
+      return;
+    }
+    const pts = data.filter(d => d.e1rm).map(d => ({ x: new Date(d.logged_at).getTime(), y: d.e1rm }));
+    if (pts.length === 0) {
+      chartEl.innerHTML = `<div style="text-align:center;padding:20px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">Aucune donnée charge</div>`;
+    } else {
+      const minX = pts[0].x, maxX = pts[pts.length - 1].x;
+      const minY = Math.min(...pts.map(p => p.y)) * 0.9;
+      const maxY = Math.max(...pts.map(p => p.y)) * 1.05;
+      const W = 280, H = 80;
+      const px = x => ((x - minX) / Math.max(1, maxX - minX)) * (W - 20) + 10;
+      const py = y => H - 8 - ((y - minY) / Math.max(1, maxY - minY)) * (H - 16);
+      const polyline = pts.map(p => `${px(p.x).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ');
+      chartEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px">
+        <polyline points="${polyline}" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map(p => `<circle cx="${px(p.x).toFixed(1)}" cy="${py(p.y).toFixed(1)}" r="3" fill="#7c3aed"/>`).join('')}
+        <text x="10" y="${H - 2}" font-family="monospace" font-size="8" fill="#888">${Math.round(minY)} kg</text>
+        <text x="${W - 10}" y="${H - 2}" text-anchor="end" font-family="monospace" font-size="8" fill="#888">${Math.round(maxY)} kg</text>
+      </svg>`;
+    }
+    if (histEl && data.length > 0) {
+      const last5 = [...data].reverse().slice(0, 5);
+      histEl.innerHTML = last5.map(d => {
+        const dt = new Date(d.logged_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+        return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--vl-border);font-size:.7rem">
+          <div style="font-family:var(--vl-mono);color:var(--vl-text-2)">${dt}</div>
+          <div>${d.load_kg ? d.load_kg + ' kg' : 'PDC'} × ${d.reps_done || '—'}</div>
+          ${d.e1rm ? `<div style="font-family:var(--vl-mono);color:#7c3aed">${d.e1rm} kg 1RM</div>` : `<div style="font-family:var(--vl-mono);color:var(--vl-text-2)">RPE ${d.rpe_actual || '—'}</div>`}
+        </div>`;
+      }).join('');
+    }
+  } catch {}
+}
+
 export function showRenfoLibraryIndex() {
   const el = document.getElementById('renfoApp');
   if (!el) return;
@@ -2756,7 +2956,7 @@ export function showRenfoLibraryExo(exoId) {
   const muscleRows = (def.primary_muscles || []).map((m, i) => {
     const pct = Math.max(30, 95 - i * 15);
     return `<div style="display:flex;align-items:center;gap:8px">
-      <div style="width:100px;font-size:.75rem;color:var(--vl-text-2)">${m}</div>
+      <div style="width:90px;font-size:.72rem;color:var(--vl-text-2)">${m}</div>
       <div style="flex:1;height:5px;background:var(--vl-bg);border-radius:2px">
         <div style="height:100%;width:${pct}%;background:#7c3aed;border-radius:2px"></div>
       </div>
@@ -2768,11 +2968,25 @@ export function showRenfoLibraryExo(exoId) {
     `<div style="padding:5px 0;border-bottom:1px dashed var(--vl-border);font-size:.78rem;color:var(--vl-text-2)">· ${v.name}</div>`
   ).join('');
 
+  const steps = (def.movement || '').split(/\.\s+/).filter(Boolean).map(s => s.replace(/\.$/, '').trim());
+  const stepsHtml = steps.map((s, i) =>
+    `<div style="display:flex;gap:8px;padding:4px 0">
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed;min-width:16px;padding-top:2px;flex-shrink:0">${i + 1}.</div>
+      <div style="font-size:.78rem;color:var(--vl-text-2);line-height:1.5">${s}</div>
+    </div>`
+  ).join('');
+
+  const wgerId = WGER_IDS[exoId];
+
   el.innerHTML = `<div style="padding-bottom:8px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem">
       <button onclick="showRenfoLibraryIndex()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;font-size:1.2rem">←</button>
       <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">BIBLIOTHÈQUE / ${(def.category||'').replace(/_/g,' ').toUpperCase()}</div>
     </div>
+
+    ${wgerId ? `<div id="wger-img-zone" style="margin-bottom:14px;border-radius:10px;overflow:hidden;background:var(--vl-bg2);border:1px solid var(--vl-border);height:160px;display:flex;align-items:center;justify-content:center">
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">…</div>
+    </div>` : ''}
 
     <div style="margin-bottom:1rem">
       <div style="font-family:var(--vl-display);font-size:2rem;font-weight:800;line-height:1;text-transform:uppercase">${def.name_fr}</div>
@@ -2782,12 +2996,21 @@ export function showRenfoLibraryExo(exoId) {
       </div>
     </div>
 
+    <div class="card" style="padding:12px;margin-bottom:10px">
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:6px;letter-spacing:.1em">PROGRESSION 90J · 1RM ESTIMÉ</div>
+      <div id="exo-chart" style="min-height:80px;display:flex;align-items:center;justify-content:center">
+        <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2)">…</div>
+      </div>
+      <div id="exo-hist" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" style="padding:12px;margin-bottom:10px">
+      <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:8px;letter-spacing:.1em">EXÉCUTION</div>
+      ${stepsHtml || `<div style="font-size:.78rem;color:var(--vl-text-2)">${def.movement || '—'}</div>`}
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div style="display:flex;flex-direction:column;gap:10px">
-        <div class="card" style="padding:12px">
-          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:8px;letter-spacing:.1em">EXÉCUTION</div>
-          <div style="font-size:.8rem;color:var(--vl-text-2);line-height:1.6">${def.movement || '—'}</div>
-        </div>
         <div class="card" style="padding:12px">
           <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);margin-bottom:6px;letter-spacing:.1em">POSITION</div>
           <div style="font-size:.78rem;color:var(--vl-text-2);line-height:1.5">${def.position || '—'}</div>
@@ -2807,12 +3030,25 @@ export function showRenfoLibraryExo(exoId) {
           <div style="font-family:var(--vl-mono);font-size:.55rem;color:#7c3aed;margin-bottom:6px;letter-spacing:.1em">ERREURS FRÉQUENTES</div>
           <div style="font-size:.78rem;color:var(--vl-text-2);line-height:1.5">${def.common_errors}</div>
         </div>` : ''}
-        <div class="card" style="padding:10px;text-align:center">
-          <div style="font-family:var(--vl-mono);font-size:.55rem;color:var(--vl-text-2);font-style:italic">ⓘ fiche consultable · pour lancer cet exo, démarre une séance qui le contient</div>
-        </div>
       </div>
     </div>
   </div>`;
+
+  if (wgerId) {
+    fetchWgerImage(wgerId).then(url => {
+      const zone = document.getElementById('wger-img-zone');
+      if (!zone) return;
+      if (url) {
+        zone.innerHTML = `<img src="${url}" alt="${def.name_fr}" style="width:100%;height:160px;object-fit:cover">`;
+      } else {
+        zone.style.display = 'none';
+      }
+    });
+  }
+
+  const chartEl = document.getElementById('exo-chart');
+  const histEl = document.getElementById('exo-hist');
+  if (chartEl) loadExoHistory(exoId, chartEl, histEl);
 }
 
 export async function showRenfoSettings() {
