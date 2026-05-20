@@ -302,6 +302,21 @@ export async function logout() {
   document.getElementById('authScreen').classList.add('show');
 }
 
+function pruneStreamsCache() {
+  const key = 'vl_streams_pruned';
+  const last = parseInt(localStorage.getItem(key) || '0', 10);
+  if (Date.now() - last < 7 * 86400 * 1000) return;
+  localStorage.setItem(key, String(Date.now()));
+  const oneYearAgo = new Date(Date.now() - 365 * 86400 * 1000).toISOString();
+  sb.from('activity_streams')
+    .delete()
+    .eq('user_id', VLState.currentUser.id)
+    .lt('cached_at', oneYearAgo)
+    .then(({ error }) => {
+      if (error) console.warn('[VL] pruneStreamsCache error:', error.message);
+    });
+}
+
 async function initApp(user) {
   VLState.currentUser = user;
   document.getElementById('authScreen').classList.remove('show');
@@ -311,6 +326,7 @@ async function initApp(user) {
   await preloadRenfoState();
   await checkStravaToken();
   await loadHistoryFromDB();
+  pruneStreamsCache();
   // Force native date picker to open on tap (needed on some iOS versions)
   document.addEventListener('click', e => {
     if(e.target.type === 'date' || e.target.type === 'time') {
