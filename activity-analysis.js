@@ -68,7 +68,7 @@ export async function fetchWeather(lat, lon, date) {
   } catch { return null; }
 }
 
-export function computePAF(act, weather) {
+export function computeRaceContext(act, weather) {
   const fcMax=VLState.userProfile.fc_max||FC_MAX_DEFAULT;
   let factors=[],totalAdj=0;
 
@@ -116,7 +116,7 @@ export function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 // LOCAL ACTIVITY ANALYSIS — NO EXTERNAL AI
 // ════════════════════════════════════════════════════
-export async function generateLocalActivitySummary(act, streams, paf) {
+export async function generateLocalActivitySummary(act, streams, ctx) {
   const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
 
   const zones = [0, 0, 0, 0, 0];
@@ -211,7 +211,7 @@ export async function openAnalyse(act) {
     ? await fetchWeather(lat0, lon0, act.start_date_local)
     : null;
 
-  const paf = computePAF(act, weather);
+  const ctx = computeRaceContext(act, weather);
   const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
   const d = new Date(act.start_date_local);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
@@ -243,7 +243,7 @@ export async function openAnalyse(act) {
     <div class="a-stats">
       <div class="a-stat"><div class="a-sv tc">${(act.distance/1000).toFixed(2)} km</div><div class="a-sl">Distance</div></div>
       <div class="a-stat"><div class="a-sv">${fmtD(act.moving_time)}</div><div class="a-sl">Temps mvt</div></div>
-      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">normalisée PAF : ${paf.paceNorm}/km</div></div>
+      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">contextualisée : ${ctx.paceNorm}/km</div></div>
       ${act.total_elevation_gain?`<div class="a-stat"><div class="a-sv to">+${act.total_elevation_gain}m</div><div class="a-sl">D+</div></div>`:''}
       ${act.average_heartrate?`<div class="a-stat"><div class="a-sv">${Math.round(act.average_heartrate)}</div><div class="a-sl">FC moy</div><div class="a-ss">max ${act.max_heartrate||'—'} bpm</div></div>`:''}
       ${act.kilojoules?`<div class="a-stat"><div class="a-sv">${Math.round(act.kilojoules*.239)}</div><div class="a-sl">kcal</div></div>`:''}
@@ -254,13 +254,13 @@ export async function openAnalyse(act) {
       <div class="summary-loading"><div class="spinner"></div><div>Calcul en cours...</div></div>
     </div>
 
-    <!-- PAF -->
-    <div class="paf-widget">
-      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">Performance Adjustment Factor</div>
-      <div class="paf-factors">${paf.factors.map(f=>`<div class="paf-factor"><span style="display:flex;align-items:center;flex-shrink:0">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
-      <div class="paf-result">
-        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure normalisée</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${paf.paceNorm}/km</div></div>
-        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Pénalité conditions : <strong>+${(paf.totalAdj*100).toFixed(0)}%</strong></div>
+    <!-- Facteurs de course -->
+    <div class="ctx-widget">
+      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">Facteurs de course</div>
+      <div class="ctx-factors">${ctx.factors.map(f=>`<div class="ctx-factor"><span style="display:flex;align-items:center;flex-shrink:0">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
+      <div class="ctx-result">
+        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure contextualisée</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${ctx.paceNorm}/km</div></div>
+        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Conditions : <strong>+${(ctx.totalAdj*100).toFixed(0)}%</strong></div>
       </div>
       <div class="mono t3" style="margin-top:8px;font-size:.56rem;font-style:italic">Minetti et al., 2002 · Ely et al., 2007 · Lejeune et al., 1998</div>
     </div>
@@ -334,7 +334,7 @@ export async function openAnalyse(act) {
   }
 
 // Local summary async
-const summaryText = await generateLocalActivitySummary(act, streams, paf);
+const summaryText = await generateLocalActivitySummary(act, streams, ctx);
 const summaryBox = document.getElementById('summaryBox');
 if (summaryBox) {
   summaryBox.innerHTML = `
