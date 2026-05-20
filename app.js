@@ -823,10 +823,11 @@ async function loadAerobicStat(weekActs, fcMax, fallback = false) {
   const threshold = fcMax * 0.75;
   if (!weekActs.length) { el.textContent = '—'; return; }
 
-  let totalPts = 0, aerobicPts = 0;
+  let totalPts = 0, aerobicPts = 0, authError = false;
   await Promise.all(weekActs.map(async a => {
     try {
       const streams = await fetchStreams(a.id);
+      if (streams._authError) { authError = true; return; }
       const hr = streams.heartrate?.data;
       if (!hr?.length) return;
       totalPts += hr.length;
@@ -836,7 +837,18 @@ async function loadAerobicStat(weekActs, fcMax, fallback = false) {
 
   const elNow = document.getElementById('aerobicStatVal');
   if (!elNow) return;
-  if (totalPts === 0) { elNow.textContent = '—'; return; }
+  if (totalPts === 0) {
+    if (authError) {
+      elNow.textContent = '↻';
+      elNow.title = 'Token Strava expiré — resynchronise';
+      elNow.style.cursor = 'pointer';
+      elNow.style.color = 'var(--vl-ember)';
+      elNow.onclick = () => navigate('profil');
+    } else {
+      elNow.textContent = '—';
+    }
+    return;
+  }
 
   const pct = Math.round(aerobicPts / totalPts * 100);
   elNow.style.color = pct >= 75 ? 'var(--vl-growth)' : pct < 50 ? 'var(--vl-ember)' : '';
