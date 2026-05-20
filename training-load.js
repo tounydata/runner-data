@@ -91,17 +91,27 @@ export function computeTrainingLoad(activities, fcMax) {
   const recent7  = recent42.filter(a => now - new Date(a.start_date).getTime() <= MS_7D);
 
   // Décroissance exponentielle — Bannister TRIMP model
-  // ATL (charge aiguë) : τ = 7 jours → sorties récentes pèsent beaucoup plus
-  // CTL (charge chronique) : τ = 42 jours → mémoire longue de 6 semaines
-  const acuteLoad = recent7.reduce((s, a) => {
+  // ATL (charge aiguë) : τ = 7 jours / CTL (charge chronique) : τ = 42 jours
+  // Les sommes sont normalisées par la somme des poids exponentiels afin que
+  // acuteLoad et chronicLoad soient deux moyennes pondérées comparables à l'échelle.
+  // Sans normalisation, CTL accumule plus de poids (42j > 7j) et le ratio ACWR
+  // serait systématiquement biaisé vers des valeurs < 1 même en charge stable.
+  const acute = recent7.reduce((acc, a) => {
     const ageDays = (now - new Date(a.start_date).getTime()) / 86_400_000;
-    return s + computeActivityLoad(a, fcMax) * Math.exp(-ageDays / 7);
-  }, 0);
-  const chronicLoad = recent42.reduce((s, a) => {
-    const ageDays = (now - new Date(a.start_date).getTime()) / 86_400_000;
-    return s + computeActivityLoad(a, fcMax) * Math.exp(-ageDays / 42);
-  }, 0);
+    const weight = Math.exp(-ageDays / 7);
+    const load = computeActivityLoad(a, fcMax);
+    return { sum: acc.sum + load * weight, weight: acc.weight + weight };
+  }, { sum: 0, weight: 0 });
 
+  const chronic = recent42.reduce((acc, a) => {
+    const ageDays = (now - new Date(a.start_date).getTime()) / 86_400_000;
+    const weight = Math.exp(-ageDays / 42);
+    const load = computeActivityLoad(a, fcMax);
+    return { sum: acc.sum + load * weight, weight: acc.weight + weight };
+  }, { sum: 0, weight: 0 });
+
+  const acuteLoad  = acute.weight   > 0 ? acute.sum   / acute.weight   : 0;
+  const chronicLoad = chronic.weight > 0 ? chronic.sum / chronic.weight : 0;
   const ratio = chronicLoad > 0 ? acuteLoad / chronicLoad : null;
   const trend = computeLoadTrend(activities, fcMax);
 
