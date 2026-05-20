@@ -9,7 +9,7 @@ import { findSimilarActivities, computeProgressSignals, renderComparisonBlock } 
 export async function fetchStreams(activityId) {
   // Proxy via edge function — never exposes Strava token to browser
   const { data: { session } } = await sb.auth.getSession();
-  if (!session?.access_token) return {};
+  if (!session?.access_token) return { _authError: true };
   try {
     const r = await fetch(`${SUPA_URL}/functions/v1/strava-activity`, {
       method: 'POST',
@@ -19,6 +19,7 @@ export async function fetchStreams(activityId) {
     if (!r.ok) {
       const body = await r.text().catch(() => '');
       console.warn('[VL] fetchStreams HTTP', r.status, r.statusText, body);
+      if (r.status === 401) return { _authError: true };
       return {};
     }
     const data = await r.json();

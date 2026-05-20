@@ -1737,6 +1737,56 @@ const _ICON_ARROW_LEFT = `<svg width="8" height="14" viewBox="0 0 8 14" fill="no
 const RENFO_DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const RENFO_DAY_FR = ['D','L','M','M','J','V','S'];
 
+export function openRenfoSessionActions(dayKey) {
+  const session = renfoProgram?.week_schedule?.[dayKey];
+  if (!session) return;
+  const existing = document.getElementById('renfoSessionActions');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'renfoSessionActions';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:flex;align-items:flex-end;touch-action:none';
+  overlay.innerHTML = `<div style="width:100%;background:var(--vl-bg2);border-radius:20px 20px 0 0;padding:20px 20px calc(32px + env(safe-area-inset-bottom,0px))" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:var(--vl-border);border-radius:2px;margin:0 auto 18px"></div>
+    <div style="font-family:var(--vl-display);font-size:1.1rem;font-weight:700;margin-bottom:4px">${session.label}</div>
+    <div style="font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);margin-bottom:20px">Déjà validée cette semaine</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="startRenfoSession('${dayKey}');document.getElementById('renfoSessionActions')?.remove()" style="width:100%;padding:13px;background:var(--vl-ember);border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:.95rem;font-weight:700;touch-action:manipulation">Refaire cette séance</button>
+      <button onclick="cancelRenfoSession('${dayKey}')" style="width:100%;padding:13px;background:var(--vl-bg);border:1.5px solid var(--vl-border);border-radius:12px;cursor:pointer;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.75rem;touch-action:manipulation">Annuler la validation</button>
+      <button onclick="document.getElementById('renfoSessionActions').remove()" style="width:100%;padding:11px;background:none;border:none;cursor:pointer;color:var(--vl-text-2);font-family:var(--vl-mono);font-size:.7rem;touch-action:manipulation">Fermer</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+}
+
+export async function cancelRenfoSession(dayKey) {
+  document.getElementById('renfoSessionActions')?.remove();
+  const session = renfoProgram?.week_schedule?.[dayKey];
+  if (!session) return;
+
+  const today = new Date();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+
+  const log = renfoSessionLogs.find(l => {
+    return new Date(l.session_date) >= weekStart &&
+      renfoProgram.week_schedule?.[l.day_key]?.focus === session.focus;
+  });
+  if (!log) { showToast('Séance introuvable', 'error'); return; }
+
+  const { error } = await sb.from('renfo_session_log')
+    .delete()
+    .eq('user_id', VLState.currentUser.id)
+    .eq('session_date', log.session_date);
+  if (error) { showToast('Erreur suppression', 'error'); return; }
+
+  renfoSessionLogs = renfoSessionLogs.filter(l => l.session_date !== log.session_date);
+  VLState.renfoSessionLogs = renfoSessionLogs;
+  showToast('Validation annulée', 'success');
+  renderRenfoHome();
+}
+
 export function renderRenfoHome() {
   const el = document.getElementById('renfoApp');
   if (!el || !renfoProgram) return;
@@ -1807,7 +1857,7 @@ export function renderRenfoHome() {
         <div style="font-family:var(--vl-mono);font-size:.58rem;color:var(--vl-text-2)">~${session.duration_min} min · ${session.exercises.length} exercices</div>
       </div>
       ${done
-        ? `<div style="display:flex;align-items:center;gap:5px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2)">${_ICON_CHECK} fait</div>`
+        ? `<button onclick="openRenfoSessionActions('${dayKey}')" style="display:flex;align-items:center;gap:5px;font-family:var(--vl-mono);font-size:.6rem;color:var(--vl-text-2);background:none;border:none;cursor:pointer;touch-action:manipulation;padding:4px 2px;-webkit-tap-highlight-color:transparent">${_ICON_CHECK} fait</button>`
         : `<button onclick="startRenfoSession('${dayKey}')" style="display:flex;align-items:center;gap:7px;padding:9px 14px;background:${col};border:none;border-radius:8px;cursor:pointer;color:#fff;font-family:var(--vl-display);font-size:.75rem;font-weight:700;touch-action:manipulation;flex-shrink:0;-webkit-tap-highlight-color:transparent">${_ICON_PLAY} LANCER</button>`
       }
     </div>`;
@@ -1817,7 +1867,6 @@ export function renderRenfoHome() {
   el.innerHTML = `<div style="padding-bottom:8px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.25rem">
       <div>
-        <div class="mlabel" style="margin-bottom:4px">Section 03</div>
         <div style="font-family:var(--vl-display);font-size:2rem;font-weight:700;letter-spacing:0.01em;line-height:1">RENFO MUSCULAIRE</div>
       </div>
       <button onclick="showRenfoSettings()" style="background:none;border:none;cursor:pointer;color:var(--vl-text-2);padding:6px;touch-action:manipulation;display:flex;align-items:center">${_ICON_GEAR}</button>

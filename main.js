@@ -26,6 +26,7 @@ import { loadRenfoApp, preloadRenfoState,
   submitRenfoLog, openCompletionPicker, completeRenfoSession, showRenfoHistoryView,
   showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
   showVariantPicker, applyVariant,
+  openRenfoSessionActions, cancelRenfoSession,
 } from './renfo.js';
 
 window.Vorcelab = {
@@ -53,6 +54,7 @@ window.Vorcelab = {
   submitRenfoLog, openCompletionPicker, completeRenfoSession, showRenfoHistoryView,
   showRenfoSettings, saveRenfoSettings, resetRenfoOnboarding,
   showVariantPicker, applyVariant,
+  openRenfoSessionActions, cancelRenfoSession,
 };
 
 // Expose as direct globals for inline onclick compatibility

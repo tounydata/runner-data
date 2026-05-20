@@ -761,10 +761,11 @@ function renderDashboard() {
     loadEl.style.display = '';
   }
 
-  // % EF glissant 7 jours — streams complets
+  // % EF — 7 derniers jours, sinon 5 dernières sorties
   const sevenDaysAgo = new Date(now - 7 * 86400000);
   const last7Days = VLState.allActivities.filter(a => new Date(a.start_date) >= sevenDaysAgo);
-  loadAerobicStat(last7Days, fcMax);
+  const efActs = last7Days.length > 0 ? last7Days : VLState.allActivities.slice(0, 5);
+  loadAerobicStat(efActs, fcMax, last7Days.length === 0);
 }
 
 function renderLastActivity() {
@@ -814,19 +815,19 @@ function renderLastActivity() {
   <button class="btn-analyse" onclick="openAnalyse(${JSON.stringify(act).replace(/"/g,'&quot;')})">Analyser cette sortie →</button>`;
 }
 
-async function loadAerobicStat(weekActs, fcMax) {
+async function loadAerobicStat(weekActs, fcMax, fallback = false) {
   const el = document.getElementById('aerobicStatVal');
   if (!el) return;
   el.textContent = '…';
 
   const threshold = fcMax * 0.75;
   if (!weekActs.length) { el.textContent = '—'; return; }
-  const candidates = weekActs;
 
-  let totalPts = 0, aerobicPts = 0;
-  await Promise.all(candidates.map(async a => {
+  let totalPts = 0, aerobicPts = 0, authError = false;
+  await Promise.all(weekActs.map(async a => {
     try {
       const streams = await fetchStreams(a.id);
+      if (streams._authError) { authError = true; return; }
       const hr = streams.heartrate?.data;
       if (!hr?.length) return;
       totalPts += hr.length;
@@ -834,15 +835,30 @@ async function loadAerobicStat(weekActs, fcMax) {
     } catch {}
   }));
 
-  // Re-chercher l'élément : le DOM peut avoir été reconstruit pendant le fetch async
   const elNow = document.getElementById('aerobicStatVal');
   if (!elNow) return;
+  if (totalPts === 0) {
+    if (authError) {
+      elNow.textContent = '↻';
+      elNow.title = 'Token Strava expiré — resynchronise';
+      elNow.style.cursor = 'pointer';
+      elNow.style.color = 'var(--vl-ember)';
+      elNow.onclick = () => navigate('profil');
+    } else {
+      elNow.textContent = '—';
+    }
+    return;
+  }
 
-  if (totalPts === 0) { elNow.textContent = '—'; return; }
   const pct = Math.round(aerobicPts / totalPts * 100);
   elNow.style.color = pct >= 75 ? 'var(--vl-growth)' : pct < 50 ? 'var(--vl-ember)' : '';
   elNow.style.fontSize = '';
   elNow.textContent = pct + '%';
+
+  if (fallback) {
+    const labelEl = document.querySelector('#aerobicStatCard .s-sl');
+    if (labelEl) labelEl.textContent = '% EF · dernières sorties';
+  }
 }
 
 // ════════════════════════════════════════════════════
