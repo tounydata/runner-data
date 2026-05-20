@@ -188,7 +188,7 @@ export async function analyzeGPX(points, fname) {
     else if(s.type==='flat'&&_cf>0){pente=minettiGradePenalty(g)*_cf;}
     else{pente=minettiGradePenalty(g);}
     const pentePenalty=1+pente;
-    const terPenalty=terrainTimePenalty(surfKey,weather,s.grade,s.type);
+    const terPenalty=terrainTimePenalty(surfKey,weather,s.grade,s.type,VLState.userProfile);
     const t=basePaceS*pentePenalty*terPenalty*s.dist/1000;
     sectionTimes.push(t);estTimeS+=t;
   });
@@ -329,6 +329,13 @@ export async function analyzeGPX(points, fname) {
   const raceDate=VLState.currentRaceContext?.date?new Date(VLState.currentRaceContext.date).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}):'';
   const splits=buildSplitsTable(kmSecs,basePaceS);
 
+  // Nutrition stats strip — profile-based target (mirrors CARBS_PROFILES in nutrition.js)
+  const _nlvl = VLState.userProfile?.nutrition_level || 'standard';
+  const _nProfiles = {prudent:{short:30,long:45},standard:{short:40,long:60},trained:{short:50,long:70},gut_trained:{short:60,long:80},elite:{short:70,long:90}};
+  const _nPro = _nProfiles[_nlvl] || _nProfiles.standard;
+  const _nPerH = dh < 2.5 ? _nPro.short : _nPro.long;
+  const _nTotal = Math.round(_nPerH * dh);
+
   const res=document.getElementById('stratResult');
   res.style.display='block';
   document.getElementById('gpxDrop').style.display='none';
@@ -444,7 +451,7 @@ export async function analyzeGPX(points, fname) {
       </summary>
       <div style="border:1px solid var(--vl-line);border-top:none;border-radius:0 0 var(--vl-r-sm) var(--vl-r-sm);padding:14px">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:1rem">
-          <div class="s-stat"><div class="s-sv tc">${dh<1.25?'Eau only':dh<2.5?Math.round(30*(dh-0.5))+'g':Math.round(60*(dh-0.5))+'g'}</div><div class="s-sl">Glucides cibles</div></div>
+          <div class="s-stat"><div class="s-sv tc">${dh<1.25?'Eau only':_nTotal+'g'}</div><div class="s-sl">${dh<1.25?'Glucides':_nPerH+' g/h · cible'}</div></div>
           <div class="s-stat"><div class="s-sv tg">${Math.round(dh*400)} ml</div><div class="s-sl">Eau estimée</div></div>
           <div class="s-stat"><div class="s-sv ${dh<1.25?'tg':dh<2.5?'ty':'to'}">${dh<1.25?'< 75min':dh<2.5?'75–150min':'> 150min'}</div><div class="s-sl">Protocole</div></div>
         </div>
