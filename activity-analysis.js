@@ -7,9 +7,23 @@ import { buildSessionInsights, renderSessionQualityBlock } from './session-quali
 import { findSimilarActivities, computeProgressSignals, renderComparisonBlock } from './progress-comparison.js';
 
 export async function fetchStreams(activityId) {
-  // Proxy via edge function — never exposes Strava token to browser
   const { data: { session } } = await sb.auth.getSession();
   if (!session?.access_token) return { _authError: true };
+  const userId = VLState.currentUser?.id;
+
+  // Cache-first: read from DB if available
+  if (userId) {
+    const { data: cached } = await sb.from('activity_streams')
+      .select('data')
+      .eq('user_id', userId)
+      .eq('activity_id', activityId)
+      .maybeSingle();
+    if (cached?.data && Object.keys(cached.data).length > 0) {
+      return cached.data;
+    }
+  }
+
+  // Fallback: fetch from Strava via edge function
   try {
     const r = await fetch(`${SUPA_URL}/functions/v1/strava-activity`, {
       method: 'POST',
@@ -25,6 +39,18 @@ export async function fetchStreams(activityId) {
     const data = await r.json();
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
       console.warn('[VL] fetchStreams: réponse vide pour activité', activityId);
+      return data ?? {};
+    }
+    // Store in DB cache (fire-and-forget, never blocks the caller)
+    if (userId) {
+      sb.from('activity_streams').upsert({
+        user_id: userId,
+        activity_id: activityId,
+        data,
+        cached_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,activity_id' }).then(({ error }) => {
+        if (error) console.warn('[VL] fetchStreams cache write error:', error.message);
+      });
     }
     return data;
   } catch(e) {
