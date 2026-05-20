@@ -57,6 +57,21 @@ export function genNutrition(distM, estTimeS){
   const hasProducts = userGels.length>0 || userBoissons.length>0;
   const rows = [];
 
+  // Profil glucidique selon niveau digestif — jamais 120g/h par défaut.
+  // 120g/h (certains élites) nécessite un entraînement digestif spécifique prolongé.
+  const nutritionLevel = VLState.userProfile?.nutrition_level || 'standard';
+  const CARBS_PROFILES = {
+    prudent:    { short: 30, long: 45 },   // débutant / intestin fragile
+    standard:   { short: 40, long: 60 },   // coureur régulier
+    trained:    { short: 50, long: 70 },   // habitué aux courses longues
+    gut_trained:{ short: 60, long: 80 },   // entraînement digestif confirmé
+    elite:      { short: 70, long: 90 },   // uniquement si testé à l'entraînement
+  };
+  const carbsPro = CARBS_PROFILES[nutritionLevel] || CARBS_PROFILES.standard;
+  // Limite caféine indicative : 3mg/kg (prudent — littérature : 3-6mg/kg performance)
+  const bodyWeight = VLState.userProfile?.body_weight || VLState.userProfile?.weight || 70;
+  const caffeineMaxMg = Math.round(bodyWeight * 3);
+
   // No pre-race food — chacun fait ce qui marche pour lui
 
   if(dh < 1.5){
@@ -67,8 +82,8 @@ export function genNutrition(distM, estTimeS){
       rows.push(`<tr><td class="mono">Option chaleur</td><td>${b.brand} ${b.name} dilué ×2</td><td>~${Math.round(b.carbs/2)}g</td><td>Si T° > 25°C uniquement. Diluer pour réduire l'apport sucré.</td></tr>`);
     }
   } else {
-    // ≥ 1h30 : protocole complet
-    const targetCarbsPerH = dh < 2.5 ? 40 : 60;
+    // ≥ 1h30 : protocole complet selon profil glucidique
+    const targetCarbsPerH = dh < 2.5 ? carbsPro.short : carbsPro.long;
 
     // Premier ravitaillement ~30-35min
     const t1km = Math.round(dk*0.30);
@@ -91,7 +106,8 @@ export function genNutrition(distM, estTimeS){
     if(hasProducts && userGels.length){
       const gelCaf = userGels.find(g=>g.caffeine>0);
       const gel2 = gelCaf || (userGels.find(g=>g.caffeine===0) || userGels[0]);
-      rows.push(`<tr><td class="mono">~${t3km} km<br><span style="font-size:.55rem;opacity:.7">${Math.round(t3km/dk*estTimeS/60)}min</span></td><td><strong>${gel2.brand} ${gel2.name}</strong>${gel2.water?' <span style="color:var(--cyan)">+ eau obligatoire</span>':''} ${gelCaf?'<span style="color:var(--yellow)">☕ Caféine</span>':''}</td><td>${gel2.carbs}g</td><td>${gelCaf?`${gel2.caffeine}mg caféine — pic d'effet 30-45min après. Timing idéal pour la dernière ligne droite ou montée finale.`:'Maintien glycémie sur derniers km.'}</td></tr>`);
+      const cafWarning = gelCaf && gel2.caffeine > caffeineMaxMg ? ` · ⚠ dépasse limite indicative ${caffeineMaxMg}mg (~3mg/kg)` : '';
+      rows.push(`<tr><td class="mono">~${t3km} km<br><span style="font-size:.55rem;opacity:.7">${Math.round(t3km/dk*estTimeS/60)}min</span></td><td><strong>${gel2.brand} ${gel2.name}</strong>${gel2.water?' <span style="color:var(--cyan)">+ eau obligatoire</span>':''} ${gelCaf?'<span style="color:var(--yellow)">☕ Caféine</span>':''}</td><td>${gel2.carbs}g</td><td>${gelCaf?`${gel2.caffeine}mg caféine — pic d'effet 30-45min après. Timing idéal fin de course${cafWarning}. À tester à l'entraînement, jamais le jour J pour la 1re fois.`:'Maintien glycémie sur derniers km.'}</td></tr>`);
     } else {
       rows.push(`<tr><td class="mono">~${t3km} km</td><td>Gel <strong>caféiné</strong> + eau</td><td>25-30g</td><td>Caféine : pic 30-45min après prise — timing pour fin de course.</td></tr>`);
     }

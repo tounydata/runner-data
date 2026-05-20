@@ -6,7 +6,7 @@ import { VLState, sb, SUPA_URL, FC_MAX_DEFAULT } from './app-state.js';
 import { genNutrition } from './nutrition.js';
 import { icon } from './icons.js';
 import { computeRunnerProfile, sensitivityLabel, climbSourceLabel } from './runner-profile.js';
-import { computeFreshnessAdjustment } from './race-predictor.js';
+import { computeFreshnessAdjustment, computeProgressionFactor } from './race-predictor.js';
 
 // leafletMap est dans VLState.leafletMap
 
@@ -100,31 +100,6 @@ export async function analyzeGPX(points, fname) {
     }
   }
 
-  // ── ALGO PROGRESSION ──
-  // TODO: migrer vers computeProgressionFactor() de race-predictor.js lors d'une prochaine passe de refacto
-  // Compute performance index from recent quality sessions (>20% time in Z3+)
-  function computeProgressionFactor(trailOnly=false) {
-    if(!VLState.allActivities.length) return 1;
-    const fcMax=VLState.userProfile.fc_max||205;
-    const z3min=Math.round(fcMax*.80);
-    let sessions=VLState.allActivities.filter(a=>{
-      if(!isRun(a.type)) return false;
-      if(trailOnly && a.type!=='TrailRun') return false;
-      if(!a.average_heartrate) return false;
-      return a.average_heartrate > z3min && a.distance > 3000;
-    }).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
-    // Fall back to all runs if not enough trail sessions
-    if(sessions.length<4 && trailOnly) return computeProgressionFactor(false);
-    if(sessions.length<4) return 1;
-    const half=Math.floor(sessions.length/2);
-    const early=sessions.slice(0,half);
-    const recent=sessions.slice(-half);
-    const avgPaceEarly=early.reduce((s,a)=>s+a.average_speed,0)/early.length;
-    const avgPaceRecent=recent.reduce((s,a)=>s+a.average_speed,0)/recent.length;
-    if(avgPaceEarly<=0) return 1;
-    return Math.min(1.10, Math.max(0.90, avgPaceRecent/avgPaceEarly));
-  }
-
   // Use event type as priority; fall back to D+/km from parsed points
   // (window._gpxPoints not yet set at this point in analyzeGPX)
   const isTrail=(()=>{
@@ -135,7 +110,13 @@ export async function analyzeGPX(points, fname) {
     }
     return totalDist>0&&(dplus/(totalDist/1000))>20;
   })();
-  const progressionFactor = computeProgressionFactor(isTrail);
+  // Progression pondérée par durée depuis race-predictor.js — source unique de vérité
+  // (moyenne pondérée moving_time, sessions Z3+, trail ou all runs si données insuffisantes)
+  const progressionFactor = computeProgressionFactor(
+    VLState.allActivities || [],
+    VLState.userProfile.fc_max || FC_MAX_DEFAULT,
+    isTrail
+  );
   const qualityCount = VLState.allActivities.filter(a=>isRun(a.type)&&a.average_heartrate>(VLState.userProfile.fc_max||205)*.80&&a.distance>3000).length;
 
   // Base pace from real performance data — goal_time never influences pace calculation
@@ -192,6 +173,9 @@ export async function analyzeGPX(points, fname) {
 
   const sectionTimes=[];
   let estTimeS=0;
+  // Stratégie GPX : temps par section calculé via buildDetailedSections + minettiGradePenalty + terrainTimePenalty.
+  // L'approximation globale dp/(dk×1000)×5.5 n'est utilisée que dans computeRaceContext (widget indicatif Strava),
+  // jamais ici pour la prédiction de temps.
   // Personal calibration: VAM > coeff_uphill > Minetti (fallback)
   const _vam=VLState.userProfile.vam_avg||0,_cu=VLState.userProfile.coeff_uphill||0,_cd=VLState.userProfile.coeff_downhill||0,_cf=VLState.userProfile.coeff_flat||0;
   sections.forEach((s,i)=>{
@@ -214,9 +198,10 @@ export async function analyzeGPX(points, fname) {
   let personalMultiplier = 1;
   if (rp && weather) {
     const { heat, cold, wind, rain } = rp.externalSensitivity;
-    // Chaleur : appliqué si météo > 20°C et sensibilité confirmée
-    if (heat.sensitivity !== 'unknown' && heat.confidence !== 'low' && heat.pacePenaltyPer10C && weather.temp > 20) {
-      const adj = Math.min(0.05, heat.pacePenaltyPer10C * (Math.max(0, weather.temp - 18) / 10));
+    // Chaleur : seuil 15°C aligné avec runner-profile.js (Ely et al. 2007 : déclin dès 13-15°C)
+    // Appliqué uniquement si estTimeS > 5400s (> 1h30) pour ne pas sur-pénaliser les courses courtes
+    if (heat.sensitivity !== 'unknown' && heat.confidence !== 'low' && heat.pacePenaltyPer10C && weather.temp > 15 && estTimeS > 5400) {
+      const adj = Math.min(0.05, heat.pacePenaltyPer10C * (Math.max(0, weather.temp - 15) / 10));
       if (adj > 0.005) {
         personalMultiplier *= (1 + adj);
         personalAdjustments.push({ label: `Chaleur ${Math.round(weather.temp)}°C`, detail: `+${(adj*100).toFixed(1)}%${sensitivityLabel(heat) ? ' · ' + sensitivityLabel(heat) : ''}`, color: 'var(--vl-amber)' });
