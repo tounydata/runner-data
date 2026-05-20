@@ -415,7 +415,7 @@ export async function analyzeGPX(points, fname) {
       <div style="display:flex;flex-direction:column;gap:5px">
         ${rp ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <span class="mlabel">Montée</span>
-          <span class="mlabel" style="color:${rp.climbProfile.source==='streams_calibrated'?'var(--vl-growth)':rp.climbProfile.source==='activity_estimated'?'var(--vl-amber)':'var(--vl-text-3)'}">
+          <span class="mlabel" style="color:${rp.climbProfile.source==='streams_calibrated'?'var(--vl-growth)':'var(--vl-text-3)'}">
             ${climbSourceLabel(rp)}
           </span>
         </div>` : ''}

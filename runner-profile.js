@@ -37,12 +37,12 @@ function vDensity(a) {
   return km > 0 ? (a.total_elevation_gain || 0) / km : 0;
 }
 
-// Allure normalisée — correction linéaire grossière du dénivelé
-// ~4 s/km per 10 m/km D+ pour rendre comparables sorties plates et vallonnées
+// Allure normalisée — correction dénivelé calibrée sur données trail réelles
+// ~6 s/km per 10 m/km D+ (0.004 sous-estimait de ~2× à partir de 30 m/km)
 function normPace(a) {
   const p = paceS(a);
   if (!p) return null;
-  return p / (1 + vDensity(a) * 0.004);
+  return p / (1 + vDensity(a) * 0.006);
 }
 
 // ─── MÉTÉO ARCHIVE AVEC CACHE ──────────────────────────────────────────────────
@@ -78,23 +78,17 @@ function _climbProfile(activities, userProfile) {
   const vamAvg = userProfile.vam_avg || null;
   const vamMax = userProfile.vam_max || null;
 
-  const estVAMs = uphills.map(a => {
-    const h = (a.moving_time || 0) / 3600;
-    if (h < 0.25 || !(a.total_elevation_gain > 0)) return null;
-    // Facteur correctif : la VAM réelle sur montées pures > VAM calculée sur sortie entière
-    return (a.total_elevation_gain / h) * 1.35;
-  }).filter(Boolean);
-  const estVam = estVAMs.length
-    ? Math.round(estVAMs.reduce((s, v) => s + v, 0) / estVAMs.length)
-    : null;
+  // Estimation VAM sans streams supprimée : D+_total / durée_totale × facteur_arbitraire
+  // introduisait une erreur systématique (le facteur dépend du % de temps en montée,
+  // inconnu sans streams). On n'émet de VAM que si autoCalibrate a tourné.
 
   return {
-    vamAvg:      vamAvg || estVam,
+    vamAvg:      vamAvg || null,
     vamMax,
     coeffUphill: userProfile.coeff_uphill || null,
     samples:     uphills.length,
-    confidence:  confLevel(uphills.length),
-    source:      vamAvg ? 'streams_calibrated' : estVam ? 'activity_estimated' : 'none',
+    confidence:  vamAvg ? confLevel(uphills.length) : 'low',
+    source:      vamAvg ? 'streams_calibrated' : 'none',
   };
 }
 
@@ -129,16 +123,18 @@ function _flatProfile(runs, userProfile, fcMax) {
   const avgTrail = flatTrail.length
     ? flatTrail.reduce((s, a) => s + (paceS(a) || 0), 0) / flatTrail.length : null;
 
-  // Efficacité FC : allure / (FC% FCmax) — indicateur d'économie de course
+  // Efficacité cardiaque : vitesse (m/s) / FC% FCmax
+  // "combien de m/s obtenus par unité d'effort cardiaque relatif" — plus élevé = plus efficace
+  // Ce n'est PAS l'économie de course au sens biomécanique (VO2/vitesse) — proxy FC uniquement
   const flatHr = flatRoad.filter(a => a.average_heartrate && fcMax > 0);
-  const economy = flatHr.length
-    ? Math.round(flatHr.reduce((s, a) => s + (paceS(a) || 0) / (a.average_heartrate / fcMax), 0) / flatHr.length)
+  const cardiacEfficiency = flatHr.length
+    ? +(flatHr.reduce((s, a) => s + a.average_speed / (a.average_heartrate / fcMax), 0) / flatHr.length).toFixed(3)
     : null;
 
   return {
-    avgRoadPaceS:   avgRoad,
-    avgTrailPaceS:  avgTrail,
-    runningEconomy: economy,
+    avgRoadPaceS:      avgRoad,
+    avgTrailPaceS:     avgTrail,
+    cardiacEfficiency,
     coeffFlat:      userProfile.coeff_flat || null,
     roadSamples:    flatRoad.length,
     trailSamples:   flatTrail.length,
@@ -177,8 +173,9 @@ function _enduranceProfile(runs, raceCtx) {
 
 // ─── 5a. SENSIBILITÉ CHALEUR ───────────────────────────────────────────────────
 function _heatSensitivity(actsW, fcMax) {
-  const optimal = actsW.filter(a => a.w.temp >= 8  && a.w.temp < 18 && normPace(a));
-  const warm    = actsW.filter(a => a.w.temp >= 18 && a.w.temp < 25 && normPace(a));
+  // Seuil optimal [8-15°C] : Ely et al. 2007 montre déclin dès 13-15°C pour efforts longs
+  const optimal = actsW.filter(a => a.w.temp >= 8  && a.w.temp < 15 && normPace(a));
+  const warm    = actsW.filter(a => a.w.temp >= 15 && a.w.temp < 25 && normPace(a));
   const hot     = actsW.filter(a => a.w.temp >= 25 && normPace(a));
   const hotAll  = [...warm, ...hot];
 
@@ -190,7 +187,7 @@ function _heatSensitivity(actsW, fcMax) {
   const avgOpt = optimal.reduce((s, a) => s + normPace(a), 0) / optimal.length;
   const avgHot = hotAll.reduce((s, a)  => s + normPace(a), 0) / hotAll.length;
   const avgT   = hotAll.reduce((s, a)  => s + a.w.temp,   0) / hotAll.length;
-  const dT     = Math.max(1, avgT - 16);
+  const dT     = Math.max(1, avgT - 15); // référence = borne haute de la zone optimale [8-15°C]
   const pDelta = (avgHot - avgOpt) / avgOpt;
   const pen10C = pDelta > 0 ? (pDelta / dT) * 10 : 0;
 
@@ -214,7 +211,7 @@ function _heatSensitivity(actsW, fcMax) {
 
 // ─── 5b. SENSIBILITÉ FROID ─────────────────────────────────────────────────────
 function _coldSensitivity(actsW) {
-  const optimal = actsW.filter(a => a.w.temp >= 8 && a.w.temp < 18 && normPace(a));
+  const optimal = actsW.filter(a => a.w.temp >= 8 && a.w.temp < 15 && normPace(a));
   const cold    = actsW.filter(a => a.w.temp < 8  && normPace(a));
 
   if (optimal.length < MIN_SIGNAL || cold.length < MIN_SIGNAL) {
@@ -377,6 +374,5 @@ export function climbSourceLabel(rp) {
   if (!rp?.climbProfile) return 'Minetti';
   const cp = rp.climbProfile;
   if (cp.source === 'streams_calibrated') return `VAM ${cp.vamAvg} m/h`;
-  if (cp.source === 'activity_estimated') return `VAM ~${cp.vamAvg} m/h`;
   return 'Minetti';
 }

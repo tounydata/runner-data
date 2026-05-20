@@ -68,15 +68,47 @@ export async function fetchWeather(lat, lon, date) {
   } catch { return null; }
 }
 
-export function computePAF(act, weather) {
+export function computeRaceContext(act, weather) {
   const fcMax=VLState.userProfile.fc_max||FC_MAX_DEFAULT;
   let factors=[],totalAdj=0;
-  if(weather?.temp!=null){const a=Math.max(0,(weather.temp-10)*0.008);totalAdj+=a;factors.push({icon:icon('weather',14),label:'Température',value:`${weather.temp.toFixed(1)}°C`,adj:a>0.005?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.02?'var(--red)':a>0.01?'var(--orange)':'var(--green)'});}
-  if(weather?.precip!=null){const a=weather.precip>5?0.03:weather.precip>1?0.02:weather.precip>0.1?0.01:0;totalAdj+=a;factors.push({icon:icon('rain',14),label:'Pluie',value:`${weather.precip.toFixed(1)}mm`,adj:a>0?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.01?'var(--orange)':'var(--green)'});}
-  if(weather?.wind!=null){const a=weather.wind>30?0.04:weather.wind>20?0.03:weather.wind>10?0.015:0.003;totalAdj+=a;factors.push({icon:icon('wind',14),label:'Vent',value:`${weather.wind.toFixed(0)}km/h`,adj:`+${(a*100).toFixed(1)}%`,color:a>0.02?'var(--orange)':'var(--green)'});}
-  const dp=act.total_elevation_gain||0,dk=(act.distance||1)/1000,ga=Math.min(0.45,dp/(dk*1000)*5.5);totalAdj+=ga;factors.push({icon:icon('elevation',14),label:'Dénivelé',value:`+${dp}m`,adj:`+${(ga*100).toFixed(1)}%`,color:ga>0.15?'var(--orange)':'var(--yellow)'});
-  const h=parseInt(act.start_date_local?.split('T')[1]?.split(':')[0]||12);if(h<6||h>20){totalAdj+=0.02;factors.push({icon:icon('moon',14),label:'Nuit',value:`${h}h`,adj:'+2%',color:'var(--purple)'});}
-  if(act.type==='TrailRun'){totalAdj+=0.08;factors.push({icon:icon('terrain',14),label:'Trail',value:'Terrain',adj:'+8%',color:'var(--orange)'});}
+
+  // Température — pénalité continue dès 15°C (Ely et al. 2007 : déclin dès ~13-15°C)
+  // +0.5% par °C au-dessus de 15°C → 25°C = +5%, 30°C = +7.5%
+  if(weather?.temp!=null){
+    const a=Math.max(0,(weather.temp-15)*0.005);
+    totalAdj+=a;
+    factors.push({icon:icon('weather',14),label:'Température',value:`${weather.temp.toFixed(1)}°C`,adj:a>0.005?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.04?'var(--red)':a>0.02?'var(--orange)':'var(--green)'});
+  }
+
+  // Pluie — logarithmique : l'essentiel de l'effet vient des 2-3 premiers mm
+  // min(3.5% à 10mm), log1p donne une courbe réaliste
+  if(weather?.precip!=null){
+    const a=Math.min(0.035,Math.log1p(weather.precip)*0.018);
+    totalAdj+=a;
+    factors.push({icon:icon('rain',14),label:'Pluie',value:`${weather.precip.toFixed(1)}mm`,adj:a>0.005?`+${(a*100).toFixed(1)}%`:'~0%',color:a>0.02?'var(--orange)':'var(--green)'});
+  }
+
+  // Vent — quadratique (drag aérodynamique ∝ v²)
+  // (wind/30)² × 0.04 → 10km/h:0.4%, 20km/h:1.8%, 30km/h:4%, capé à 4.5%
+  if(weather?.wind!=null){
+    const a=Math.min(0.045,Math.pow(weather.wind/30,2)*0.04);
+    totalAdj+=a;
+    factors.push({icon:icon('wind',14),label:'Vent',value:`${weather.wind.toFixed(0)}km/h`,adj:`+${(a*100).toFixed(1)}%`,color:a>0.02?'var(--orange)':'var(--green)'});
+  }
+
+  // Dénivelé — formule Minetti calibrée (dp/(dk×1000)×5.5, cap 45%)
+  const dp=act.total_elevation_gain||0,dk=(act.distance||1)/1000,ga=Math.min(0.45,dp/(dk*1000)*5.5);
+  totalAdj+=ga;
+  factors.push({icon:icon('elevation',14),label:'Dénivelé',value:`+${dp}m`,adj:`+${(ga*100).toFixed(1)}%`,color:ga>0.15?'var(--orange)':'var(--yellow)'});
+
+  // Nuit — uniquement 21h-5h (vraie nuit, pas simplement "après 20h")
+  const h=parseInt(act.start_date_local?.split('T')[1]?.split(':')[0]||12);
+  if(h<5||h>=21){totalAdj+=0.02;factors.push({icon:icon('moon',14),label:'Nuit',value:`${h}h`,adj:'+2%',color:'var(--purple)'});}
+
+  // Trail — +4% pour rugosité de surface (racines, rochers, instabilité)
+  // réduit de +8% : le surcoût vertical est déjà capturé par le facteur dénivelé
+  if(act.type==='TrailRun'){totalAdj+=0.04;factors.push({icon:icon('terrain',14),label:'Trail',value:'Terrain',adj:'+4%',color:'var(--orange)'});}
+
   const raw=act.average_speed>0?1000/act.average_speed:0,norm=raw/(1+totalAdj),nm=Math.floor(norm/60),ns=Math.round(norm%60);
   return {factors,totalAdj,paceNorm:`${nm}:${String(ns).padStart(2,'0')}`};
 }
@@ -84,7 +116,7 @@ export function computePAF(act, weather) {
 // ════════════════════════════════════════════════════
 // LOCAL ACTIVITY ANALYSIS — NO EXTERNAL AI
 // ════════════════════════════════════════════════════
-export async function generateLocalActivitySummary(act, streams, paf) {
+export async function generateLocalActivitySummary(act, streams, ctx) {
   const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
 
   const zones = [0, 0, 0, 0, 0];
@@ -179,7 +211,7 @@ export async function openAnalyse(act) {
     ? await fetchWeather(lat0, lon0, act.start_date_local)
     : null;
 
-  const paf = computePAF(act, weather);
+  const ctx = computeRaceContext(act, weather);
   const fcMax = VLState.userProfile.fc_max || FC_MAX_DEFAULT;
   const d = new Date(act.start_date_local);
   const dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
@@ -211,7 +243,7 @@ export async function openAnalyse(act) {
     <div class="a-stats">
       <div class="a-stat"><div class="a-sv tc">${(act.distance/1000).toFixed(2)} km</div><div class="a-sl">Distance</div></div>
       <div class="a-stat"><div class="a-sv">${fmtD(act.moving_time)}</div><div class="a-sl">Temps mvt</div></div>
-      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">normalisée PAF : ${paf.paceNorm}/km</div></div>
+      <div class="a-stat"><div class="a-sv">${fmtP(act.average_speed)}/km</div><div class="a-sl">Allure</div><div class="a-ss t3" style="font-size:.58rem">contextualisée : ${ctx.paceNorm}/km</div></div>
       ${act.total_elevation_gain?`<div class="a-stat"><div class="a-sv to">+${act.total_elevation_gain}m</div><div class="a-sl">D+</div></div>`:''}
       ${act.average_heartrate?`<div class="a-stat"><div class="a-sv">${Math.round(act.average_heartrate)}</div><div class="a-sl">FC moy</div><div class="a-ss">max ${act.max_heartrate||'—'} bpm</div></div>`:''}
       ${act.kilojoules?`<div class="a-stat"><div class="a-sv">${Math.round(act.kilojoules*.239)}</div><div class="a-sl">kcal</div></div>`:''}
@@ -222,13 +254,13 @@ export async function openAnalyse(act) {
       <div class="summary-loading"><div class="spinner"></div><div>Calcul en cours...</div></div>
     </div>
 
-    <!-- PAF -->
-    <div class="paf-widget">
-      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">Performance Adjustment Factor</div>
-      <div class="paf-factors">${paf.factors.map(f=>`<div class="paf-factor"><span style="display:flex;align-items:center;flex-shrink:0">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
-      <div class="paf-result">
-        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure normalisée</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${paf.paceNorm}/km</div></div>
-        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Pénalité conditions : <strong>+${(paf.totalAdj*100).toFixed(0)}%</strong></div>
+    <!-- Facteurs de course -->
+    <div class="ctx-widget">
+      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:10px">Facteurs de course</div>
+      <div class="ctx-factors">${ctx.factors.map(f=>`<div class="ctx-factor"><span style="display:flex;align-items:center;flex-shrink:0">${f.icon}</span><div><div style="font-size:.7rem;font-weight:600">${f.label}</div><div style="font-size:.62rem;color:var(--text2)">${f.value}</div></div><div style="font-family:var(--mono);font-size:.7rem;font-weight:500;color:${f.color}">${f.adj}</div></div>`).join('')}</div>
+      <div class="ctx-result">
+        <div><div class="mono" style="font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Allure contextualisée</div><div style="font-family:var(--display);font-size:1.4rem;color:var(--text2)">${ctx.paceNorm}/km</div></div>
+        <div style="font-size:.76rem;color:var(--text2);line-height:1.5">Conditions : <strong>+${(ctx.totalAdj*100).toFixed(0)}%</strong></div>
       </div>
       <div class="mono t3" style="margin-top:8px;font-size:.56rem;font-style:italic">Minetti et al., 2002 · Ely et al., 2007 · Lejeune et al., 1998</div>
     </div>
@@ -302,7 +334,7 @@ export async function openAnalyse(act) {
   }
 
 // Local summary async
-const summaryText = await generateLocalActivitySummary(act, streams, paf);
+const summaryText = await generateLocalActivitySummary(act, streams, ctx);
 const summaryBox = document.getElementById('summaryBox');
 if (summaryBox) {
   summaryBox.innerHTML = `

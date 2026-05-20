@@ -8,7 +8,8 @@ import { FC_MAX_DEFAULT } from './app-state.js';
 
 // ─── FRAÎCHEUR ────────────────────────────────────────────────────────────────
 // Multiplicateur sur le temps de course basé sur la charge récente.
-// Prudent : plafonnés à ±4% max, appliqués uniquement si données suffisantes.
+// Seuils alignés sur Gabbett 2016 (cohérents avec getLoadStatus de training-load.js).
+// Plafonnés à ±4% — prudent, l'effet réel peut dépasser mais on ne surprédit pas.
 
 export function computeFreshnessAdjustment(activities, fcMax) {
   const load = computeTrainingLoad(activities, fcMax || FC_MAX_DEFAULT);
@@ -16,9 +17,9 @@ export function computeFreshnessAdjustment(activities, fcMax) {
     return { multiplier: 1, label: null };
 
   const r = load.ratio;
-  if (r > 1.40) return { multiplier: 1.04, label: 'surcharge', loadStatus: 'overload' };
-  if (r > 1.25) return { multiplier: 1.02, label: 'fatigue',   loadStatus: 'elevated' };
-  if (r < 0.60) return { multiplier: 0.99, label: 'fraîcheur', loadStatus: 'recovery' };
+  if (r > 1.50) return { multiplier: 1.04, label: 'surcharge', loadStatus: 'overload' };
+  if (r > 1.30) return { multiplier: 1.02, label: 'fatigue',   loadStatus: 'elevated' };
+  if (r < 0.80) return { multiplier: 0.99, label: 'fraîcheur', loadStatus: 'recovery' };
   return { multiplier: 1, label: null, loadStatus: 'stable' };
 }
 
@@ -44,7 +45,14 @@ export function computeProgressionFactor(activities, fcMax, trailOnly = false) {
   const half   = Math.floor(sessions.length / 2);
   const early  = sessions.slice(0, half);
   const recent = sessions.slice(-half);
-  const avgE   = early.reduce((s, a) => s + a.average_speed, 0) / early.length;
-  const avgR   = recent.reduce((s, a) => s + a.average_speed, 0) / recent.length;
+  // Pondération par moving_time : une sortie de 2h Z3+ pèse 8× plus qu'une de 15min
+  const weightedAvg = (arr) => {
+    const totalTime = arr.reduce((s, a) => s + (a.moving_time || 0), 0);
+    return totalTime > 0
+      ? arr.reduce((s, a) => s + a.average_speed * (a.moving_time || 0), 0) / totalTime
+      : 0;
+  };
+  const avgE = weightedAvg(early);
+  const avgR = weightedAvg(recent);
   return avgE > 0 ? Math.min(1.10, Math.max(0.90, avgR / avgE)) : 1;
 }

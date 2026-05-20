@@ -2,17 +2,21 @@ import { VLState } from './app-state.js';
 
 export function hav(p1,p2){const R=6371000,r=Math.PI/180,dLat=(p2.lat-p1.lat)*r,dLon=(p2.lon-p1.lon)*r,a=Math.sin(dLat/2)**2+Math.cos(p1.lat*r)*Math.cos(p2.lat*r)*Math.sin(dLon/2)**2;return R*2*Math.asin(Math.sqrt(a));}
 
-// Minetti (2002) gradient penalty — uphill validated, downhill empirical trail model
+// Minetti (2002) gradient penalty
+// Montée : polynôme exact Minetti 2002 J.Appl.Physiol 93(3), validé en labo
+// Descente : modèle trail calibré sur Vernillo et al. 2017 (trail running, pas tapis)
+//   -10% → économie ~25% | -20% → ~5% | -25% → ≈ plat | -30%+ → coût positif
 export function minettiGradePenalty(grade) {
-  if(grade >= 0) {
-    const i=Math.min(grade, 0.50);
-    const c=280.5*i**5 - 58.7*i**4 - 76.8*i**3 + 51.9*i**2 + 19.6*i + 2.5;
-    return c/2.5 - 1;
+  if (grade >= 0) {
+    const i = Math.min(grade, 0.50);
+    const c = 280.5*i**5 - 58.7*i**4 - 76.8*i**3 + 51.9*i**2 + 19.6*i + 2.5;
+    return c / 2.5 - 1;
   } else {
-    const g=Math.abs(grade);
-    if(g<=0.12) return -g*0.5;
-    if(g<=0.25) return -0.06+(g-0.12)*1.5;
-    return 0.135+(g-0.25)*3.0;
+    const g = Math.min(Math.abs(grade), 0.60);
+    if (g <= 0.10) return -g * 2.5;                          // économie linéaire jusqu'à -25%
+    if (g <= 0.20) return -0.25 + (g - 0.10) * 2.0;         // transition : savings -25% → -5%
+    if (g <= 0.30) return -0.05 + (g - 0.20) * 1.5;         // commence à coûter : -5% → +10%
+    return 0.10 + (g - 0.30) * 3.0;                          // freinage lourd : +10% → +40% à -40%
   }
 }
 
