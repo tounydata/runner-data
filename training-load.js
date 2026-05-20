@@ -20,14 +20,15 @@ export function computeActivityLoad(activity, fcMax) {
   const durationMin = (activity.moving_time || 0) / 60;
   if (durationMin < 5) return 0;
 
-  // Facteur intensité — zone FC si disponible, sinon allure/type
+  // Facteur intensité — poids log-croissants inspirés Bannister TRIMP
+  // Z5 est ~6-8× plus stressant que Z1, pas 5× (linéaire serait faux)
   let intensity;
   if (activity.average_heartrate && maxHR > 0) {
     const z = activity.average_heartrate / maxHR;
-    if (z >= 0.90)      intensity = 5.0;
-    else if (z >= 0.80) intensity = 4.0;
-    else if (z >= 0.70) intensity = 3.0;
-    else if (z >= 0.60) intensity = 2.0;
+    if (z >= 0.90)      intensity = 7.5;
+    else if (z >= 0.80) intensity = 4.5;
+    else if (z >= 0.70) intensity = 2.5;
+    else if (z >= 0.60) intensity = 1.5;
     else                intensity = 1.0;
   } else {
     const t = activity.sport_type || activity.type || '';
@@ -89,10 +90,17 @@ export function computeTrainingLoad(activities, fcMax) {
   const recent42 = runs.filter(a => now - new Date(a.start_date).getTime() <= MS_42D);
   const recent7  = recent42.filter(a => now - new Date(a.start_date).getTime() <= MS_7D);
 
-  const acuteLoad   = recent7.reduce((s, a) => s + computeActivityLoad(a, fcMax), 0);
-  const total42     = recent42.reduce((s, a) => s + computeActivityLoad(a, fcMax), 0);
-  // Charge de fond = moyenne hebdomadaire sur 6 semaines
-  const chronicLoad = total42 / 6;
+  // Décroissance exponentielle — Bannister TRIMP model
+  // ATL (charge aiguë) : τ = 7 jours → sorties récentes pèsent beaucoup plus
+  // CTL (charge chronique) : τ = 42 jours → mémoire longue de 6 semaines
+  const acuteLoad = recent7.reduce((s, a) => {
+    const ageDays = (now - new Date(a.start_date).getTime()) / 86_400_000;
+    return s + computeActivityLoad(a, fcMax) * Math.exp(-ageDays / 7);
+  }, 0);
+  const chronicLoad = recent42.reduce((s, a) => {
+    const ageDays = (now - new Date(a.start_date).getTime()) / 86_400_000;
+    return s + computeActivityLoad(a, fcMax) * Math.exp(-ageDays / 42);
+  }, 0);
 
   const ratio = chronicLoad > 0 ? acuteLoad / chronicLoad : null;
   const trend = computeLoadTrend(activities, fcMax);
@@ -110,14 +118,16 @@ export function computeTrainingLoad(activities, fcMax) {
 
 // ─── STATUT ───────────────────────────────────────────────────────────────────
 
+// Seuils ACWR issus de Gabbett 2016 (Br J Sports Med) :
+// 0.8–1.3 = zone optimale, >1.5 = risque de blessure augmenté
 export function getLoadStatus(ratio) {
   if (ratio === null || ratio === undefined)
     return { label: 'inconnu',           color: 'var(--vl-text-3)', code: 'unknown'  };
-  if (ratio < 0.75)
+  if (ratio < 0.80)
     return { label: 'récupération',      color: 'var(--vl-growth)', code: 'recovery' };
-  if (ratio <= 1.10)
-    return { label: 'stable',            color: 'var(--vl-growth)', code: 'stable'   };
   if (ratio <= 1.30)
+    return { label: 'stable',            color: 'var(--vl-growth)', code: 'stable'   };
+  if (ratio <= 1.50)
     return { label: 'charge élevée',     color: '#f59e0b',           code: 'elevated' };
   return   { label: 'surcharge probable',color: 'var(--vl-ember)',  code: 'overload' };
 }
